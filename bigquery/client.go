@@ -19,8 +19,8 @@ type Client struct {
 	client *bigquery.Client
 }
 
-// GetList ... クエリを実行し、データを取得する
-func (c *Client) GetList(ctx context.Context, query string, limit int, cursor string, dsts interface{}) (string, error) {
+// List ... クエリを実行し、データを取得する
+func (c *Client) List(ctx context.Context, query string, limit int, cursor string, dsts interface{}) (string, error) {
 	q := c.client.Query(query)
 	it, err := q.Read(ctx)
 	if err != nil {
