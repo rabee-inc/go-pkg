@@ -8,3 +8,11 @@ type OpenGraph struct {
 	ImageURL    string `json:"image_url"`
 	FaviconURL  string `json:"favicon_url"`
 }
+
+// ConvRequest ... 画像変換リクエスト
+type ConvRequest struct {
+	Key         string `json:"key"`
+	SourceID    string `json:"source_id"`
+	SourceURL   string `json:"source_url"`
+	DstFilePath string `json:"dst_file_path"`
+}
