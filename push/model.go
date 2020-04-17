@@ -31,6 +31,7 @@ type MessageWeb struct {
 // Reserve ... 予約
 type Reserve struct {
 	ID         string        `json:"id"`
+	UserIDs    []string      `json:"user_ids"`
 	Message    *Message      `json:"message"`
 	ReservedAt int64         `json:"reserved_at"`
 	Status     ReserveStatus `json:"status"`

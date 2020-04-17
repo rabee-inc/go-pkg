@@ -183,13 +183,15 @@ func (c *Client) ListReserve(ctx context.Context, limit int, cursor string) ([]*
 }
 
 // CreateReserve ... 予約リストを作成する
-func (c *Client) CreateReserve(ctx context.Context, msg *Message, reservedAt int64) (*Reserve, error) {
+func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Message, reservedAt int64) (*Reserve, error) {
 	params := &struct {
 		AppID      string   `json:"app_id"`
+		UserIDs    []string `json:"user_ids"`
 		Message    *Message `json:"message"`
 		ReservedAt int64    `json:"reserved_at"`
 	}{
 		AppID:      c.appID,
+		UserIDs:    userIDs,
 		Message:    msg,
 		ReservedAt: reservedAt,
 	}
@@ -215,16 +217,18 @@ func (c *Client) CreateReserve(ctx context.Context, msg *Message, reservedAt int
 }
 
 // UpdateReserve ... 予約リストを更新する
-func (c *Client) UpdateReserve(ctx context.Context, reserveID string, msg *Message, reservedAt int64, status ReserveStatus) (*Reserve, error) {
+func (c *Client) UpdateReserve(ctx context.Context, reserveID string, userIDs []string, msg *Message, reservedAt int64, status ReserveStatus) (*Reserve, error) {
 	params := &struct {
 		AppID      string        `json:"app_id"`
 		ReserveID  string        `json:"reserve_id"`
+		UserIDs    []string      `json:"user_ids"`
 		Message    *Message      `json:"message"`
 		ReservedAt int64         `json:"reserved_at"`
 		Status     ReserveStatus `json:"status"`
 	}{
 		AppID:      c.appID,
 		ReserveID:  reserveID,
+		UserIDs:    userIDs,
 		Message:    msg,
 		ReservedAt: reservedAt,
 		Status:     status,
