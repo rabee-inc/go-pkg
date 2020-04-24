@@ -30,6 +30,16 @@ func ArrayInt64Shuffle(arr []int64) []int64 {
 	return arr
 }
 
+// ArrayUint64Shuffle ... uint64配列をシャッフルする
+func ArrayUint64Shuffle(arr []uint64) []uint64 {
+	n := len(arr)
+	for i := n - 1; i >= 0; i-- {
+		j := IntRand(0, i+1)
+		arr[i], arr[j] = arr[j], arr[i]
+	}
+	return arr
+}
+
 // ArrayStringInsert ... string配列の任意の場所に挿入する
 func ArrayStringInsert(arr []string, v string, i int) []string {
 	return append(arr[:i], append([]string{v}, arr[i:]...)...)
@@ -45,6 +55,11 @@ func ArrayInt64Insert(arr []int64, v int64, i int) []int64 {
 	return append(arr[:i], append([]int64{v}, arr[i:]...)...)
 }
 
+// ArrayUint64Insert ... uint64配列の任意の場所に挿入する
+func ArrayUint64Insert(arr []uint64, v uint64, i int) []uint64 {
+	return append(arr[:i], append([]uint64{v}, arr[i:]...)...)
+}
+
 // ArrayStringDelete ... string配列の任意の値を削除する
 func ArrayStringDelete(arr []string, i int) []string {
 	return append(arr[:i], arr[i+1:]...)
@@ -57,6 +72,11 @@ func ArrayIntDelete(arr []int, i int) []int {
 
 // ArrayInt64Delete ... int64配列の任意の値を削除する
 func ArrayInt64Delete(arr []int64, i int) []int64 {
+	return append(arr[:i], arr[i+1:]...)
+}
+
+// ArrayUint64Delete ... uint64配列の任意の値を削除する
+func ArrayUint64Delete(arr []uint64, i int) []uint64 {
 	return append(arr[:i], arr[i+1:]...)
 }
 
@@ -75,6 +95,11 @@ func ArrayInt64Shift(arr []int64) (int64, []int64) {
 	return arr[0], arr[1:]
 }
 
+// ArrayUint64Shift ... uint64配列の先頭を切り取る
+func ArrayUint64Shift(arr []uint64) (uint64, []uint64) {
+	return arr[0], arr[1:]
+}
+
 // ArrayStringBack ... string配列の後尾を切り取る
 func ArrayStringBack(arr []string) (string, []string) {
 	return arr[len(arr)-1], arr[:len(arr)-1]
@@ -87,6 +112,11 @@ func ArrayIntBack(arr []int) (int, []int) {
 
 // ArrayInt64Back ... int64配列の後尾を切り取る
 func ArrayInt64Back(arr []int64) (int64, []int64) {
+	return arr[len(arr)-1], arr[:len(arr)-1]
+}
+
+// ArrayUint64Back ... uint64配列の後尾を切り取る
+func ArrayUint64Back(arr []uint64) (uint64, []uint64) {
 	return arr[len(arr)-1], arr[:len(arr)-1]
 }
 
@@ -115,6 +145,17 @@ func ArrayIntFilter(arr []int, fn func(int) bool) []int {
 // ArrayInt64Filter ... int64配列をフィルタする
 func ArrayInt64Filter(arr []int64, fn func(int64) bool) []int64 {
 	ret := []int64{}
+	for _, v := range arr {
+		if fn(v) {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// ArrayUint64Filter ... uint64配列をフィルタする
+func ArrayUint64Filter(arr []uint64, fn func(uint64) bool) []uint64 {
+	ret := []uint64{}
 	for _, v := range arr {
 		if fn(v) {
 			ret = append(ret, v)
@@ -162,6 +203,19 @@ func ArrayInt64Uniq(arr []int64) []int64 {
 	return uniq
 }
 
+// ArrayUint64Uniq ... uint64配列の重複を排除する
+func ArrayUint64Uniq(arr []uint64) []uint64 {
+	m := make(map[uint64]bool)
+	uniq := []uint64{}
+	for _, v := range arr {
+		if !m[v] {
+			m[v] = true
+			uniq = append(uniq, v)
+		}
+	}
+	return uniq
+}
+
 // ArrayStringContains ... string配列の値の存在確認
 func ArrayStringContains(arr []string, e string) bool {
 	for _, v := range arr {
@@ -184,6 +238,16 @@ func ArrayIntContains(arr []int, e int) bool {
 
 // ArrayInt64Contains ... int64配列の値の存在確認
 func ArrayInt64Contains(arr []int64, e int64) bool {
+	for _, v := range arr {
+		if e == v {
+			return true
+		}
+	}
+	return false
+}
+
+// ArrayUint64Contains ... uint64配列の値の存在確認
+func ArrayUint64Contains(arr []uint64, e uint64) bool {
 	for _, v := range arr {
 		if e == v {
 			return true
@@ -223,6 +287,20 @@ func ArrayIntChunk(arr []int, size int) [][]int {
 // ArrayInt64Chunk ... int64配列の分割
 func ArrayInt64Chunk(arr []int64, size int) [][]int64 {
 	var chunks [][]int64
+	arrSize := len(arr)
+	for i := 0; i < arrSize; i += size {
+		end := i + size
+		if arrSize < end {
+			end = arrSize
+		}
+		chunks = append(chunks, arr[i:end])
+	}
+	return chunks
+}
+
+// ArrayUint64Chunk ... uint64配列の分割
+func ArrayUint64Chunk(arr []uint64, size int) [][]uint64 {
+	var chunks [][]uint64
 	arrSize := len(arr)
 	for i := 0; i < arrSize; i += size {
 		end := i + size
@@ -297,6 +375,27 @@ func ArrayInt64Mix(arrList [][]int64) []int64 {
 	return dst
 }
 
+// ArrayUint64Mix ... uint64配列を交互に結合する
+func ArrayUint64Mix(arrList [][]uint64) []uint64 {
+	maxLen := 0
+	for _, arr := range arrList {
+		len := len(arr)
+		if maxLen < len {
+			maxLen = len
+		}
+	}
+	dst := []uint64{}
+	for i := 0; i < maxLen; i++ {
+		for _, arr := range arrList {
+			if len(arr) < i+1 {
+				continue
+			}
+			dst = append(dst, arr[i])
+		}
+	}
+	return dst
+}
+
 // ArrayStringExcludes ... string配列で指定したbaseArrayの中でtargetArrayに含まれない値の配列を取得
 func ArrayStringExcludes(baseArray []string, targetArray []string) []string {
 	return ArrayStringFilter(baseArray, func(v string) bool {
@@ -328,6 +427,20 @@ func ArrayIntExcludes(baseArray []int, targetArray []int) []int {
 // ArrayInt64Excludes ... int64配列で指定したbaseArrayの中でtargetArrayに含まれない値の配列を取得
 func ArrayInt64Excludes(baseArray []int64, targetArray []int64) []int64 {
 	return ArrayInt64Filter(baseArray, func(v int64) bool {
+		isExclude := true
+		for _, t := range targetArray {
+			if t == v {
+				isExclude = false
+				continue
+			}
+		}
+		return isExclude
+	})
+}
+
+// ArrayUint64Excludes ... uint64配列で指定したbaseArrayの中でtargetArrayに含まれない値の配列を取得
+func ArrayUint64Excludes(baseArray []uint64, targetArray []uint64) []uint64 {
+	return ArrayUint64Filter(baseArray, func(v uint64) bool {
 		isExclude := true
 		for _, t := range targetArray {
 			if t == v {
