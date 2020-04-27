@@ -256,6 +256,7 @@ func TxListByQuery(ctx context.Context, tx *firestore.Transaction, query firesto
 
 // Create ... 作成する
 func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
+	setEmptyBySlice(src)
 	ref, _, err := colRef.Add(ctx, src)
 	if err != nil {
 		log.Errorm(ctx, "colRef.Add", err)
@@ -267,6 +268,7 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 
 // BtCreate ... 作成する（バッチ書き込み）
 func BtCreate(ctx context.Context, bt *firestore.WriteBatch, colRef *firestore.CollectionRef, src interface{}) {
+	setEmptyBySlice(src)
 	id := util.StrUniqueID()
 	ref := colRef.Doc(id)
 	bt.Create(ref, src)
@@ -275,6 +277,7 @@ func BtCreate(ctx context.Context, bt *firestore.WriteBatch, colRef *firestore.C
 
 // TxCreate ... 作成する（トランザクション）
 func TxCreate(ctx context.Context, tx *firestore.Transaction, colRef *firestore.CollectionRef, src interface{}) error {
+	setEmptyBySlice(src)
 	id := util.StrUniqueID()
 	ref := colRef.Doc(id)
 	err := tx.Create(ref, src)
@@ -328,6 +331,7 @@ func TxUpdate(ctx context.Context, tx *firestore.Transaction, docRef *firestore.
 
 // Set ... 上書きする
 func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) error {
+	setEmptyBySlice(src)
 	_, err := docRef.Set(ctx, src)
 	if err != nil {
 		log.Errorm(ctx, "docRef.Set", err)
@@ -339,12 +343,14 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) er
 
 // BtSet ... 上書きする（バッチ書き込み）
 func BtSet(ctx context.Context, bt *firestore.WriteBatch, docRef *firestore.DocumentRef, src interface{}) {
+	setEmptyBySlice(src)
 	_ = bt.Set(docRef, src)
 	setDocByDst(src, docRef)
 }
 
 // TxSet ... 上書きする（トランザクション）
 func TxSet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef, src interface{}) error {
+	setEmptyBySlice(src)
 	err := tx.Set(docRef, src)
 	if err != nil {
 		log.Errorm(ctx, "tx.Set", err)
