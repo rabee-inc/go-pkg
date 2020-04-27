@@ -41,6 +41,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 		return false, err
 	}
 	setDocByDst(dst, dsnp.Ref)
+	setEmptyBySlice(dst)
 	return true, nil
 }
 
@@ -65,6 +66,7 @@ func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.
 		}
 		rrv := reflect.ValueOf(v)
 		setDocByDsts(rrv, rrt, dsnp.Ref)
+		setEmptyBySlices(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
@@ -84,6 +86,7 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 		return false, err
 	}
 	setDocByDst(dst, dsnp.Ref)
+	setEmptyBySlice(dst)
 	return true, nil
 }
 
@@ -110,6 +113,7 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) e
 		}
 		rrv := reflect.ValueOf(v)
 		setDocByDsts(rrv, rrt, dsnp.Ref)
+		setEmptyBySlices(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
@@ -142,6 +146,7 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 		}
 		rrv := reflect.ValueOf(v)
 		setDocByDsts(rrv, rrt, dsnp.Ref)
+		setEmptyBySlices(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 		lastDsnp = dsnp
 	}
@@ -167,6 +172,7 @@ func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 		return false, err
 	}
 	setDocByDst(dst, dsnp.Ref)
+	setEmptyBySlice(dst)
 	return true, nil
 }
 
@@ -191,6 +197,7 @@ func TxGetMulti(ctx context.Context, tx *firestore.Transaction, docRefs []*fires
 		}
 		rrv := reflect.ValueOf(v)
 		setDocByDsts(rrv, rrt, dsnp.Ref)
+		setEmptyBySlices(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
@@ -214,6 +221,7 @@ func TxGetByQuery(ctx context.Context, tx *firestore.Transaction, query firestor
 		return false, err
 	}
 	setDocByDst(dst, dsnp.Ref)
+	setEmptyBySlice(dst)
 	return true, nil
 }
 
@@ -240,6 +248,7 @@ func TxListByQuery(ctx context.Context, tx *firestore.Transaction, query firesto
 		}
 		rrv := reflect.ValueOf(v)
 		setDocByDsts(rrv, rrt, dsnp.Ref)
+		setEmptyBySlices(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
