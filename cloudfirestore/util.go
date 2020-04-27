@@ -62,10 +62,10 @@ func setEmptyBySlices(rv reflect.Value, rt reflect.Type) {
 	if rt.Kind() == reflect.Struct {
 		for i := 0; i < rt.NumField(); i++ {
 			f := rt.Field(i)
-			if f.Type.Kind() == reflect.Slice && rv.Field(i).Len() == 0 {
+			if f.Type.Kind() == reflect.Slice && rv.Elem().Field(i).Len() == 0 {
 				sp := reflect.MakeSlice(f.Type, 0, 0)
 				s := reflect.Indirect(sp)
-				rv.Field(i).Set(s)
+				rv.Elem().Field(i).Set(s)
 				continue
 			}
 		}
