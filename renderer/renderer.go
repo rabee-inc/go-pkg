@@ -81,8 +81,21 @@ func Text(ctx context.Context, w http.ResponseWriter, status int, body string) {
 	log.SetResponseStatus(ctx, status)
 }
 
-// CSV ... CSVをレンダリングする
+// CSV ... CSV(UTF8)をレンダリングする
 func CSV(ctx context.Context, w http.ResponseWriter, name string, data [][]string) {
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=%s.csv", name))
+
+	writer := csv.NewWriter(w)
+	for _, datum := range data {
+		writer.Write(datum)
+	}
+	writer.Flush()
+	log.SetResponseStatus(ctx, http.StatusOK)
+}
+
+// CSVByShiftJIS ... CSV(ShiftJIS)をレンダリングする
+func CSVByShiftJIS(ctx context.Context, w http.ResponseWriter, name string, data [][]string) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=%s.csv", name))
 
