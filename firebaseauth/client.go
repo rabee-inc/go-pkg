@@ -15,8 +15,8 @@ import (
 func NewClient(projectID string) *auth.Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                30 * time.Millisecond,
-		Timeout:             20 * time.Millisecond,
+		Time:                1 * time.Second,
+		Timeout:             5 * time.Second,
 		PermitWithoutStream: true,
 	}))
 	conf := &firebase.Config{ProjectID: projectID}

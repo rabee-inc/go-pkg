@@ -63,8 +63,8 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 func NewClient(projectID string) *Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                30 * time.Millisecond,
-		Timeout:             20 * time.Millisecond,
+		Time:                1 * time.Second,
+		Timeout:             5 * time.Second,
 		PermitWithoutStream: true,
 	}))
 	client, err := bigquery.NewClient(ctx, projectID, gOpt)
