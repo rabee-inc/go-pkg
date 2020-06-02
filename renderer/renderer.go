@@ -22,7 +22,7 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 		Error(ctx, w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	var texts := []string{}
+	texts := []string{}
 	if msg != "" {
 		text := fmt.Sprintf("%d %s", code, msg)
 		texts = append(texts, text)
