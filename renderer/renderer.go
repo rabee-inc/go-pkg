@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/unrolled/render"
 	"golang.org/x/text/encoding/japanese"
@@ -21,27 +22,33 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 		Error(ctx, w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	var texts := []string{}
+	if msg != "" {
+		text := fmt.Sprintf("%d %s", code, msg)
+		texts = append(texts, text)
+	}
+	if err != nil {
+		text := err.Error()
+		texts = append(texts, text)
+	}
+	text := strings.Join(texts, "\n")
+
 	switch code {
 	case http.StatusBadRequest:
-		msg := fmt.Sprintf("%d StatusBadRequest: %s, %s", code, msg, err.Error())
-		log.Warningf(ctx, msg)
-		Error(ctx, w, code, msg)
+		log.Warningf(ctx, text)
+		Error(ctx, w, code, text)
 	case http.StatusUnauthorized:
-		msg := fmt.Sprintf("%d Unauthorized: %s, %s", code, msg, err.Error())
-		log.Warningf(ctx, msg)
-		Error(ctx, w, code, msg)
+		log.Warningf(ctx, text)
+		Error(ctx, w, code, text)
 	case http.StatusForbidden:
-		msg := fmt.Sprintf("%d Forbidden: %s, %s", code, msg, err.Error())
-		log.Warningf(ctx, msg)
-		Error(ctx, w, code, msg)
+		log.Warningf(ctx, text)
+		Error(ctx, w, code, text)
 	case http.StatusNotFound:
-		msg := fmt.Sprintf("%d NotFound: %s, %s", code, msg, err.Error())
-		log.Warningf(ctx, msg)
-		Error(ctx, w, code, msg)
+		log.Warningf(ctx, text)
+		Error(ctx, w, code, text)
 	default:
-		msg := fmt.Sprintf("%d: %s, %s", code, msg, err.Error())
-		log.Errorf(ctx, msg)
-		Error(ctx, w, code, msg)
+		log.Errorf(ctx, text)
+		Error(ctx, w, code, text)
 	}
 }
 
