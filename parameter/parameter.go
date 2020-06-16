@@ -3,10 +3,13 @@ package parameter
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi"
 
@@ -122,6 +125,64 @@ func GetFormByBool(ctx context.Context, r *http.Request, key string) (bool, erro
 	return val, nil
 }
 
+// GetFormBySlice ... リクエストからFormパラメータをsliceで取得する
+func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
+	sKey := fmt.Sprintf("%s[]", key)
+	qs := r.URL.RawQuery
+	vs := []string{}
+	var err error
+	for _, q := range strings.Split(qs, "&") {
+		kv := strings.Split(q, "=")
+		if len(kv) < 2 {
+			continue
+		}
+		k := kv[0]
+		if k != sKey {
+			continue
+		}
+		v := kv[1]
+		v, err = url.QueryUnescape(v)
+		if err != nil {
+			log.Warningm(ctx, "url.QueryUnescape", err)
+			continue
+		}
+		vs = append(vs, v)
+	}
+	return vs
+}
+
+// GetFormByIntSlice ... リクエストからFormパラメータをintのsliceで取得する
+func GetFormByIntSlice(ctx context.Context, r *http.Request, key string) []int {
+	sKey := fmt.Sprintf("%s[]", key)
+	qs := r.URL.RawQuery
+	vs := []int{}
+	var err error
+	for _, q := range strings.Split(qs, "&") {
+		kv := strings.Split(q, "=")
+		if len(kv) < 2 {
+			continue
+		}
+		k := kv[0]
+		if k != sKey {
+			continue
+		}
+		v := kv[1]
+		v, err = url.QueryUnescape(v)
+		if err != nil {
+			log.Warningm(ctx, "url.QueryUnescape", err)
+			continue
+		}
+		var num int
+		num, err = strconv.Atoi(v)
+		if err != nil {
+			log.Warningm(ctx, "strconv.Atoi", err)
+			continue
+		}
+		vs = append(vs, num)
+	}
+	return vs
+}
+
 // GetForms ... リクエストからFormパラメータを取得する
 func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Ptr {
@@ -171,6 +232,17 @@ func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 				return err
 			}
 			fieldValue.SetBool(val)
+		case reflect.Slice:
+			switch {
+			case field.Type == reflect.TypeOf([]string{}):
+				val := GetFormBySlice(ctx, r, formTag)
+				rv := reflect.ValueOf(val)
+				fieldValue.Set(rv)
+			case field.Type == reflect.TypeOf([]int{}):
+				val := GetFormByIntSlice(ctx, r, formTag)
+				rv := reflect.ValueOf(val)
+				fieldValue.Set(rv)
+			}
 		}
 	}
 	return nil
