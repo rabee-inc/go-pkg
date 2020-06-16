@@ -137,6 +137,11 @@ func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
 			continue
 		}
 		k := kv[0]
+		k, err = url.QueryUnescape(k)
+		if err != nil {
+			log.Warningm(ctx, "url.QueryUnescape", err)
+			continue
+		}
 		if k != sKey {
 			continue
 		}
@@ -153,34 +158,17 @@ func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
 
 // GetFormByIntSlice ... リクエストからFormパラメータをintのsliceで取得する
 func GetFormByIntSlice(ctx context.Context, r *http.Request, key string) []int {
-	sKey := fmt.Sprintf("%s[]", key)
-	qs := r.URL.RawQuery
-	vs := []int{}
-	var err error
-	for _, q := range strings.Split(qs, "&") {
-		kv := strings.Split(q, "=")
-		if len(kv) < 2 {
-			continue
-		}
-		k := kv[0]
-		if k != sKey {
-			continue
-		}
-		v := kv[1]
-		v, err = url.QueryUnescape(v)
-		if err != nil {
-			log.Warningm(ctx, "url.QueryUnescape", err)
-			continue
-		}
-		var num int
-		num, err = strconv.Atoi(v)
+	strs := GetFormBySlice(ctx, r, key)
+	nums := []int{}
+	for _, str := range strs {
+		num, err := strconv.Atoi(str)
 		if err != nil {
 			log.Warningm(ctx, "strconv.Atoi", err)
 			continue
 		}
-		vs = append(vs, num)
+		nums = append(nums, num)
 	}
-	return vs
+	return nums
 }
 
 // GetForms ... リクエストからFormパラメータを取得する
