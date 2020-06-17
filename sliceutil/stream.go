@@ -1,6 +1,9 @@
 package sliceutil
 
-import "reflect"
+import (
+	"reflect"
+	"sort"
+)
 
 // Stream ... スライス操作
 type Stream struct {
@@ -20,7 +23,7 @@ func (s *Stream) Filter(fn interface{}) *Stream {
 	for i := 0; i < s.slice.Len(); i++ {
 		rv := s.slice.Index(i)
 		out := frv.Call([]reflect.Value{rv})
-		if out[0].Interface().(bool) {
+		if out[0].Bool() {
 			srv = reflect.Append(srv, rv)
 		}
 	}
@@ -69,6 +72,23 @@ func (s *Stream) Reduce(fn interface{}) interface{} {
 
 /*
 dst := StreamOf(hoges).
+	Sort(func(prev, next *Hoge) bool {
+		return prev.SortNum < next.SortNum
+	}).Out().([]*Hoge)
+*/
+func (s *Stream) Sort(fn interface{}) *Stream {
+	frv := reflect.ValueOf(fn)
+	slice := s.slice.Interface()
+	sort.Slice(slice, func(i, j int) bool {
+		out := frv.Call([]reflect.Value{s.slice.Index(i), s.slice.Index(j)})
+		return out[0].Bool()
+	})
+	s.slice = reflect.ValueOf(slice)
+	return s
+}
+
+/*
+dst := StreamOf(hoges).
     Contains(func(hoge *Hoge) bool {
 		return hoge.ID == "abc"
 	})
@@ -79,7 +99,7 @@ func (s *Stream) Contains(fn interface{}) bool {
 	for i := 0; i < s.slice.Len(); i++ {
 		rv := s.slice.Index(i)
 		out := frv.Call([]reflect.Value{rv})
-		if out[0].Interface().(bool) {
+		if out[0].Bool() {
 			return true
 		}
 	}
