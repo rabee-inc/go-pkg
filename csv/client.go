@@ -8,9 +8,10 @@ import (
 
 	"github.com/jszwec/csvutil"
 
+	"github.com/rabee-inc/go-pkg/bytesutil"
 	"github.com/rabee-inc/go-pkg/httpclient"
 	"github.com/rabee-inc/go-pkg/log"
-	"github.com/rabee-inc/go-pkg/util"
+	"github.com/rabee-inc/go-pkg/stringutil"
 )
 
 // ToResponse ... レスポンス形式に変換する
@@ -20,7 +21,7 @@ func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 		log.Errorm(ctx, "csvutil.Marshal", err)
 		return nil, err
 	}
-	str := util.BytesToStr(bytes)
+	str := bytesutil.ToStr(bytes)
 
 	r := csv.NewReader(strings.NewReader(str))
 	rows, err := r.ReadAll()
@@ -52,7 +53,7 @@ func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 
 // GetByStr ... 文字列からCSVデータを取得する
 func GetByStr(ctx context.Context, str string, dsts interface{}) error {
-	bytes := util.StrToBytes(str)
+	bytes := stringutil.ToBytes(str)
 	err := GetByBytes(ctx, bytes, dsts)
 	if err != nil {
 		log.Errorm(ctx, "GetByBytes", err)

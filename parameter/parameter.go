@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi"
 
 	"github.com/rabee-inc/go-pkg/log"
-	"github.com/rabee-inc/go-pkg/util"
+	"github.com/rabee-inc/go-pkg/validation"
 )
 
 // GetURL ... リクエストからURLパラメータを取得する
@@ -186,7 +186,7 @@ func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 		field := paramType.Field(i)
 
 		formTag := paramType.Field(i).Tag.Get("form")
-		if util.IsZero(formTag) {
+		if validation.IsZero(formTag) {
 			continue
 		}
 

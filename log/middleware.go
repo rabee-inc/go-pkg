@@ -3,7 +3,8 @@ package log
 import (
 	"net/http"
 
-	"github.com/rabee-inc/go-pkg/util"
+	"github.com/rabee-inc/go-pkg/stringutil"
+	"github.com/rabee-inc/go-pkg/timeutil"
 )
 
 // Middleware ... ロガー
@@ -15,10 +16,10 @@ type Middleware struct {
 // Handle ... ロガーを初期化する
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		startAt := util.TimeNow()
+		startAt := timeutil.Now()
 
 		// ロガーをContextに設定
-		traceID := util.StrUniqueID()
+		traceID := stringutil.UniqueID()
 		logger := NewLogger(m.Writer, m.MinOutSeverity, traceID)
 		ctx := r.Context()
 		ctx = SetLogger(ctx, logger)
@@ -31,7 +32,7 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 				w.Write([]byte(msg))
 
 				// 実行時間を計算
-				endAt := util.TimeNow()
+				endAt := timeutil.Now()
 				dr := endAt.Sub(startAt)
 
 				// リクエストログを出力
@@ -43,7 +44,7 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 		// 実行時間を計算
-		endAt := util.TimeNow()
+		endAt := timeutil.Now()
 		dr := endAt.Sub(startAt)
 
 		// リクエストログを出力

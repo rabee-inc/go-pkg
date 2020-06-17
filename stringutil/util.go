@@ -1,4 +1,4 @@
-package util
+package stringutil
 
 import (
 	"crypto/md5"
@@ -18,26 +18,26 @@ const (
 	letterIdxMask = 0x3F
 )
 
-// StrToMD5 ... 文字列のハッシュ(MD5)を取得する
-func StrToMD5(str string) string {
+// ToMD5 ... 文字列のハッシュ(MD5)を取得する
+func ToMD5(str string) string {
 	h := md5.New()
 	io.WriteString(h, str)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-// StrToSHA256 ... 文字列のハッシュ(SHA256)を取得する
-func StrToSHA256(str string) string {
+// ToSHA256 ... 文字列のハッシュ(SHA256)を取得する
+func ToSHA256(str string) string {
 	c := sha256.Sum256([]byte(str))
 	return hex.EncodeToString(c[:])
 }
 
-// StrToBytes ... 文字列をバイト列に変換する
-func StrToBytes(str string) []byte {
+// ToBytes ... 文字列をバイト列に変換する
+func ToBytes(str string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&str))
 }
 
-// StrRand ... nビットのランダムな文字列を生成する。
-func StrRand(n int) (string, error) {
+// Rand ... nビットのランダムな文字列を生成する。
+func Rand(n int) (string, error) {
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {
 		return "", err
@@ -56,14 +56,14 @@ func StrRand(n int) (string, error) {
 	return string(buf), nil
 }
 
-// StrUniqueID ... ユニークでソータブルなIDを作成する
-func StrUniqueID() string {
+// UniqueID ... ユニークでソータブルなIDを作成する
+func UniqueID() string {
 	guid := xid.New()
 	return guid.String()
 }
 
-// StrIsNumeric ... 数字か確認する
-func StrIsNumeric(s string) bool {
+// IsNumeric ... 数字か確認する
+func IsNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
 }

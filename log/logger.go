@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/rabee-inc/go-pkg/errcode"
-	"github.com/rabee-inc/go-pkg/util"
+	"github.com/rabee-inc/go-pkg/timeutil"
 )
 
 // Logger ... ロガー
@@ -79,7 +79,7 @@ func Debugf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
@@ -100,7 +100,7 @@ func Debugm(ctx context.Context, method string, err error) {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf("%s: %s", method, err.Error())
 		logger.Writer.Application(
@@ -122,7 +122,7 @@ func Debuge(ctx context.Context, format string, args ...interface{}) error {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -145,7 +145,7 @@ func Debugc(ctx context.Context, code int, format string, args ...interface{}) e
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -167,7 +167,7 @@ func Infof(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
@@ -188,7 +188,7 @@ func Infom(ctx context.Context, method string, err error) {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf("%s: %s", method, err.Error())
 		logger.Writer.Application(
@@ -210,7 +210,7 @@ func Infoe(ctx context.Context, format string, args ...interface{}) error {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -233,7 +233,7 @@ func Infoc(ctx context.Context, code int, format string, args ...interface{}) er
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -255,7 +255,7 @@ func Warningf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
@@ -276,7 +276,7 @@ func Warningm(ctx context.Context, method string, err error) {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf("%s: %s", method, err.Error())
 		logger.Writer.Application(
@@ -298,7 +298,7 @@ func Warninge(ctx context.Context, format string, args ...interface{}) error {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -321,7 +321,7 @@ func Warningc(ctx context.Context, code int, format string, args ...interface{})
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -343,7 +343,7 @@ func Errorf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
@@ -364,7 +364,7 @@ func Errorm(ctx context.Context, method string, err error) {
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf("%s: %s", method, err.Error())
 		logger.Writer.Application(
@@ -387,7 +387,7 @@ func Errore(ctx context.Context, format string, args ...interface{}) error {
 	logger := GetLogger(ctx)
 	msg := err.Error()
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		logger.Writer.Application(
 			severity,
@@ -409,7 +409,7 @@ func Errorc(ctx context.Context, code int, format string, args ...interface{}) e
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -431,7 +431,7 @@ func Criticalf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
@@ -452,7 +452,7 @@ func Criticalm(ctx context.Context, method string, err error) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := fmt.Sprintf("%s: %s", method, err.Error())
 		logger.Writer.Application(
@@ -474,7 +474,7 @@ func Criticale(ctx context.Context, format string, args ...interface{}) error {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(
@@ -497,7 +497,7 @@ func Criticalc(ctx context.Context, code int, format string, args ...interface{}
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
-		now := util.TimeNow()
+		now := timeutil.Now()
 		file, line, function := getFileLine()
 		msg := err.Error()
 		logger.Writer.Application(

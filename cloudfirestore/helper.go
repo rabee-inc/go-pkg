@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/iterator"
 
 	"github.com/rabee-inc/go-pkg/log"
-	"github.com/rabee-inc/go-pkg/util"
+	"github.com/rabee-inc/go-pkg/stringutil"
 )
 
 // GenerateDocumentRef ... ドキュメント参照を作成する
@@ -269,7 +269,7 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 // BtCreate ... 作成する（バッチ書き込み）
 func BtCreate(ctx context.Context, bt *firestore.WriteBatch, colRef *firestore.CollectionRef, src interface{}) {
 	setEmptyBySlice(src)
-	id := util.StrUniqueID()
+	id := stringutil.UniqueID()
 	ref := colRef.Doc(id)
 	bt.Create(ref, src)
 	setDocByDst(src, ref)
@@ -278,7 +278,7 @@ func BtCreate(ctx context.Context, bt *firestore.WriteBatch, colRef *firestore.C
 // TxCreate ... 作成する（トランザクション）
 func TxCreate(ctx context.Context, tx *firestore.Transaction, colRef *firestore.CollectionRef, src interface{}) error {
 	setEmptyBySlice(src)
-	id := util.StrUniqueID()
+	id := stringutil.UniqueID()
 	ref := colRef.Doc(id)
 	err := tx.Create(ref, src)
 	if err != nil {
