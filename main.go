@@ -14,6 +14,7 @@ import (
 	_ "github.com/rabee-inc/go-pkg/environment"
 	_ "github.com/rabee-inc/go-pkg/errcode"
 	_ "github.com/rabee-inc/go-pkg/firebaseauth"
+	_ "github.com/rabee-inc/go-pkg/geolocutil"
 	_ "github.com/rabee-inc/go-pkg/httpclient"
 	_ "github.com/rabee-inc/go-pkg/httpheader"
 	_ "github.com/rabee-inc/go-pkg/images"
