@@ -108,16 +108,23 @@ func (s *Stream) Contains(fn interface{}) bool {
 
 /*
 dst := StreamOf(hoges).
-    ForEach(func(hoge *Hoge) {
+    ForEach(func(hoge *Hoge, i int) {
 		hoge.ID = "abc"
 	})
 */
 // ForEach ... 要素のループ
 func (s *Stream) ForEach(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
-	for i := 0; i < s.slice.Len(); i++ {
-		rv := s.slice.Index(i)
-		_ = frv.Call([]reflect.Value{rv})
+	if frv.Type().NumIn() == 1 {
+		for i := 0; i < s.slice.Len(); i++ {
+			rv := s.slice.Index(i)
+			_ = frv.Call([]reflect.Value{rv})
+		}
+	} else {
+		for i := 0; i < s.slice.Len(); i++ {
+			rv := s.slice.Index(i)
+			_ = frv.Call([]reflect.Value{rv, reflect.ValueOf(i)})
+		}
 	}
 	return s
 }
