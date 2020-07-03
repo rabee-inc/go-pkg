@@ -85,3 +85,10 @@ func YearPeriod(at int64, diff int) (int64, int64) {
 	endTime := time.Date(t.Year(), 1, 1, 23, 59, 59, 0, ZoneJST()).AddDate(1, 0, -1)
 	return ToUnix(startTime), ToUnix(endTime)
 }
+
+// LastDayByMonth ... 月の最終日を取得する
+func LastDayByMonth(at int64) int {
+	t := ByUnix(at)
+	t = time.Date(t.Year(), t.Month(), 1, 23, 59, 59, 0, ZoneJST()).AddDate(0, 1, -1)
+	return t.Day()
+}

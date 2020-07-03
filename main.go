@@ -23,6 +23,7 @@ import (
 	_ "github.com/rabee-inc/go-pkg/log"
 	_ "github.com/rabee-inc/go-pkg/maintenance"
 	_ "github.com/rabee-inc/go-pkg/ogp"
+	_ "github.com/rabee-inc/go-pkg/pagination"
 	_ "github.com/rabee-inc/go-pkg/parameter"
 	_ "github.com/rabee-inc/go-pkg/push"
 	_ "github.com/rabee-inc/go-pkg/randutil"
