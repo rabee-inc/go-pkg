@@ -6,13 +6,13 @@ import "math"
 type Object struct {
 	TotalCount  int  `json:"total_count"`
 	OffsetCount int  `json:"offset_count"`
-	Per         int  `json:"per"`
-	Total       int  `json:"total"`
-	Current     int  `json:"current"`
-	Next        int  `json:"next"`
-	Prev        int  `json:"prev"`
-	IsFirst     bool `json:"is_first"`
-	IsLast      bool `json:"is_last"`
+	PerPage     int  `json:"per_page"`
+	TotalPage   int  `json:"total_page"`
+	CurrentPage int  `json:"current_page"`
+	NextPage    int  `json:"next_page"`
+	PrevPage    int  `json:"prev_page"`
+	IsFirstPage bool `json:"is_first_page"`
+	IsLastPage  bool `json:"is_last_page"`
 }
 
 // Set ... ページネーションを設定する
@@ -21,29 +21,29 @@ func (m *Object) Set(totalCount int) {
 		return
 	}
 	m.TotalCount = totalCount
-	m.OffsetCount = ((m.Current - 1) * m.Per)
-	m.Total = int(math.Ceil(float64(totalCount) / float64(m.Per)))
-	if m.Current < m.Total {
-		m.Next = m.Current + 1
+	m.OffsetCount = ((m.CurrentPage - 1) * m.PerPage)
+	m.TotalPage = int(math.Ceil(float64(totalCount) / float64(m.PerPage)))
+	if m.CurrentPage < m.TotalPage {
+		m.NextPage = m.CurrentPage + 1
 	}
-	if 1 < m.Current {
-		m.Prev = m.Current - 1
+	if 1 < m.CurrentPage {
+		m.PrevPage = m.CurrentPage - 1
 	}
-	if m.Total <= m.Current {
-		m.IsLast = true
+	if m.TotalPage <= m.CurrentPage {
+		m.IsLastPage = true
 	}
-	if m.Current == 1 {
-		m.IsFirst = true
+	if m.CurrentPage == 1 {
+		m.IsFirstPage = true
 	}
 	return
 }
 
 // New ... ページネーションを作成する
-func New(page int, per int) *Object {
+func New(currentPage int, perPage int) *Object {
 	return &Object{
-		Current: page,
-		Per:     per,
-		IsFirst: false,
-		IsLast:  false,
+		CurrentPage: currentPage,
+		PerPage:     perPage,
+		IsFirstPage: false,
+		IsLastPage:  false,
 	}
 }
