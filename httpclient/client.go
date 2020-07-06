@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rabee-inc/go-pkg/log"
@@ -29,11 +30,14 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 		return 0, nil, err
 	}
 
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	if opt != nil {
 		for key, value := range opt.Headers {
 			req.Header.Set(key, value)
 		}
 	}
+	mutex.Unlock()
 
 	return send(ctx, req, opt)
 }
@@ -46,11 +50,14 @@ func GetForm(ctx context.Context, url string, param map[string]string, opt *HTTP
 		return 0, nil, err
 	}
 
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	if opt != nil {
 		for key, value := range opt.Headers {
 			req.Header.Set(key, value)
 		}
 	}
+	mutex.Unlock()
 
 	query := req.URL.Query()
 	for key, value := range param {
@@ -68,11 +75,14 @@ func GetQueryString(ctx context.Context, u string, qs string, opt *HTTPOption) (
 		return 0, nil, err
 	}
 
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	if opt != nil {
 		for key, value := range opt.Headers {
 			req.Header.Set(key, value)
 		}
 	}
+	mutex.Unlock()
 
 	return send(ctx, req, opt)
 }
@@ -90,11 +100,14 @@ func PostForm(ctx context.Context, u string, param map[string]string, opt *HTTPO
 		return 0, nil, err
 	}
 
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	if opt != nil {
 		for key, value := range opt.Headers {
 			req.Header.Set(key, value)
 		}
 	}
+	mutex.Unlock()
 
 	return send(ctx, req, opt)
 }
@@ -118,10 +131,13 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 			Headers: map[string]string{},
 		}
 	}
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	opt.Headers["Content-Type"] = "application/json"
 	for key, value := range opt.Headers {
 		req.Header.Set(key, value)
 	}
+	mutex.Unlock()
 
 	status, body, err := send(ctx, req, opt)
 	if status != http.StatusOK {
@@ -144,11 +160,14 @@ func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (in
 		return 0, nil, err
 	}
 
+	mutex := sync.Mutex{}
+	mutex.Lock()
 	if opt != nil {
 		for key, value := range opt.Headers {
 			req.Header.Set(key, value)
 		}
 	}
+	mutex.Unlock()
 
 	return send(ctx, req, opt)
 }
