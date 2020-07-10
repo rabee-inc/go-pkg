@@ -128,6 +128,15 @@ func (s *service) DeleteUser(ctx context.Context, userID string) error {
 	return nil
 }
 
+func (s *service) GeneratePasswordRemindURL(ctx context.Context, userID string, email string, setting *auth.ActionCodeSettings) (string, error) {
+	url, err := s.cli.PasswordResetLinkWithSettings(ctx, email, setting)
+	if err != nil {
+		log.Errorm(ctx, "s.cli.PasswordResetLinkWithSettings", err)
+		return "", err
+	}
+	return url, err
+}
+
 // NewService ... Serviceを作成する
 func NewService(cli *auth.Client) Service {
 	return &service{

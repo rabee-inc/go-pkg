@@ -2,6 +2,8 @@ package firebaseauth
 
 import (
 	"context"
+
+	"firebase.google.com/go/auth"
 )
 
 // Service ... Firebase認証の機能を提供する
@@ -36,4 +38,9 @@ type Service interface {
 	DeleteUser(
 		ctx context.Context,
 		userID string) error
+	GeneratePasswordRemindURL(
+		ctx context.Context,
+		userID string,
+		email string,
+		setting *auth.ActionCodeSettings) (string, error)
 }

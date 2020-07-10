@@ -154,6 +154,15 @@ func (s *serviceDebug) DeleteUser(ctx context.Context, userID string) error {
 	return nil
 }
 
+func (s *serviceDebug) GeneratePasswordRemindURL(ctx context.Context, userID string, email string, setting *auth.ActionCodeSettings) (string, error) {
+	url, err := s.cli.PasswordResetLinkWithSettings(ctx, email, setting)
+	if err != nil {
+		log.Errorm(ctx, "s.cli.PasswordResetLinkWithSettings", err)
+		return "", err
+	}
+	return url, err
+}
+
 // NewDebugService ... DebugServiceを作成する
 func NewDebugService(cli *auth.Client, dummyClaims map[string]interface{}) Service {
 	return &serviceDebug{
