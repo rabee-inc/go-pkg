@@ -16,7 +16,6 @@ import (
 	_ "github.com/rabee-inc/go-pkg/firebaseauth"
 	_ "github.com/rabee-inc/go-pkg/geolocutil"
 	_ "github.com/rabee-inc/go-pkg/httpclient"
-	_ "github.com/rabee-inc/go-pkg/httpheader"
 	_ "github.com/rabee-inc/go-pkg/images"
 	_ "github.com/rabee-inc/go-pkg/internalauth"
 	_ "github.com/rabee-inc/go-pkg/jsonrpc2"

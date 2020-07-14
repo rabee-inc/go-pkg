@@ -2,15 +2,12 @@ package firebaseauth
 
 import (
 	"context"
-	"fmt"
 
 	"firebase.google.com/go/auth"
-
-	"github.com/rabee-inc/go-pkg/log"
 )
 
 type serviceDebug struct {
-	cli         *auth.Client
+	svc         Service
 	dummyClaims map[string]interface{}
 }
 
@@ -20,21 +17,7 @@ func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, m
 	if user := getUserByAuthHeader(ah); user != "" {
 		return user, s.dummyClaims, nil
 	}
-
-	// 通常の処理
-	token := getTokenByAuthHeader(ah)
-	if token == "" {
-		err := log.Warninge(ctx, "token empty error")
-		return "", nil, err
-	}
-
-	t, err := s.cli.VerifyIDToken(ctx, token)
-	if err != nil {
-		msg := fmt.Sprintf("c.VerifyIDToken: %s", token)
-		log.Warningm(ctx, msg, err)
-		return "", nil, err
-	}
-	return t.UID, t.Claims, nil
+	return s.svc.Authentication(ctx, ah)
 }
 
 // SetCustomClaims ... カスタムClaimsを設定
@@ -44,33 +27,16 @@ func (s *serviceDebug) SetCustomClaims(ctx context.Context, userID string, claim
 	if getUserByAuthHeader(ah) != "" {
 		return nil
 	}
-
-	// 通常の処理
-	err := s.cli.SetCustomUserClaims(ctx, userID, claims)
-	if err != nil {
-		log.Errorm(ctx, "c.SetCustomUserClaims", err)
-		return err
-	}
-	return nil
+	return s.svc.SetCustomClaims(ctx, userID, claims)
 }
 
 func (s *serviceDebug) GetEmail(ctx context.Context, userID string) (string, error) {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	ah := getAuthHeader(ctx)
 	if user := getUserByAuthHeader(ah); user != "" {
-		return "hirose.yuuki@rabee.jp", nil
+		return "development@rabee.jp", nil
 	}
-
-	// FirebaseAuthUserを取得
-	user, err := s.cli.GetUser(ctx, userID)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
-		return "", err
-	}
-	if user == nil {
-		return "", nil
-	}
-	return user.Email, nil
+	return s.svc.GetEmail(ctx, userID)
 }
 
 func (s *serviceDebug) GetTwitterID(ctx context.Context, userID string) (string, error) {
@@ -79,94 +45,34 @@ func (s *serviceDebug) GetTwitterID(ctx context.Context, userID string) (string,
 	if getUserByAuthHeader(ah) != "" {
 		return "", nil
 	}
-
-	// FirebaseAuthUserを取得
-	user, err := s.cli.GetUser(ctx, userID)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
-		return "", err
-	}
-	if user == nil {
-		return "", err
-	}
-
-	dst := ""
-	for _, userInfo := range user.ProviderUserInfo {
-		if userInfo != nil && userInfo.ProviderID == "twitter.com" {
-			dst = userInfo.UID
-			break
-		}
-	}
-	return dst, nil
+	return s.svc.GetTwitterID(ctx, userID)
 }
 
 func (s *serviceDebug) ExistUser(ctx context.Context, userID string) (bool, error) {
-	user, err := s.cli.GetUser(ctx, userID)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
-		return false, err
-	}
-	if user == nil {
-		return false, nil
-	}
-	return true, nil
+	return s.svc.ExistUser(ctx, userID)
 }
 
 func (s *serviceDebug) CreateUser(ctx context.Context, email string, password string, displayName string) (string, error) {
-	params := (&auth.UserToCreate{}).
-		Email(email).
-		Password(password).
-		DisplayName(displayName)
-	user, err := s.cli.CreateUser(ctx, params)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.CreateUser", err)
-		return "", err
-	}
-	return user.UID, nil
+	return s.svc.CreateUser(ctx, email, password, displayName)
 }
 
 func (s *serviceDebug) UpdateUser(ctx context.Context, userID string, email *string, password *string, displayName *string) error {
-	params := (&auth.UserToUpdate{})
-	if email != nil {
-		params = params.Email(*email)
-	}
-	if password != nil {
-		params = params.Password(*password)
-	}
-	if displayName != nil {
-		params = params.DisplayName(*displayName)
-	}
-	_, err := s.cli.UpdateUser(ctx, userID, params)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.UpdateUser", err)
-		return err
-	}
-	return nil
+	return s.svc.UpdateUser(ctx, userID, email, password, displayName)
 }
 
 func (s *serviceDebug) DeleteUser(ctx context.Context, userID string) error {
-	params := (&auth.UserToUpdate{}).Disabled(true)
-	_, err := s.cli.UpdateUser(ctx, userID, params)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.UpdateUser", err)
-		return err
-	}
-	return nil
+	return s.svc.DeleteUser(ctx, userID)
 }
 
 func (s *serviceDebug) GeneratePasswordRemindURL(ctx context.Context, userID string, email string, setting *auth.ActionCodeSettings) (string, error) {
-	url, err := s.cli.PasswordResetLinkWithSettings(ctx, email, setting)
-	if err != nil {
-		log.Errorm(ctx, "s.cli.PasswordResetLinkWithSettings", err)
-		return "", err
-	}
-	return url, err
+	return s.svc.GeneratePasswordRemindURL(ctx, userID, email, setting)
 }
 
-// NewDebugService ... DebugServiceを作成する
-func NewDebugService(cli *auth.Client, dummyClaims map[string]interface{}) Service {
+// NewServiceDebug ... ServiceDebugを作成する
+func NewServiceDebug(cli *auth.Client, dummyClaims map[string]interface{}) Service {
+	svc := NewService(cli)
 	return &serviceDebug{
-		cli:         cli,
+		svc:         svc,
 		dummyClaims: dummyClaims,
 	}
 }
