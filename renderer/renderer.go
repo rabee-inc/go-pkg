@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/unrolled/render"
@@ -23,15 +24,18 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 		return
 	}
 	texts := []string{}
-	if msg != "" {
-		text := fmt.Sprintf("%d %s", code, msg)
+	if code > 0 {
+		text := strconv.Itoa(code)
 		texts = append(texts, text)
+	}
+	if msg != "" {
+		texts = append(texts, msg)
 	}
 	if err != nil {
 		text := err.Error()
 		texts = append(texts, text)
 	}
-	text := strings.Join(texts, "\n")
+	text := strings.Join(texts, " ")
 
 	switch code {
 	case http.StatusBadRequest:
