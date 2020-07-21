@@ -36,19 +36,19 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 	switch code {
 	case http.StatusBadRequest:
 		log.Warningf(ctx, text)
-		Error(ctx, w, code, text)
+		Error(ctx, w, code, err.Error())
 	case http.StatusUnauthorized:
 		log.Warningf(ctx, text)
-		Error(ctx, w, code, text)
+		Error(ctx, w, code, err.Error())
 	case http.StatusForbidden:
 		log.Warningf(ctx, text)
-		Error(ctx, w, code, text)
+		Error(ctx, w, code, err.Error())
 	case http.StatusNotFound:
 		log.Warningf(ctx, text)
-		Error(ctx, w, code, text)
+		Error(ctx, w, code, err.Error())
 	default:
 		log.Errorf(ctx, text)
-		Error(ctx, w, code, text)
+		Error(ctx, w, code, err.Error())
 	}
 }
 
