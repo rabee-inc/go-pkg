@@ -19,6 +19,8 @@ import (
 	_ "github.com/rabee-inc/go-pkg/images"
 	_ "github.com/rabee-inc/go-pkg/internalauth"
 	_ "github.com/rabee-inc/go-pkg/jsonrpc2"
+	_ "github.com/rabee-inc/go-pkg/jwtauth"
+	_ "github.com/rabee-inc/go-pkg/language"
 	_ "github.com/rabee-inc/go-pkg/log"
 	_ "github.com/rabee-inc/go-pkg/maintenance"
 	_ "github.com/rabee-inc/go-pkg/ogp"
@@ -32,6 +34,7 @@ import (
 	_ "github.com/rabee-inc/go-pkg/stringutil"
 	_ "github.com/rabee-inc/go-pkg/timeutil"
 	_ "github.com/rabee-inc/go-pkg/validation"
+	_ "github.com/rabee-inc/go-pkg/wallet"
 )
 
 func main() {
