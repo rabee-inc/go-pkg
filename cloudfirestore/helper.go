@@ -80,6 +80,10 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 	if err == iterator.Done {
 		return false, nil
 	}
+	if err != nil {
+		log.Errorm(ctx, "it.Next", err)
+		return err
+	}
 	err = dsnp.DataTo(dst)
 	if err != nil {
 		log.Errorm(ctx, "dsnp.DataTo", err)
