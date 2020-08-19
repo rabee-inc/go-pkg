@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"math"
 	"strconv"
@@ -37,6 +38,17 @@ func ToSHA256(str string) string {
 // ToBytes ... 文字列をバイト列に変換する
 func ToBytes(str string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&str))
+}
+
+// ToNumHash ... 文字列を数字ハッシュに変換する
+func ToNumHash(str string) (uint32, error) {
+	b := ToBytes(str)
+	h := fnv.New32()
+	_, err := h.Write(b)
+	if err != nil {
+		return 0, err
+	}
+	return h.Sum32(), nil
 }
 
 // Rand ... nビットのランダムな文字列を生成する。
