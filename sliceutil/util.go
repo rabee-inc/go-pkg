@@ -6,7 +6,7 @@ import "github.com/rabee-inc/go-pkg/randutil"
 func Shuffle(arr []string) []string {
 	n := len(arr)
 	for i := n - 1; i >= 0; i-- {
-		j := randutil.Int(0, i+1)
+		j := randutil.Int(0, i)
 		arr[i], arr[j] = arr[j], arr[i]
 	}
 	return arr
@@ -16,7 +16,7 @@ func Shuffle(arr []string) []string {
 func IntShuffle(arr []int) []int {
 	n := len(arr)
 	for i := n - 1; i >= 0; i-- {
-		j := randutil.Int(0, i+1)
+		j := randutil.Int(0, i)
 		arr[i], arr[j] = arr[j], arr[i]
 	}
 	return arr
@@ -26,7 +26,7 @@ func IntShuffle(arr []int) []int {
 func Int64Shuffle(arr []int64) []int64 {
 	n := len(arr)
 	for i := n - 1; i >= 0; i-- {
-		j := randutil.Int(0, i+1)
+		j := randutil.Int(0, i)
 		arr[i], arr[j] = arr[j], arr[i]
 	}
 	return arr
