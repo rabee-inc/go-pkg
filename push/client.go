@@ -182,18 +182,20 @@ func (c *Client) ListReserve(ctx context.Context, limit int, cursor string) ([]*
 	return ret.Reserves, ret.NextCursor, nil
 }
 
-// CreateReserve ... 予約リストを作成する
-func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Message, reservedAt int64) (*Reserve, error) {
+// CreateReserve ... 予約を作成する
+func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Message, reservedAt int64, unmanaged bool) (*Reserve, error) {
 	params := &struct {
 		AppID      string   `json:"app_id"`
 		UserIDs    []string `json:"user_ids"`
 		Message    *Message `json:"message"`
 		ReservedAt int64    `json:"reserved_at"`
+		Unmanaged  bool     `json:"unmanaged"`
 	}{
 		AppID:      c.appID,
 		UserIDs:    userIDs,
 		Message:    msg,
 		ReservedAt: reservedAt,
+		Unmanaged:  unmanaged,
 	}
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	resResult, resError, err := cli.DoSingle(ctx, "create_reserve", params)
@@ -216,7 +218,7 @@ func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Messa
 	return ret.Reserve, nil
 }
 
-// UpdateReserve ... 予約リストを更新する
+// UpdateReserve ... 予約を更新する
 func (c *Client) UpdateReserve(ctx context.Context, reserveID string, userIDs []string, msg *Message, reservedAt int64, status ReserveStatus) (*Reserve, error) {
 	params := &struct {
 		AppID      string        `json:"app_id"`

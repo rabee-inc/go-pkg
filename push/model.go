@@ -35,6 +35,7 @@ type Reserve struct {
 	Message    *Message      `json:"message"`
 	ReservedAt int64         `json:"reserved_at"`
 	Status     ReserveStatus `json:"status"`
+	Unmanaged  bool          `json:"unmanaged"`
 	CreatedAt  int64         `json:"created_at"`
 	UpdatedAt  int64         `json:"updated_at"`
 }
