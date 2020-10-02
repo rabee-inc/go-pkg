@@ -32,7 +32,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 		return false, nil
 	}
 	if err != nil {
-		log.Errorm(ctx, "docRef.Get", err)
+		log.Warningm(ctx, "docRef.Get", err)
 		return false, err
 	}
 	err = dsnp.DataTo(dst)
@@ -49,7 +49,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
 	dsnps, err := fCli.GetAll(ctx, docRefs)
 	if err != nil {
-		log.Errorm(ctx, "fCli.GetAll", err)
+		log.Warningm(ctx, "fCli.GetAll", err)
 		return err
 	}
 	rv := reflect.Indirect(reflect.ValueOf(dsts))
@@ -81,7 +81,7 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 		return false, nil
 	}
 	if err != nil {
-		log.Errorm(ctx, "it.Next", err)
+		log.Warningm(ctx, "it.Next", err)
 		return false, err
 	}
 	err = dsnp.DataTo(dst)
@@ -106,7 +106,7 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) e
 			break
 		}
 		if err != nil {
-			log.Errorm(ctx, "it.Next", err)
+			log.Warningm(ctx, "it.Next", err)
 			return err
 		}
 		v := reflect.New(rrt).Interface()
@@ -139,7 +139,7 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 			break
 		}
 		if err != nil {
-			log.Errorm(ctx, "it.Next", err)
+			log.Warningm(ctx, "it.Next", err)
 			return nil, err
 		}
 		v := reflect.New(rrt).Interface()
@@ -167,7 +167,7 @@ func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 		return false, nil
 	}
 	if err != nil {
-		log.Errorm(ctx, "docRef.Get", err)
+		log.Warningm(ctx, "docRef.Get", err)
 		return false, err
 	}
 	err = dsnp.DataTo(dst)
@@ -184,7 +184,7 @@ func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 func TxGetMulti(ctx context.Context, tx *firestore.Transaction, docRefs []*firestore.DocumentRef, dsts interface{}) error {
 	dsnps, err := tx.GetAll(docRefs)
 	if err != nil {
-		log.Errorm(ctx, "tx.GetAll", err)
+		log.Warningm(ctx, "tx.GetAll", err)
 		return err
 	}
 	rv := reflect.Indirect(reflect.ValueOf(dsts))
@@ -216,7 +216,7 @@ func TxGetByQuery(ctx context.Context, tx *firestore.Transaction, query firestor
 		return false, nil
 	}
 	if err != nil {
-		log.Errorm(ctx, "it.Next", err)
+		log.Warningm(ctx, "it.Next", err)
 		return false, err
 	}
 	err = dsnp.DataTo(dst)
@@ -241,7 +241,7 @@ func TxListByQuery(ctx context.Context, tx *firestore.Transaction, query firesto
 			break
 		}
 		if err != nil {
-			log.Errorm(ctx, "it.Next", err)
+			log.Warningm(ctx, "it.Next", err)
 			return err
 		}
 		v := reflect.New(rrt).Interface()
@@ -263,7 +263,7 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 	setEmptyBySlice(src)
 	ref, _, err := colRef.Add(ctx, src)
 	if err != nil {
-		log.Errorm(ctx, "colRef.Add", err)
+		log.Warningm(ctx, "colRef.Add", err)
 		return err
 	}
 	setDocByDst(src, ref)
@@ -286,7 +286,7 @@ func TxCreate(ctx context.Context, tx *firestore.Transaction, colRef *firestore.
 	ref := colRef.Doc(id)
 	err := tx.Create(ref, src)
 	if err != nil {
-		log.Errorm(ctx, "tx.Create", err)
+		log.Warningm(ctx, "tx.Create", err)
 		return err
 	}
 	setDocByDst(src, ref)
@@ -302,7 +302,7 @@ func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]in
 	}
 	_, err := docRef.Update(ctx, srcs)
 	if err != nil {
-		log.Errorm(ctx, "docRef.Update", err)
+		log.Warningm(ctx, "docRef.Update", err)
 		return err
 	}
 	return nil
@@ -327,7 +327,7 @@ func TxUpdate(ctx context.Context, tx *firestore.Transaction, docRef *firestore.
 	}
 	err := tx.Update(docRef, srcs)
 	if err != nil {
-		log.Errorm(ctx, "tx.Update", err)
+		log.Warningm(ctx, "tx.Update", err)
 		return err
 	}
 	return nil
@@ -338,7 +338,7 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) er
 	setEmptyBySlice(src)
 	_, err := docRef.Set(ctx, src)
 	if err != nil {
-		log.Errorm(ctx, "docRef.Set", err)
+		log.Warningm(ctx, "docRef.Set", err)
 		return err
 	}
 	setDocByDst(src, docRef)
@@ -357,7 +357,7 @@ func TxSet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 	setEmptyBySlice(src)
 	err := tx.Set(docRef, src)
 	if err != nil {
-		log.Errorm(ctx, "tx.Set", err)
+		log.Warningm(ctx, "tx.Set", err)
 		return err
 	}
 	setDocByDst(src, docRef)
@@ -368,7 +368,7 @@ func TxSet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
 	_, err := docRef.Delete(ctx)
 	if err != nil {
-		log.Errorm(ctx, "docRef.Delete", err)
+		log.Warningm(ctx, "docRef.Delete", err)
 		return err
 	}
 	return nil
@@ -383,7 +383,7 @@ func BtDelete(ctx context.Context, bt *firestore.WriteBatch, docRef *firestore.D
 func TxDelete(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef) error {
 	err := tx.Delete(docRef)
 	if err != nil {
-		log.Errorm(ctx, "tx.Delete", err)
+		log.Warningm(ctx, "tx.Delete", err)
 		return err
 	}
 	return nil

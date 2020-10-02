@@ -31,23 +31,23 @@ func ZoneJST() *time.Location {
 	return time.FixedZone("Asia/Tokyo", 9*60*60)
 }
 
-// SecondsToMiliseconds ... 指定秒数をミリ秒に変換する
-func SecondsToMiliseconds(seconds int) int64 {
+// SecondsToMilliseconds ... 指定秒数をミリ秒に変換する
+func SecondsToMilliseconds(seconds int) int64 {
 	return int64(seconds * 1000)
 }
 
-// MinutesToMiliseconds ... 指定分数をミリ秒に変換する
-func MinutesToMiliseconds(minutes int) int64 {
+// MinutesToMilliseconds ... 指定分数をミリ秒に変換する
+func MinutesToMilliseconds(minutes int) int64 {
 	return int64(minutes * 60 * 1000)
 }
 
-// HoursToMiliseconds ... 指定時数をミリ秒に変換する
-func HoursToMiliseconds(hours int) int64 {
+// HoursToMilliseconds ... 指定時数をミリ秒に変換する
+func HoursToMilliseconds(hours int) int64 {
 	return int64(hours * 60 * 60 * 1000)
 }
 
-// DaysToMiliseconds ... 指定日数をミリ秒に変換する
-func DaysToMiliseconds(days int) int64 {
+// DaysToMilliseconds ... 指定日数をミリ秒に変換する
+func DaysToMilliseconds(days int) int64 {
 	return int64(days * 24 * 60 * 60 * 1000)
 }
 
