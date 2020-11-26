@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,7 +39,7 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 }
 
 // GetForm ... Getリクエスト(URL, param)
-func GetForm(ctx context.Context, url string, param map[string]string, opt *HTTPOption) (int, []byte, error) {
+func GetForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
@@ -53,7 +54,7 @@ func GetForm(ctx context.Context, url string, param map[string]string, opt *HTTP
 
 	query := req.URL.Query()
 	for key, value := range param {
-		query.Add(key, value)
+		query.Add(key, fmt.Sprintf("%v", value))
 	}
 	req.URL.RawQuery = query.Encode()
 	return send(ctx, req, opt)
@@ -76,10 +77,10 @@ func GetQueryString(ctx context.Context, u string, qs string, opt *HTTPOption) (
 }
 
 // PostForm ... Postリクエスト(URL, param)
-func PostForm(ctx context.Context, u string, param map[string]string, opt *HTTPOption) (int, []byte, error) {
+func PostForm(ctx context.Context, u string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	values := url.Values{}
 	for key, value := range param {
-		values.Add(key, value)
+		values.Add(key, fmt.Sprintf("%v", value))
 	}
 
 	req, err := http.NewRequest("POST", u, strings.NewReader(values.Encode()))
