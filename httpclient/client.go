@@ -55,6 +55,7 @@ func GetForm(ctx context.Context, url string, param map[string]string, opt *HTTP
 	for key, value := range param {
 		query.Add(key, value)
 	}
+	req.URL.RawQuery = query.Encode()
 	return send(ctx, req, opt)
 }
 
