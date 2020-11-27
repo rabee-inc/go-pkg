@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	neturl "net/url"
 	"strings"
 	"time"
 
@@ -24,7 +24,7 @@ type HTTPOption struct {
 
 // Get ... Getリクエスト(URL)
 func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, nil, err
@@ -40,7 +40,7 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 
 // GetForm ... Getリクエスト(URL, param)
 func GetForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, nil, err
@@ -61,8 +61,8 @@ func GetForm(ctx context.Context, url string, param map[string]interface{}, opt 
 }
 
 // GetQueryString ... Getリクエスト(URL, QueryString)
-func GetQueryString(ctx context.Context, u string, qs string, opt *HTTPOption) (int, []byte, error) {
-	req, err := http.NewRequest("GET", u+"?"+qs, nil)
+func GetQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodGet, url+"?"+qs, nil)
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, nil, err
@@ -77,13 +77,13 @@ func GetQueryString(ctx context.Context, u string, qs string, opt *HTTPOption) (
 }
 
 // PostForm ... Postリクエスト(URL, param)
-func PostForm(ctx context.Context, u string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
-	values := url.Values{}
+func PostForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
+	values := neturl.Values{}
 	for key, value := range param {
 		values.Add(key, fmt.Sprintf("%v", value))
 	}
 
-	req, err := http.NewRequest("POST", u, strings.NewReader(values.Encode()))
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(values.Encode()))
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, nil, err
@@ -106,7 +106,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 		return 0, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jp))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jp))
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, err
@@ -137,7 +137,114 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 
 // PostBody ... Postリクエスト(URL, Body)
 func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, nil, err
+	}
+
+	if opt != nil {
+		for key, value := range opt.Headers {
+			req.Header.Set(key, value)
+		}
+	}
+	return send(ctx, req, opt)
+}
+
+// PutJSON ... Putリクエスト(URL, JSON)
+func PutJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+	jp, err := json.Marshal(param)
+	if err != nil {
+		log.Warningm(ctx, "json.Marshal", err)
+		return 0, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jp))
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, err
+	}
+
+	if opt == nil {
+		opt = &HTTPOption{
+			Headers: map[string]string{},
+		}
+	}
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range opt.Headers {
+		req.Header.Set(key, value)
+	}
+
+	status, body, err := send(ctx, req, opt)
+	if status != http.StatusOK {
+		return status, err
+	}
+
+	err = json.Unmarshal(body, res)
+	if err != nil {
+		log.Warningm(ctx, "json.Unmarshal", err)
+		return status, err
+	}
+	return status, err
+}
+
+// PutBody ... Putリクエスト(URL, Body)
+func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, nil, err
+	}
+
+	if opt != nil {
+		for key, value := range opt.Headers {
+			req.Header.Set(key, value)
+		}
+	}
+	return send(ctx, req, opt)
+}
+
+// Delete ... Deleteリクエスト(URL)
+func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, nil, err
+	}
+
+	if opt != nil {
+		for key, value := range opt.Headers {
+			req.Header.Set(key, value)
+		}
+	}
+	return send(ctx, req, opt)
+}
+
+// DeleteForm ... Deleteリクエスト(URL, param)
+func DeleteForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, nil, err
+	}
+
+	if opt != nil {
+		for key, value := range opt.Headers {
+			req.Header.Set(key, value)
+		}
+	}
+
+	query := req.URL.Query()
+	for key, value := range param {
+		query.Add(key, fmt.Sprintf("%v", value))
+	}
+	req.URL.RawQuery = query.Encode()
+	return send(ctx, req, opt)
+}
+
+// DeleteQueryString ... Deleteリクエスト(URL, QueryString)
+func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodDelete, url+"?"+qs, nil)
 	if err != nil {
 		log.Warningm(ctx, "http.NewRequest", err)
 		return 0, nil, err
