@@ -258,6 +258,43 @@ func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOpti
 	return send(ctx, req, opt)
 }
 
+// DeleteJSON ... Deleteリクエスト(URL, JSON)
+func DeleteJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+	jp, err := json.Marshal(param)
+	if err != nil {
+		log.Warningm(ctx, "json.Marshal", err)
+		return 0, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(jp))
+	if err != nil {
+		log.Warningm(ctx, "http.NewRequest", err)
+		return 0, err
+	}
+
+	if opt == nil {
+		opt = &HTTPOption{
+			Headers: map[string]string{},
+		}
+	}
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range opt.Headers {
+		req.Header.Set(key, value)
+	}
+
+	status, body, err := send(ctx, req, opt)
+	if status != http.StatusOK {
+		return status, err
+	}
+
+	err = json.Unmarshal(body, res)
+	if err != nil {
+		log.Warningm(ctx, "json.Unmarshal", err)
+		return status, err
+	}
+	return status, err
+}
+
 func send(ctx context.Context, req *http.Request, opt *HTTPOption) (int, []byte, error) {
 	client := http.Client{}
 	if opt != nil && opt.Timeout > 0 {
