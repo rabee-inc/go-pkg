@@ -11,6 +11,7 @@ import (
 	_ "github.com/rabee-inc/go-pkg/cloudtasks"
 	_ "github.com/rabee-inc/go-pkg/csv"
 	_ "github.com/rabee-inc/go-pkg/deploy"
+	_ "github.com/rabee-inc/go-pkg/encryptutil"
 	_ "github.com/rabee-inc/go-pkg/environment"
 	_ "github.com/rabee-inc/go-pkg/errcode"
 	_ "github.com/rabee-inc/go-pkg/firebaseauth"

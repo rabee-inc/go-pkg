@@ -2,13 +2,8 @@ package stringutil
 
 import (
 	"bytes"
-	"crypto/md5"
 	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"hash/fnv"
-	"io"
 	"math"
 	"strconv"
 	"strings"
@@ -21,19 +16,6 @@ const (
 	letters       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 	letterIdxMask = 0x3F
 )
-
-// ToMD5 ... 文字列のハッシュ(MD5)を取得する
-func ToMD5(str string) string {
-	h := md5.New()
-	io.WriteString(h, str)
-	return fmt.Sprintf("%x", h.Sum(nil))
-}
-
-// ToSHA256 ... 文字列のハッシュ(SHA256)を取得する
-func ToSHA256(str string) string {
-	c := sha256.Sum256([]byte(str))
-	return hex.EncodeToString(c[:])
-}
 
 // ToBytes ... 文字列をバイト列に変換する
 func ToBytes(str string) []byte {

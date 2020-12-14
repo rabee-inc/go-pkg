@@ -5,7 +5,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 
-	"github.com/rabee-inc/go-pkg/stringutil"
+	"github.com/rabee-inc/go-pkg/encryptutil"
 )
 
 // Item ... お財布のアイテム
@@ -28,7 +28,7 @@ func ItemRef(fCli *firestore.Client) *firestore.CollectionRef {
 
 // GenerateItemID ... お財布のアイテムIDを作成する
 func GenerateItemID(userID string, kind ItemKind) string {
-	return stringutil.ToMD5(fmt.Sprintf("%s::%s", userID, kind))
+	return encryptutil.ToMD5(fmt.Sprintf("%s::%s", userID, kind))
 }
 
 // ItemDetail ... お財布アイテムの詳細
