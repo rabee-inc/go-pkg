@@ -16,16 +16,16 @@ type Size struct {
 	Height int    `firestore:"height" json:"height"`
 }
 
-// ConvRequest ... 画像変換リクエスト
-type ConvRequest struct {
+// ConvertRequest ... 画像変換リクエスト
+type ConvertRequest struct {
 	Key         string   `json:"key"`
 	SourceID    string   `json:"source_id"`
 	SourceURLs  []string `json:"source_urls"`
 	DstFilePath string   `json:"dst_file_path"`
 }
 
-// GenRequest ... 画像作成リクエスト
-type GenRequest struct {
+// GenerateRequest ... 画像作成リクエスト
+type GenerateRequest struct {
 	Key         string `json:"key"`
 	SourceID    string `json:"source_id"`
 	SourceURL   string `json:"source_url"`

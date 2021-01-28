@@ -13,6 +13,7 @@ import (
 // Handler ... スポットのハンドラ
 type Handler struct {
 	repo Repository
+	v    *validator.Validate
 }
 
 // UpdateByConvertObjects ... 変換後の画像をアップデートする
@@ -32,8 +33,7 @@ func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Validation
-	v := validator.New()
-	if err := v.Struct(param); err != nil {
+	if err := h.v.Struct(param); err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
 		renderer.HandleError(ctx, w, "v.Struct", err)
 		return
@@ -67,8 +67,7 @@ func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validation
-	v := validator.New()
-	if err := v.Struct(param); err != nil {
+	if err := h.v.Struct(param); err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
 		renderer.HandleError(ctx, w, "v.Struct", err)
 		return
@@ -86,7 +85,9 @@ func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 
 // NewHandler ... ハンドラを作成する
 func NewHandler(repo Repository) *Handler {
+	v := validator.New()
 	return &Handler{
 		repo: repo,
+		v:    v,
 	}
 }
