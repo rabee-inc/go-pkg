@@ -9,8 +9,9 @@ import (
 
 // Client ... クライアント
 type Client struct {
-	psCli     *cloudpubsub.Client
-	topicName string
+	psCli         *cloudpubsub.Client
+	convTopicName string
+	genTopicName  string
 }
 
 // SendConvertRequest ... 画像変換リクエストを送信する
@@ -36,7 +37,36 @@ func (c *Client) SendConvertRequest(
 		SourceURLs:  srcURLs,
 		DstFilePath: dstFilePath,
 	}
-	err := c.psCli.Publish(ctx, c.topicName, src)
+	err := c.psCli.Publish(ctx, c.convTopicName, src)
+	if err != nil {
+		log.Errorm(ctx, "c.psCli.Publish", err)
+		return err
+	}
+	return nil
+}
+
+// SendGenerateRequest ... 画像作成リクエストを送信する
+func (c *Client) SendGenerateRequest(
+	ctx context.Context,
+	key string,
+	sourceID string,
+	sourceURL string,
+	width int,
+	height int,
+	dstFilePath string) error {
+	if sourceID == "" || sourceURL == "" || dstFilePath == "" {
+		err := log.Errore(ctx, "invalid parametor, sourceID: %s, sourceURL: %s, dstFilePath: %s", sourceID, sourceURL, dstFilePath)
+		return err
+	}
+	src := &GenRequest{
+		Key:         key,
+		SourceID:    sourceID,
+		SourceURL:   sourceURL,
+		Width:       width,
+		Height:      height,
+		DstFilePath: dstFilePath,
+	}
+	err := c.psCli.Publish(ctx, c.genTopicName, src)
 	if err != nil {
 		log.Errorm(ctx, "c.psCli.Publish", err)
 		return err
@@ -45,9 +75,12 @@ func (c *Client) SendConvertRequest(
 }
 
 // NewClient ... クライアントを作成する
-func NewClient(psCli *cloudpubsub.Client, topicName string) *Client {
+func NewClient(psCli *cloudpubsub.Client) *Client {
+	convTopicName := "image-converter"
+	genTopicName := "image-generator"
 	return &Client{
-		psCli:     psCli,
-		topicName: topicName,
+		psCli:         psCli,
+		convTopicName: convTopicName,
+		genTopicName:  genTopicName,
 	}
 }

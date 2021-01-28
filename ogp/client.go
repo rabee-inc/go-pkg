@@ -71,31 +71,6 @@ type Client struct {
 	topicName string
 }
 
-// SendRequest ... OGP作成リクエストを送信する
-func (c *Client) SendRequest(
-	ctx context.Context,
-	key string,
-	sourceID string,
-	sourceURL string,
-	dstFilePath string) error {
-	if sourceID == "" || sourceURL == "" || dstFilePath == "" {
-		err := log.Errore(ctx, "invalid parametor, sourceID: %s, sourceURL: %s, dstFilePath: %s", sourceID, sourceURL, dstFilePath)
-		return err
-	}
-	src := &ConvRequest{
-		Key:         key,
-		SourceID:    sourceID,
-		SourceURL:   sourceURL,
-		DstFilePath: dstFilePath,
-	}
-	err := c.psCli.Publish(ctx, c.topicName, src)
-	if err != nil {
-		log.Errorm(ctx, "c.psCli.Publish", err)
-		return err
-	}
-	return nil
-}
-
 // NewClient ... クライアントを作成する
 func NewClient(psCli *cloudpubsub.Client, topicName string) *Client {
 	return &Client{

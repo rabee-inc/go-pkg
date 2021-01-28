@@ -23,3 +23,13 @@ type ConvRequest struct {
 	SourceURLs  []string `json:"source_urls"`
 	DstFilePath string   `json:"dst_file_path"`
 }
+
+// GenRequest ... 画像作成リクエスト
+type GenRequest struct {
+	Key         string `json:"key"`
+	SourceID    string `json:"source_id"`
+	SourceURL   string `json:"source_url"`
+	Width       int    `json:"width"`
+	Height      int    `json:"height"`
+	DstFilePath string `json:"dst_file_path"`
+}
