@@ -3,6 +3,7 @@ package images
 // Object ... 画像オブジェクト
 type Object struct {
 	ID            string           `firestore:"id"             json:"id"`
+	OriginalURL   string           `firestore:"original_url"   json:"original_url"`
 	URL           string           `firestore:"url"            json:"url"`
 	DominantColor string           `firestore:"dominant_color" json:"dominant_color"`
 	Sizes         map[string]*Size `firestore:"sizes"          json:"sizes"`
