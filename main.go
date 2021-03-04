@@ -24,6 +24,7 @@ import (
 	_ "github.com/rabee-inc/go-pkg/language"
 	_ "github.com/rabee-inc/go-pkg/log"
 	_ "github.com/rabee-inc/go-pkg/maintenance"
+	_ "github.com/rabee-inc/go-pkg/memcache"
 	_ "github.com/rabee-inc/go-pkg/ogp"
 	_ "github.com/rabee-inc/go-pkg/pagination"
 	_ "github.com/rabee-inc/go-pkg/parameter"
