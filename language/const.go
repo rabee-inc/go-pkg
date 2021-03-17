@@ -14,3 +14,7 @@ const (
 	// KeyTraditionalChinese ... 言語: 中国語(繁)
 	KeyTraditionalChinese Key = "zh-hant"
 )
+
+const (
+	keyTraditionalTaiwanChinese Key = "zh-tw"
+)

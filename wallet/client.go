@@ -8,11 +8,13 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
+// Client ... ウォレットのクライアント
 type Client struct {
 	svc  *Service
 	fCli *firestore.Client
 }
 
+// Get ... 指定のアイテムが入ったウォレットを取得する
 func (c *Client) Get(ctx context.Context, userID string, kind ItemKind) (*Item, error) {
 	dst, err := c.svc.Get(ctx, userID, kind)
 	if err != nil {
@@ -22,6 +24,7 @@ func (c *Client) Get(ctx context.Context, userID string, kind ItemKind) (*Item, 
 	return dst, nil
 }
 
+// GetMulti ... 指定のアイテムが入ったウォレットを複数取得する
 func (c *Client) GetMulti(ctx context.Context, userID string, kinds []ItemKind) (map[ItemKind]*Item, error) {
 	dsts, err := c.svc.GetMulti(ctx, userID, kinds)
 	if err != nil {
@@ -31,6 +34,7 @@ func (c *Client) GetMulti(ctx context.Context, userID string, kinds []ItemKind) 
 	return dsts, nil
 }
 
+// GetAmount ... 指定のアイテムが入ったウォレット(金額のみ)を取得する
 func (c *Client) GetAmount(ctx context.Context, userID string, kind ItemKind) (float64, error) {
 	dst, err := c.svc.GetAmount(ctx, userID, kind)
 	if err != nil {
@@ -40,6 +44,7 @@ func (c *Client) GetAmount(ctx context.Context, userID string, kind ItemKind) (f
 	return dst, nil
 }
 
+// GetMultiAmount ... 指定のアイテムが入ったウォレット(金額のみ)を複数取得する
 func (c *Client) GetMultiAmount(ctx context.Context, userID string, kinds []ItemKind) (map[ItemKind]float64, error) {
 	dsts, err := c.svc.GetMultiAmount(ctx, userID, kinds)
 	if err != nil {
@@ -49,6 +54,7 @@ func (c *Client) GetMultiAmount(ctx context.Context, userID string, kinds []Item
 	return dsts, nil
 }
 
+// Give ... アイテムを配布する
 func (c *Client) Give(
 	ctx context.Context,
 	userID string,
@@ -72,6 +78,7 @@ func (c *Client) Give(
 	return dsts, nil
 }
 
+// Use ... アイテムを消費する
 func (c *Client) Use(
 	ctx context.Context,
 	userID string,
@@ -95,6 +102,7 @@ func (c *Client) Use(
 	return dsts, nil
 }
 
+// Exchange ... アイテムを両替する
 func (c *Client) Exchange(
 	ctx context.Context,
 	userID string,
@@ -120,6 +128,7 @@ func (c *Client) Exchange(
 	return dsts, nil
 }
 
+// HistoriesByCursor ... 履歴リストを取得する
 func (c *Client) HistoriesByCursor(
 	ctx context.Context,
 	userID string,
@@ -134,6 +143,7 @@ func (c *Client) HistoriesByCursor(
 	return histories, nCursor, nil
 }
 
+// HistoriesByPeriod ... 履歴リストを期間指定で取得する
 func (c *Client) HistoriesByPeriod(
 	ctx context.Context,
 	userID string,

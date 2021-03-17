@@ -31,23 +31,6 @@ func GenerateItemID(userID string, kind ItemKind) string {
 	return encryptutil.ToMD5(fmt.Sprintf("%s::%s", userID, kind))
 }
 
-// ItemDetail ... お財布アイテムの詳細
-type ItemDetail struct {
-	ID        string                 `firestore:"-"          json:"id" cloudfirestore:"id"`
-	Ref       *firestore.DocumentRef `firestore:"-"          json:"-"  cloudfirestore:"ref"`
-	UserID    string                 `firestore:"user_id"    json:"user_id"`
-	Kind      ItemKind               `firestore:"kind"       json:"kind"`
-	Amount    float64                `firestore:"amount"     json:"amount"`
-	Expired   bool                   `firestore:"expired"    json:"expired"`
-	CreatedAt int64                  `firestore:"created_at" json:"created_at"`
-	UpdatedAt int64                  `firestore:"updated_at" json:"updated_at"`
-}
-
-// ItemDetailRef ... コレクションの参照を取得
-func ItemDetailRef(fCli *firestore.Client) *firestore.CollectionRef {
-	return fCli.Collection("wallet_item_details")
-}
-
 // ItemHistory ... お財布アイテムの配布/消費履歴
 type ItemHistory struct {
 	ID        string                 `firestore:"-"          json:"id" cloudfirestore:"id"`

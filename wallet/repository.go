@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"context"
-	"sort"
 
 	"cloud.google.com/go/firestore"
 
@@ -10,12 +9,14 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
+// Repository ... ウォレットのリポジトリ
 type Repository struct {
 	fCli *firestore.Client
 }
 
 // Item
 
+// GetItem ... アイテムを取得する
 func (r *Repository) GetItem(ctx context.Context, userID string, kind ItemKind) (*Item, error) {
 	q := ItemRef(r.fCli).
 		Where("user_id", "==", userID).
@@ -32,6 +33,7 @@ func (r *Repository) GetItem(ctx context.Context, userID string, kind ItemKind) 
 	return dst, nil
 }
 
+// TxGetMultiItem ... アイテムを複数取得する
 func (r *Repository) TxGetMultiItem(
 	ctx context.Context,
 	tx *firestore.Transaction,
@@ -56,6 +58,7 @@ func (r *Repository) TxGetMultiItem(
 	return dsts, nil
 }
 
+// ListItem ... アイテムリストを取得する
 func (r *Repository) ListItem(ctx context.Context, userID string) ([]*Item, error) {
 	q := ItemRef(r.fCli).Where("user_id", "==", userID)
 	dsts := []*Item{}
@@ -67,6 +70,7 @@ func (r *Repository) ListItem(ctx context.Context, userID string) ([]*Item, erro
 	return dsts, nil
 }
 
+// TxSetItem ... アイテムを設定する
 func (r *Repository) TxSetItem(
 	ctx context.Context,
 	tx *firestore.Transaction,
@@ -83,69 +87,9 @@ func (r *Repository) TxSetItem(
 	return src, nil
 }
 
-// ItemDetail
-
-func (r *Repository) TxListItemDetail(
-	ctx context.Context,
-	tx *firestore.Transaction,
-	userID string,
-	kinds []ItemKind) ([]*ItemDetail, error) {
-	q := ItemDetailRef(r.fCli).
-		Where("user_id", "==", userID).
-		Where("kind", "in", kinds).
-		Where("expired", "==", false).
-		Where("amount", ">", 0)
-	dsts := []*ItemDetail{}
-	err := cloudfirestore.TxListByQuery(ctx, tx, q, &dsts)
-	if err != nil {
-		log.Errorm(ctx, "loudfirestore.TxListByQuery", err)
-		return nil, err
-	}
-	sort.Slice(dsts, func(i, j int) bool {
-		return dsts[i].CreatedAt < dsts[j].CreatedAt
-	})
-	return dsts, nil
-}
-
-func (r *Repository) TxCreateItemDetail(
-	ctx context.Context,
-	tx *firestore.Transaction,
-	userID string,
-	kind ItemKind,
-	amount float64,
-	createdAt int64) (*ItemDetail, error) {
-	src := &ItemDetail{
-		UserID:    userID,
-		Kind:      kind,
-		Amount:    amount,
-		Expired:   false,
-		CreatedAt: createdAt,
-		UpdatedAt: createdAt,
-	}
-	colRef := ItemDetailRef(r.fCli)
-	err := cloudfirestore.TxCreate(ctx, tx, colRef, src)
-	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.TxCreate", err)
-		return nil, err
-	}
-	return src, nil
-}
-
-func (r *Repository) TxUpdateItemDetail(
-	ctx context.Context,
-	tx *firestore.Transaction,
-	src *ItemDetail) (*ItemDetail, error) {
-	docRef := ItemDetailRef(r.fCli).Doc(src.ID)
-	err := cloudfirestore.TxSet(ctx, tx, docRef, src)
-	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.TxSet", err)
-		return nil, err
-	}
-	return src, nil
-}
-
 // ItemHistory
 
+// ListHistoryByCursor ... 履歴リストを取得する
 func (r *Repository) ListHistoryByCursor(
 	ctx context.Context,
 	userID string,
@@ -178,6 +122,7 @@ func (r *Repository) ListHistoryByCursor(
 	return dsts, nCursor, nil
 }
 
+// ListHistoryByPeriod ... 履歴リストを期間指定で取得する
 func (r *Repository) ListHistoryByPeriod(
 	ctx context.Context,
 	userID string,
@@ -198,6 +143,7 @@ func (r *Repository) ListHistoryByPeriod(
 	return dsts, nil
 }
 
+// TxCreateHistory ... 履歴を作成する
 func (r *Repository) TxCreateHistory(
 	ctx context.Context,
 	tx *firestore.Transaction,
