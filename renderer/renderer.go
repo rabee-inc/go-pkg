@@ -16,7 +16,7 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
-// HandleError ... 一番典型的なエラーハンドリング
+// HandleError ... よく使うエラーハンドリング
 func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
 	code, ok := errcode.Get(err)
 	if !ok {
@@ -38,6 +38,8 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 	text := strings.Join(texts, " ")
 
 	switch code {
+	case http.StatusOK:
+		Error(ctx, w, code, err.Error())
 	case http.StatusBadRequest:
 		log.Warningf(ctx, text)
 		Error(ctx, w, code, err.Error())

@@ -3,7 +3,7 @@ module github.com/rabee-inc/go-pkg
 go 1.15
 
 require (
-	cloud.google.com/go v0.79.0
+	cloud.google.com/go v0.80.0
 	cloud.google.com/go/bigquery v1.16.0
 	cloud.google.com/go/firestore v1.5.0
 	cloud.google.com/go/pubsub v1.10.1
@@ -24,9 +24,9 @@ require (
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/text v0.3.5
-	google.golang.org/api v0.42.0
-	google.golang.org/genproto v0.0.0-20210315173758-2651cd453018
-	google.golang.org/grpc v1.36.0
+	google.golang.org/api v0.43.0
+	google.golang.org/genproto v0.0.0-20210325224202-eed09b1b5210
+	google.golang.org/grpc v1.36.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
