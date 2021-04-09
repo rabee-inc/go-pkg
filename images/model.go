@@ -5,6 +5,7 @@ type Object struct {
 	ID            string           `firestore:"id"             json:"id"`
 	OriginalURL   string           `firestore:"original_url"   json:"original_url"`
 	URL           string           `firestore:"url"            json:"url"`
+	Filename      string           `firestore:"filename"       json:"filename"`
 	ContentType   string           `firestore:"content_type"   json:"content_type"`
 	DominantColor string           `firestore:"dominant_color" json:"dominant_color"`
 	Sizes         map[string]*Size `firestore:"sizes"          json:"sizes"`
