@@ -86,6 +86,19 @@ func (s *service) ExistUser(ctx context.Context, userID string) (bool, error) {
 	return true, nil
 }
 
+func (s *service) IsEmailVerified(ctx context.Context, userID string) (bool, error) {
+	// FirebaseAuthUserを取得
+	user, err := s.cli.GetUser(ctx, userID)
+	if err != nil {
+		log.Errorm(ctx, "s.cli.GetUser", err)
+		return false, err
+	}
+	if user == nil {
+		return false, nil
+	}
+	return user.EmailVerified, nil
+}
+
 func (s *service) CreateUser(ctx context.Context, email string, password string, displayName string) (string, error) {
 	params := (&auth.UserToCreate{}).
 		Email(email).

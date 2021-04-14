@@ -24,6 +24,9 @@ type Service interface {
 	ExistUser(
 		ctx context.Context,
 		userID string) (bool, error)
+	IsEmailVerified(
+		ctx context.Context,
+		userID string) (bool, error)
 	CreateUser(
 		ctx context.Context,
 		email string,

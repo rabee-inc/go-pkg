@@ -52,6 +52,10 @@ func (s *serviceDebug) ExistUser(ctx context.Context, userID string) (bool, erro
 	return s.svc.ExistUser(ctx, userID)
 }
 
+func (s *serviceDebug) IsEmailVerified(ctx context.Context, userID string) (bool, error) {
+	return s.svc.IsEmailVerified(ctx, userID)
+}
+
 func (s *serviceDebug) CreateUser(ctx context.Context, email string, password string, displayName string) (string, error) {
 	return s.svc.CreateUser(ctx, email, password, displayName)
 }

@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.81.0
 	cloud.google.com/go/bigquery v1.17.0
 	cloud.google.com/go/firestore v1.5.0
-	cloud.google.com/go/pubsub v1.10.1
+	cloud.google.com/go/pubsub v1.10.2
 	cloud.google.com/go/storage v1.14.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
@@ -25,7 +25,7 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/text v0.3.6
 	google.golang.org/api v0.44.0
-	google.golang.org/genproto v0.0.0-20210406143921-e86de6bf7a46
+	google.golang.org/genproto v0.0.0-20210413151531-c14fb6ef47c3
 	google.golang.org/grpc v1.37.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
