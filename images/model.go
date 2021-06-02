@@ -36,3 +36,8 @@ type GenerateRequest struct {
 	Height      int    `json:"height"`
 	DstFilePath string `json:"dst_file_path"`
 }
+
+type ClientOption struct {
+	ConverterTopicID string
+	GeneratorTopicID string
+}
