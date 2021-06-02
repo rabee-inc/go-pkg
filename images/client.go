@@ -9,7 +9,9 @@ import (
 
 // Client ... クライアント
 type Client struct {
-	psCli *cloudpubsub.Client
+	psCli            *cloudpubsub.Client
+	converterTopicID string
+	generatorTopicID string
 }
 
 // SendConvertRequest ... 画像変換リクエストを送信する
@@ -35,7 +37,7 @@ func (c *Client) SendConvertRequest(
 		SourceURLs:  srcURLs,
 		DstFilePath: dstFilePath,
 	}
-	err := c.psCli.Publish(ctx, ConverterTopicID, src)
+	err := c.psCli.Publish(ctx, c.converterTopicID, src)
 	if err != nil {
 		log.Errorm(ctx, "c.psCli.Publish", err)
 		return err
@@ -64,7 +66,7 @@ func (c *Client) SendGenerateRequest(
 		Height:      height,
 		DstFilePath: dstFilePath,
 	}
-	err := c.psCli.Publish(ctx, GeneratorTopicID, src)
+	err := c.psCli.Publish(ctx, c.generatorTopicID, src)
 	if err != nil {
 		log.Errorm(ctx, "c.psCli.Publish", err)
 		return err
@@ -75,6 +77,26 @@ func (c *Client) SendGenerateRequest(
 // NewClient ... クライアントを作成する
 func NewClient(psCli *cloudpubsub.Client) *Client {
 	return &Client{
-		psCli: psCli,
+		psCli:            psCli,
+		converterTopicID: ConverterTopicID,
+	}
+}
+
+// NewClientWithOption ... オプションを指定してクライアントを作成する
+func NewClientWithOption(psCli *cloudpubsub.Client, reqOption *ClientOption) *Client {
+	option := &ClientOption{
+		ConverterTopicID: ConverterTopicID,
+		GeneratorTopicID: GeneratorTopicID,
+	}
+	if reqOption != nil && reqOption.ConverterTopicID != "" {
+		option.ConverterTopicID = reqOption.ConverterTopicID
+	}
+	if reqOption != nil && reqOption.GeneratorTopicID != "" {
+		option.GeneratorTopicID = reqOption.GeneratorTopicID
+	}
+	return &Client{
+		psCli:            psCli,
+		converterTopicID: option.ConverterTopicID,
+		generatorTopicID: option.GeneratorTopicID,
 	}
 }
