@@ -12,11 +12,16 @@ import (
 )
 
 // Load ... 環境変数を読み込む
-func Load() {
-	// 値
-	file, err := ioutil.ReadFile("./env.yaml")
+func Load(service string) {
+	// 環境変数設定ファイル読み込み
+	localEnvFilePath := "./env.yaml"
+	serverEnvFilePath := fmt.Sprintf("./%s/env.yaml", service)
+	file, err := ioutil.ReadFile(serverEnvFilePath)
 	if err != nil {
-		panic(err)
+		file, err = ioutil.ReadFile(localEnvFilePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 	val := &Variable{}
 	err = yaml.Unmarshal(file, &val)
@@ -24,6 +29,7 @@ func Load() {
 		panic(err)
 	}
 
+	// 値を設定
 	var src map[string]string
 	if deploy.IsLocal() {
 		file, err := ioutil.ReadFile("../../project.json")

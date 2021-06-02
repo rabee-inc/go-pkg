@@ -41,7 +41,6 @@ func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map
 }
 
 func (s *service) GetEmail(ctx context.Context, userID string) (string, error) {
-	// FirebaseAuthUserを取得
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
 		log.Errorm(ctx, "s.cli.GetUser", err)
@@ -54,7 +53,6 @@ func (s *service) GetEmail(ctx context.Context, userID string) (string, error) {
 }
 
 func (s *service) GetTwitterID(ctx context.Context, userID string) (string, error) {
-	// FirebaseAuthUserを取得
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
 		log.Errorm(ctx, "s.cli.GetUser", err)
@@ -87,7 +85,6 @@ func (s *service) ExistUser(ctx context.Context, userID string) (bool, error) {
 }
 
 func (s *service) IsEmailVerified(ctx context.Context, userID string) (bool, error) {
-	// FirebaseAuthUserを取得
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
 		log.Errorm(ctx, "s.cli.GetUser", err)
@@ -97,6 +94,29 @@ func (s *service) IsEmailVerified(ctx context.Context, userID string) (bool, err
 		return false, nil
 	}
 	return user.EmailVerified, nil
+}
+
+func (s *service) IsLinkedProviders(ctx context.Context, userID string, providers []Provider) (bool, error) {
+	user, err := s.cli.GetUser(ctx, userID)
+	if err != nil {
+		log.Errorm(ctx, "s.cli.GetUser", err)
+		return false, err
+	}
+	if user == nil {
+		return false, nil
+	}
+
+	for _, userInfo := range user.ProviderUserInfo {
+		if userInfo != nil {
+			providerID := Provider(userInfo.ProviderID)
+			for _, provider := range providers {
+				if provider == providerID {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
 }
 
 func (s *service) CreateUser(ctx context.Context, email string, password string, displayName string) (string, error) {
