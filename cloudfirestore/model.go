@@ -1,6 +1,7 @@
 package cloudfirestore
 
 import (
+	"fmt"
 	"strings"
 
 	"cloud.google.com/go/firestore"
@@ -19,7 +20,7 @@ type SummaryDocRef struct {
 }
 
 // GenerateSummaryDocRef ... 最小のドキュメント参照を取得する
-func GenerateSummaryDocRef(docRef *firestore.DocumentRef) *SummaryDocRef {
+func GenerateSummaryDocRef(docRef *firestore.DocumentRef, rootCollectionPath string) *SummaryDocRef {
 	if docRef == nil {
 		return nil
 	}
@@ -29,7 +30,12 @@ func GenerateSummaryDocRef(docRef *firestore.DocumentRef) *SummaryDocRef {
 	dst.ID = docRef.ID
 
 	// Path: クライアントSDKの形式に修正
-	key := "/documents/"
+	var key string
+	if rootCollectionPath == "" {
+		key = "/documents/"
+	} else {
+		key = fmt.Sprintf("/documents/%s/", rootCollectionPath)
+	}
 	if i := strings.Index(docRef.Path, key); i > 0 {
 		dst.Path = string(docRef.Path[i+len(key):])
 	}
