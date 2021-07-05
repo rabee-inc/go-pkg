@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -22,6 +23,7 @@ func (w *writerStackdriver) Request(
 	dr time.Duration) {
 	u := *r.URL
 	u.Fragment = ""
+	uri := url.QueryEscape(u.RequestURI())
 
 	falseV := false
 
@@ -34,7 +36,7 @@ func (w *writerStackdriver) Request(
 		Message:  "",
 		HTTPRequest: &EntryHTTPRequest{
 			RequestMethod:                  r.Method,
-			RequestURL:                     u.RequestURI(),
+			RequestURL:                     uri,
 			RequestSize:                    r.ContentLength,
 			Status:                         status,
 			UserAgent:                      r.UserAgent(),
