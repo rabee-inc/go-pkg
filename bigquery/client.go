@@ -59,6 +59,7 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 	return token, nil
 }
 
+// Insert ... データを指定されたテーブルに登録する
 func (c *Client) Insert(ctx context.Context, dataset string, table string, src interface{}) error {
 	uploader := c.client.Dataset(dataset).Table(table).Uploader()
 	err := uploader.Put(ctx, src)
