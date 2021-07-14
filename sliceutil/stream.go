@@ -79,7 +79,7 @@ dst := StreamOf(hoges).
 func (s *Stream) Sort(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
 	slice := s.slice.Interface()
-	sort.Slice(slice, func(i, j int) bool {
+	sort.SliceStable(slice, func(i, j int) bool {
 		out := frv.Call([]reflect.Value{s.slice.Index(i), s.slice.Index(j)})
 		return out[0].Bool()
 	})
