@@ -23,7 +23,11 @@ func (w *writerStackdriver) Request(
 	dr time.Duration) {
 	u := *r.URL
 	u.Fragment = ""
-	uri := url.QueryEscape(u.RequestURI())
+
+	uri, err := url.QueryUnescape(u.RequestURI())
+	if err != nil {
+		uri = u.RequestURI()
+	}
 
 	falseV := false
 
