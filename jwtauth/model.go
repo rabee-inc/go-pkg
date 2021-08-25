@@ -1,6 +1,6 @@
 package jwtauth
 
-import jwt "github.com/dgrijalva/jwt-go"
+import "github.com/golang-jwt/jwt"
 
 // Claims ... JWTに仕込むclaims定義
 type Claims struct {

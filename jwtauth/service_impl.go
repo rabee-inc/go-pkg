@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/rabee-inc/go-pkg/errcode"
 	"github.com/rabee-inc/go-pkg/log"
