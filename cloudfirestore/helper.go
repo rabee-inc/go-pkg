@@ -9,6 +9,7 @@ import (
 	"google.golang.org/api/iterator"
 
 	"github.com/rabee-inc/go-pkg/log"
+	"github.com/rabee-inc/go-pkg/sliceutil"
 	"github.com/rabee-inc/go-pkg/stringutil"
 )
 
@@ -27,6 +28,9 @@ func GenerateDocumentRef(fCli *firestore.Client, docRefs []*DocRef) *firestore.D
 
 // Get ... １つ取得する
 func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
+	if docRef == nil || docRef.ID == "" {
+		return false, nil
+	}
 	dsnp, err := docRef.Get(ctx)
 	if dsnp != nil && !dsnp.Exists() {
 		return false, nil
@@ -47,6 +51,14 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 
 // GetMulti ... 複数取得する
 func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+	docRefs = sliceutil.StreamOf(docRefs).
+		Filter(func(docRef *firestore.DocumentRef) bool {
+			return docRef != nil && docRef.ID != ""
+		}).
+		Out().([]*firestore.DocumentRef)
+	if len(docRefs) == 0 {
+		return nil
+	}
 	dsnps, err := fCli.GetAll(ctx, docRefs)
 	if err != nil {
 		log.Warningm(ctx, "fCli.GetAll", err)
@@ -162,6 +174,9 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 
 // TxGet ... １つ取得する（トランザクション）
 func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
+	if docRef == nil || docRef.ID == "" {
+		return false, nil
+	}
 	dsnp, err := tx.Get(docRef)
 	if dsnp != nil && !dsnp.Exists() {
 		return false, nil
@@ -182,6 +197,14 @@ func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.Doc
 
 // TxGetMulti ... 複数取得する（トランザクション）
 func TxGetMulti(ctx context.Context, tx *firestore.Transaction, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+	docRefs = sliceutil.StreamOf(docRefs).
+		Filter(func(docRef *firestore.DocumentRef) bool {
+			return docRef != nil && docRef.ID != ""
+		}).
+		Out().([]*firestore.DocumentRef)
+	if len(docRefs) == 0 {
+		return nil
+	}
 	dsnps, err := tx.GetAll(docRefs)
 	if err != nil {
 		log.Warningm(ctx, "tx.GetAll", err)
