@@ -79,6 +79,7 @@ func NewClient(psCli *cloudpubsub.Client) *Client {
 	return &Client{
 		psCli:            psCli,
 		converterTopicID: ConverterTopicID,
+		generatorTopicID: GeneratorTopicID,
 	}
 }
 
