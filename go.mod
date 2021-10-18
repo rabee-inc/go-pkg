@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/datacatalog v1.0.0 // indirect
 	cloud.google.com/go/firestore v1.6.0
 	cloud.google.com/go/pubsub v1.17.0
-	cloud.google.com/go/storage v1.18.1
+	cloud.google.com/go/storage v1.16.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
