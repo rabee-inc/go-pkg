@@ -123,14 +123,14 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 	}
 
 	status, body, err := send(ctx, req, opt)
-	if status != http.StatusOK {
-		return status, err
-	}
-
-	err = json.Unmarshal(body, res)
-	if err != nil {
-		log.Warningm(ctx, "json.Unmarshal", err)
-		return status, err
+	if body != nil && len(body) > 0 {
+		errRes := map[string]interface{}{}
+		err = json.Unmarshal(body, &errRes)
+		if err != nil {
+			log.Warningm(ctx, "json.Unmarshal", err)
+			return status, err
+		}
+		log.Warningf(ctx, "%v", errRes)
 	}
 	return status, err
 }
