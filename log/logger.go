@@ -74,14 +74,14 @@ func SetResponseStatus(ctx context.Context, status int) {
 	}
 }
 
-// Debugf ... Debugログを出力する
-func Debugf(ctx context.Context, format string, args ...interface{}) {
+// Debug ... Debugログの定形を出力する
+func Debug(ctx context.Context, err error) {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf(format, args...)
+		msg := err.Error()
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -95,14 +95,14 @@ func Debugf(ctx context.Context, format string, args ...interface{}) {
 	}
 }
 
-// Debugm ... Debugログの定形を出力する
-func Debugm(ctx context.Context, method string, err error) {
+// Debugf ... Debugログを出力する
+func Debugf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf("%s: %s", method, err.Error())
+		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -162,14 +162,14 @@ func Debugc(ctx context.Context, code int, format string, args ...interface{}) e
 	return errcode.Set(err, code)
 }
 
-// Infof ... Infoログを出力する
-func Infof(ctx context.Context, format string, args ...interface{}) {
+// Info ... Infoログの定形を出力する
+func Info(ctx context.Context, err error) {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf(format, args...)
+		msg := err.Error()
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -183,14 +183,14 @@ func Infof(ctx context.Context, format string, args ...interface{}) {
 	}
 }
 
-// Infom ... Infoログの定形を出力する
-func Infom(ctx context.Context, method string, err error) {
+// Infof ... Infoログを出力する
+func Infof(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf("%s: %s", method, err.Error())
+		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -250,14 +250,14 @@ func Infoc(ctx context.Context, code int, format string, args ...interface{}) er
 	return errcode.Set(err, code)
 }
 
-// Warningf ... Warningログを出力する
-func Warningf(ctx context.Context, format string, args ...interface{}) {
+// Warning ... Warningログの定形を出力する
+func Warning(ctx context.Context, err error) {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf(format, args...)
+		msg := err.Error()
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -271,14 +271,14 @@ func Warningf(ctx context.Context, format string, args ...interface{}) {
 	}
 }
 
-// Warningm ... Warningログの定形を出力する
-func Warningm(ctx context.Context, method string, err error) {
+// Warningf ... Warningログを出力する
+func Warningf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf("%s: %s", method, err.Error())
+		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -338,14 +338,14 @@ func Warningc(ctx context.Context, code int, format string, args ...interface{})
 	return errcode.Set(err, code)
 }
 
-// Errorf ... Errorログを出力する
-func Errorf(ctx context.Context, format string, args ...interface{}) {
+// Error ... Errorログの定形を出力する
+func Error(ctx context.Context, err error) {
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf(format, args...)
+		msg := err.Error()
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -359,14 +359,14 @@ func Errorf(ctx context.Context, format string, args ...interface{}) {
 	}
 }
 
-// Errorm ... Errorログの定形を出力する
-func Errorm(ctx context.Context, method string, err error) {
+// Errorf ... Errorログを出力する
+func Errorf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf("%s: %s", method, err.Error())
+		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -426,14 +426,14 @@ func Errorc(ctx context.Context, code int, format string, args ...interface{}) e
 	return errcode.Set(err, code)
 }
 
-// Criticalf ... Criticalログを出力する
-func Criticalf(ctx context.Context, format string, args ...interface{}) {
+// Critical ... Criticalログの定形を出力する
+func Critical(ctx context.Context, method string, err error) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf(format, args...)
+		msg := err.Error()
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,
@@ -447,14 +447,14 @@ func Criticalf(ctx context.Context, format string, args ...interface{}) {
 	}
 }
 
-// Criticalm ... Criticalログの定形を出力する
-func Criticalm(ctx context.Context, method string, err error) {
+// Criticalf ... Criticalログを出力する
+func Criticalf(ctx context.Context, format string, args ...interface{}) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
 		now := timeutil.Now()
 		file, line, function := getFileLine()
-		msg := fmt.Sprintf("%s: %s", method, err.Error())
+		msg := fmt.Sprintf(format, args...)
 		logger.Writer.Application(
 			severity,
 			logger.TraceID,

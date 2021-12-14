@@ -33,7 +33,7 @@ func (c *Client) Entry(ctx context.Context, userID string, pf Platform, deviceID
 	client := jsonrpc2.NewClient(c.endpoint, c.headers)
 	_, resError, err := client.DoSingle(ctx, "entry", params)
 	if err != nil {
-		log.Errorm(ctx, "client.DoSingle", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if resError != nil {
@@ -59,7 +59,7 @@ func (c *Client) Leave(ctx context.Context, userID string, pf Platform, deviceID
 	client := jsonrpc2.NewClient(c.endpoint, c.headers)
 	_, resError, err := client.DoSingle(ctx, "leave", params)
 	if err != nil {
-		log.Errorm(ctx, "client.DoSingle", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if resError != nil {
@@ -85,7 +85,7 @@ func (c *Client) SendByUsers(ctx context.Context, userIDs []string, pushID strin
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	_, resError, err := cli.DoSingle(ctx, "send_by_users", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if resError != nil {
@@ -109,7 +109,7 @@ func (c *Client) SendByAllUsers(ctx context.Context, pushID string, msg *Message
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	_, resError, err := cli.DoSingle(ctx, "send_by_all_users", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if resError != nil {
@@ -131,7 +131,7 @@ func (c *Client) GetReserve(ctx context.Context, reserveID string) (*Reserve, er
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	resResult, resError, err := cli.DoSingle(ctx, "get_reserve", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if resError != nil {
@@ -143,7 +143,7 @@ func (c *Client) GetReserve(ctx context.Context, reserveID string) (*Reserve, er
 	}{}
 	err = json.Unmarshal([]byte(*resResult), ret)
 	if err != nil {
-		log.Errorm(ctx, "json.Unmarshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return ret.Reserve, nil
@@ -163,7 +163,7 @@ func (c *Client) ListReserve(ctx context.Context, limit int, cursor string) ([]*
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	resResult, resError, err := cli.DoSingle(ctx, "list_reserve", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return nil, "", err
 	}
 	if resError != nil {
@@ -176,7 +176,7 @@ func (c *Client) ListReserve(ctx context.Context, limit int, cursor string) ([]*
 	}{}
 	err = json.Unmarshal([]byte(*resResult), ret)
 	if err != nil {
-		log.Errorm(ctx, "json.Unmarshal", err)
+		log.Error(ctx, err)
 		return nil, "", err
 	}
 	return ret.Reserves, ret.NextCursor, nil
@@ -200,7 +200,7 @@ func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Messa
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	resResult, resError, err := cli.DoSingle(ctx, "create_reserve", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if resError != nil {
@@ -212,7 +212,7 @@ func (c *Client) CreateReserve(ctx context.Context, userIDs []string, msg *Messa
 	}{}
 	err = json.Unmarshal([]byte(*resResult), ret)
 	if err != nil {
-		log.Errorm(ctx, "json.Unmarshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return ret.Reserve, nil
@@ -238,7 +238,7 @@ func (c *Client) UpdateReserve(ctx context.Context, reserveID string, userIDs []
 	cli := jsonrpc2.NewClient(c.endpoint, c.headers)
 	resResult, resError, err := cli.DoSingle(ctx, "update_reserve", params)
 	if err != nil {
-		log.Errorm(ctx, "cli.DoSingle", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if resError != nil {
@@ -250,7 +250,7 @@ func (c *Client) UpdateReserve(ctx context.Context, reserveID string, userIDs []
 	}{}
 	err = json.Unmarshal([]byte(*resResult), ret)
 	if err != nil {
-		log.Errorm(ctx, "json.Unmarshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return ret.Reserve, nil

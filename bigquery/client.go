@@ -24,7 +24,7 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 	q := c.client.Query(query)
 	it, err := q.Read(ctx)
 	if err != nil {
-		log.Errorm(ctx, "q.Read", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	if pageInfo := it.PageInfo(); pageInfo != nil {
@@ -43,7 +43,7 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 			break
 		}
 		if err != nil {
-			log.Errorm(ctx, "it.Next", err)
+			log.Error(ctx, err)
 			return "", err
 		}
 		rrv := reflect.ValueOf(v)

@@ -20,7 +20,7 @@ type Client struct {
 func (c *Client) AddRequest(ctx context.Context, id string, method string, params interface{}) error {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
-		log.Errorm(ctx, "c.marshalRawMessage", err)
+		log.Error(ctx, err)
 		return err
 	}
 	c.Requests = append(c.Requests, &ClientRequest{
@@ -36,7 +36,7 @@ func (c *Client) AddRequest(ctx context.Context, id string, method string, param
 func (c *Client) DoSingle(ctx context.Context, method string, params interface{}) (*json.RawMessage, *ErrorResponse, error) {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
-		log.Errorm(ctx, "c.marshalRawMessage", err)
+		log.Error(ctx, err)
 		return nil, nil, err
 	}
 
@@ -49,7 +49,7 @@ func (c *Client) DoSingle(ctx context.Context, method string, params interface{}
 	var res ClientResponse
 	status, err := httpclient.PostJSON(ctx, c.URL, req, &res, &httpclient.HTTPOption{Headers: c.Headers})
 	if err != nil {
-		log.Errorm(ctx, "httpclient.PostJSON", err)
+		log.Error(ctx, err)
 		return nil, nil, err
 	}
 	if status != http.StatusOK {
@@ -64,7 +64,7 @@ func (c *Client) DoBatch(ctx context.Context) ([]*ClientResponse, error) {
 	var res []*ClientResponse
 	status, err := httpclient.PostJSON(ctx, c.URL, c.Requests, &res, nil)
 	if err != nil {
-		log.Errorm(ctx, "httpclient.PostJSON", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if status != http.StatusOK {
@@ -77,7 +77,7 @@ func (c *Client) DoBatch(ctx context.Context) ([]*ClientResponse, error) {
 func (c *Client) marshalRawMessage(ctx context.Context, params interface{}) (*json.RawMessage, error) {
 	bParams, err := json.Marshal(params)
 	if err != nil {
-		log.Errorm(ctx, "json.Marshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	rawMessage := json.RawMessage(bParams)

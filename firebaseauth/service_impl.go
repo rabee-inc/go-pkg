@@ -2,7 +2,6 @@ package firebaseauth
 
 import (
 	"context"
-	"fmt"
 
 	"firebase.google.com/go/auth"
 
@@ -23,8 +22,7 @@ func (s *service) Authentication(ctx context.Context, ah string) (string, map[st
 
 	t, err := s.cli.VerifyIDToken(ctx, token)
 	if err != nil {
-		msg := fmt.Sprintf("c.VerifyIDToken: %s", token)
-		log.Warningm(ctx, msg, err)
+		log.Warningf(ctx, "c.VerifyIDToken: %s, %s", token, err.Error())
 		return "", nil, err
 	}
 	return t.UID, t.Claims, nil
@@ -34,7 +32,7 @@ func (s *service) Authentication(ctx context.Context, ah string) (string, map[st
 func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map[string]interface{}) error {
 	err := s.cli.SetCustomUserClaims(ctx, userID, claims)
 	if err != nil {
-		log.Errorm(ctx, "c.SetCustomUserClaims", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -43,7 +41,7 @@ func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map
 func (s *service) GetEmail(ctx context.Context, userID string) (string, error) {
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	if user == nil {
@@ -55,7 +53,7 @@ func (s *service) GetEmail(ctx context.Context, userID string) (string, error) {
 func (s *service) GetTwitterID(ctx context.Context, userID string) (string, error) {
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	if user == nil {
@@ -75,7 +73,7 @@ func (s *service) GetTwitterID(ctx context.Context, userID string) (string, erro
 func (s *service) ExistUser(ctx context.Context, userID string) (bool, error) {
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
+		log.Error(ctx, err)
 		return false, err
 	}
 	if user == nil {
@@ -87,7 +85,7 @@ func (s *service) ExistUser(ctx context.Context, userID string) (bool, error) {
 func (s *service) IsEmailVerified(ctx context.Context, userID string) (bool, error) {
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
+		log.Error(ctx, err)
 		return false, err
 	}
 	if user == nil {
@@ -99,7 +97,7 @@ func (s *service) IsEmailVerified(ctx context.Context, userID string) (bool, err
 func (s *service) IsLinkedProviders(ctx context.Context, userID string, providers []Provider) (bool, error) {
 	user, err := s.cli.GetUser(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.GetUser", err)
+		log.Error(ctx, err)
 		return false, err
 	}
 	if user == nil {
@@ -126,7 +124,7 @@ func (s *service) CreateUser(ctx context.Context, email string, password string,
 		DisplayName(displayName)
 	user, err := s.cli.CreateUser(ctx, params)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.CreateUser", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	return user.UID, nil
@@ -145,7 +143,7 @@ func (s *service) UpdateUser(ctx context.Context, userID string, email *string, 
 	}
 	_, err := s.cli.UpdateUser(ctx, userID, params)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.UpdateUser", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -155,7 +153,7 @@ func (s *service) DeleteUser(ctx context.Context, userID string) error {
 	params := (&auth.UserToUpdate{}).Disabled(true)
 	_, err := s.cli.UpdateUser(ctx, userID, params)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.UpdateUser", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -164,7 +162,7 @@ func (s *service) DeleteUser(ctx context.Context, userID string) error {
 func (s *service) GeneratePasswordRemindURL(ctx context.Context, userID string, email string, setting *auth.ActionCodeSettings) (string, error) {
 	url, err := s.cli.PasswordResetLinkWithSettings(ctx, email, setting)
 	if err != nil {
-		log.Errorm(ctx, "s.cli.PasswordResetLinkWithSettings", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	return url, err

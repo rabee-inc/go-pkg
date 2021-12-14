@@ -37,7 +37,7 @@ func (c *Client) AddTask(ctx context.Context, queue string, path string, params 
 	}
 	body, err := json.Marshal(params)
 	if err != nil {
-		log.Errorm(ctx, "json.Marshal", err)
+		log.Error(ctx, err)
 		return err
 	}
 	req := &taskspb.AppEngineHttpRequest{
@@ -59,7 +59,7 @@ func (c *Client) addTask(ctx context.Context, queue string, aeReq *taskspb.AppEn
 			Headers: aeReq.Headers,
 		})
 		if err != nil {
-			log.Errorm(ctx, "httpclient.PostJSON", err)
+			log.Error(ctx, err)
 			return err
 		}
 		if status != http.StatusOK {
@@ -77,7 +77,7 @@ func (c *Client) addTask(ctx context.Context, queue string, aeReq *taskspb.AppEn
 		}
 		_, err := c.cli.CreateTask(ctx, req)
 		if err != nil {
-			log.Errorm(ctx, "c.cli.CreateTask", err)
+			log.Error(ctx, err)
 			return err
 		}
 	}

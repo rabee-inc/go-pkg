@@ -39,7 +39,7 @@ func (c *Client) SendConvertRequest(
 	}
 	err := c.psCli.Publish(ctx, c.converterTopicID, src)
 	if err != nil {
-		log.Errorm(ctx, "c.psCli.Publish", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -68,7 +68,7 @@ func (c *Client) SendGenerateRequest(
 	}
 	err := c.psCli.Publish(ctx, c.generatorTopicID, src)
 	if err != nil {
-		log.Errorm(ctx, "c.psCli.Publish", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil

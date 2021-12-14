@@ -19,7 +19,7 @@ type Service struct {
 func (s *Service) Get(ctx context.Context, userID string, kind ItemKind) (*Item, error) {
 	item, err := s.repo.GetItem(ctx, userID, kind)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.GetItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if item == nil {
@@ -41,7 +41,7 @@ func (s *Service) Get(ctx context.Context, userID string, kind ItemKind) (*Item,
 func (s *Service) GetMulti(ctx context.Context, userID string, kinds []ItemKind) (map[ItemKind]*Item, error) {
 	items, err := s.repo.ListItem(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.ListItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	itemMap := map[ItemKind]*Item{}
@@ -68,7 +68,7 @@ func (s *Service) GetMulti(ctx context.Context, userID string, kinds []ItemKind)
 func (s *Service) GetAmount(ctx context.Context, userID string, kind ItemKind) (float64, error) {
 	item, err := s.repo.GetItem(ctx, userID, kind)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.GetItem", err)
+		log.Error(ctx, err)
 		return 0, err
 	}
 	if item == nil {
@@ -81,7 +81,7 @@ func (s *Service) GetAmount(ctx context.Context, userID string, kind ItemKind) (
 func (s *Service) GetMultiAmount(ctx context.Context, userID string, kinds []ItemKind) (map[ItemKind]float64, error) {
 	items, err := s.repo.ListItem(ctx, userID)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.ListItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	itemMap := map[ItemKind]float64{}
@@ -119,14 +119,14 @@ func (s *Service) Give(
 	}
 	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.TxGetMultiItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
 	// アイテム詳細を更新
 	updateAmounts, err := s.give(ctx, amounts)
 	if err != nil {
-		log.Errorm(ctx, "s.give", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
@@ -134,7 +134,7 @@ func (s *Service) Give(
 	now := timeutil.NowUnix()
 	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
-		log.Errorm(ctx, "s.updateItems", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
@@ -145,7 +145,7 @@ func (s *Service) Give(
 		}
 		_, err = s.repo.TxCreateHistory(ctx, tx, userID, kind, amount, data, comment, now)
 		if err != nil {
-			log.Errorm(ctx, "s.repo.TxCreateHistory", err)
+			log.Error(ctx, err)
 			return nil, err
 		}
 	}
@@ -169,21 +169,21 @@ func (s *Service) Use(
 	}
 	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.TxGetMultiItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
 	// アイテムを消費
 	updateAmounts, err := s.use(ctx, kinds, amounts, itemsMap)
 	if err != nil {
-		log.Errorm(ctx, "s.use", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
 	// アイテムを更新
 	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
-		log.Errorm(ctx, "s.updateItems", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
@@ -194,7 +194,7 @@ func (s *Service) Use(
 		}
 		_, err = s.repo.TxCreateHistory(ctx, tx, userID, kind, -amount, data, comment, now)
 		if err != nil {
-			log.Errorm(ctx, "s.repo.TxCreateHistory", err)
+			log.Error(ctx, err)
 			return nil, err
 		}
 	}
@@ -217,7 +217,7 @@ func (s *Service) Exchange(
 	kinds := []ItemKind{fromKind, toKind}
 	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.TxGetMultiItem", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if itemsMap[fromKind] == nil {
@@ -252,7 +252,7 @@ func (s *Service) Exchange(
 	}
 	useUpdateAmounts, err := s.use(ctx, kinds, fromAmount, itemsMap)
 	if err != nil {
-		log.Errorm(ctx, "s.use", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
@@ -262,7 +262,7 @@ func (s *Service) Exchange(
 	}
 	giveUpdateAmounts, err := s.give(ctx, toAmount)
 	if err != nil {
-		log.Errorm(ctx, "s.give", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
@@ -275,19 +275,19 @@ func (s *Service) Exchange(
 	}
 	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
-		log.Errorm(ctx, "s.updateItems", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 
 	// 履歴を記録
 	_, err = s.repo.TxCreateHistory(ctx, tx, userID, fromKind, -amount, data, comment, now)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.TxCreateHistory", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	_, err = s.repo.TxCreateHistory(ctx, tx, userID, toKind, amount, data, comment, now)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.TxCreateHistory", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return itemsMap, nil
@@ -300,7 +300,7 @@ func (s *Service) HistoriesByCursor(ctx context.Context, userID string, kinds []
 	}
 	histories, nCursor, err := s.repo.ListHistoryByCursor(ctx, userID, kinds, limit, cursor)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.ListHistoryByCursor", err)
+		log.Error(ctx, err)
 		return nil, "", err
 	}
 	return histories, nCursor, nil
@@ -318,7 +318,7 @@ func (s *Service) HistoriesByPeriod(
 	}
 	histories, err := s.repo.ListHistoryByPeriod(ctx, userID, kinds, startAt, endAt)
 	if err != nil {
-		log.Errorm(ctx, "s.repo.ListHistoryByPeriod", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return histories, nil
@@ -357,7 +357,7 @@ func (s *Service) updateItems(ctx context.Context, tx *firestore.Transaction, us
 		var err error
 		item, err = s.repo.TxSetItem(ctx, tx, userID, item.Kind, item)
 		if err != nil {
-			log.Errorm(ctx, "s.repo.TxSetItem", err)
+			log.Error(ctx, err)
 			return nil, err
 		}
 	}

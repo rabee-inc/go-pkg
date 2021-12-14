@@ -24,7 +24,7 @@ func (r *Repository) GetItem(ctx context.Context, userID string, kind ItemKind) 
 	dst := &Item{}
 	exist, err := cloudfirestore.GetByQuery(ctx, q, dst)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.GetByQuery", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	if !exist {
@@ -48,7 +48,7 @@ func (r *Repository) TxGetMultiItem(
 	items := []*Item{}
 	err := cloudfirestore.TxGetMulti(ctx, tx, docRefs, &items)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.TxGetMulti", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	dsts := map[ItemKind]*Item{}
@@ -64,7 +64,7 @@ func (r *Repository) ListItem(ctx context.Context, userID string) ([]*Item, erro
 	dsts := []*Item{}
 	err := cloudfirestore.ListByQuery(ctx, q, &dsts)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.ListByQuery", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return dsts, nil
@@ -81,7 +81,7 @@ func (r *Repository) TxSetItem(
 	docRef := ItemRef(r.fCli).Doc(id)
 	err := cloudfirestore.TxSet(ctx, tx, docRef, src)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.TxSet", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return src, nil
@@ -105,14 +105,14 @@ func (r *Repository) ListHistoryByCursor(
 	if cursor != "" {
 		dsnp, err = ItemHistoryRef(r.fCli).Doc(cursor).Get(ctx)
 		if err != nil {
-			log.Errorm(ctx, "Get", err)
+			log.Error(ctx, err)
 			return nil, "", err
 		}
 	}
 	dsts := []*ItemHistory{}
 	nDsnp, err := cloudfirestore.ListByQueryCursor(ctx, q, limit, dsnp, &dsts)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.ListByQueryCursor", err)
+		log.Error(ctx, err)
 		return nil, "", err
 	}
 	var nCursor string
@@ -137,7 +137,7 @@ func (r *Repository) ListHistoryByPeriod(
 	dsts := []*ItemHistory{}
 	err := cloudfirestore.ListByQuery(ctx, q, &dsts)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.ListByQuery", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return dsts, nil
@@ -168,7 +168,7 @@ func (r *Repository) TxCreateHistory(
 	colRef := ItemHistoryRef(r.fCli)
 	err := cloudfirestore.TxCreate(ctx, tx, colRef, src)
 	if err != nil {
-		log.Errorm(ctx, "cloudfirestore.TxCreate", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return src, nil

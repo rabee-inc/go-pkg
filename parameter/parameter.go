@@ -30,7 +30,7 @@ func GetURLByInt(ctx context.Context, r *http.Request, key string) (int, error) 
 	}
 	num, err := strconv.Atoi(str)
 	if err != nil {
-		log.Warningm(ctx, "strconv.Atoi", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -44,7 +44,7 @@ func GetURLByInt64(ctx context.Context, r *http.Request, key string) (int64, err
 	}
 	num, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
-		log.Warningm(ctx, "strconv.ParseInt", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -58,7 +58,7 @@ func GetURLByFloat64(ctx context.Context, r *http.Request, key string) (float64,
 	}
 	num, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		log.Warningm(ctx, "strconv.ParseFloat", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -77,7 +77,7 @@ func GetFormByInt(ctx context.Context, r *http.Request, key string) (int, error)
 	}
 	num, err := strconv.Atoi(str)
 	if err != nil {
-		log.Warningm(ctx, "strconv.Atoi", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -91,7 +91,7 @@ func GetFormByInt64(ctx context.Context, r *http.Request, key string) (int64, er
 	}
 	num, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
-		log.Warningm(ctx, "strconv.ParseInt", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -105,7 +105,7 @@ func GetFormByFloat64(ctx context.Context, r *http.Request, key string) (float64
 	}
 	num, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		log.Warningm(ctx, "strconv.ParseFloat", err)
+		log.Warning(ctx, err)
 		return num, err
 	}
 	return num, nil
@@ -119,7 +119,7 @@ func GetFormByBool(ctx context.Context, r *http.Request, key string) (bool, erro
 	}
 	val, err := strconv.ParseBool(str)
 	if err != nil {
-		log.Warningm(ctx, "strconv.ParseInt", err)
+		log.Warning(ctx, err)
 		return val, err
 	}
 	return val, nil
@@ -139,7 +139,7 @@ func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
 		k := kv[0]
 		k, err = url.QueryUnescape(k)
 		if err != nil {
-			log.Warningm(ctx, "url.QueryUnescape", err)
+			log.Warning(ctx, err)
 			continue
 		}
 		if k != sKey {
@@ -148,7 +148,7 @@ func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
 		v := kv[1]
 		v, err = url.QueryUnescape(v)
 		if err != nil {
-			log.Warningm(ctx, "url.QueryUnescape", err)
+			log.Warning(ctx, err)
 			continue
 		}
 		vs = append(vs, v)
@@ -163,7 +163,7 @@ func GetFormByIntSlice(ctx context.Context, r *http.Request, key string) []int {
 	for _, str := range strs {
 		num, err := strconv.Atoi(str)
 		if err != nil {
-			log.Warningm(ctx, "strconv.Atoi", err)
+			log.Warning(ctx, err)
 			continue
 		}
 		nums = append(nums, num)
@@ -199,14 +199,14 @@ func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 		case reflect.Int64, reflect.Int:
 			val, err := GetFormByInt64(ctx, r, formTag)
 			if err != nil {
-				log.Warningm(ctx, "GetFormByInt64", err)
+				log.Warning(ctx, err)
 				return err
 			}
 			fieldValue.SetInt(val)
 		case reflect.Float64:
 			val, err := GetFormByFloat64(ctx, r, formTag)
 			if err != nil {
-				log.Warningm(ctx, "GetFormByFloat64", err)
+				log.Warning(ctx, err)
 				return err
 			}
 			fieldValue.SetFloat(val)
@@ -216,7 +216,7 @@ func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 		case reflect.Bool:
 			val, err := GetFormByBool(ctx, r, formTag)
 			if err != nil {
-				log.Warningm(ctx, "GetFormByBool", err)
+				log.Warning(ctx, err)
 				return err
 			}
 			fieldValue.SetBool(val)
@@ -242,7 +242,7 @@ func GetJSON(r *http.Request, dst interface{}) error {
 	err := dec.Decode(dst)
 	if err != nil {
 		ctx := r.Context()
-		log.Warningm(ctx, "dec.Decode", err)
+		log.Warning(ctx, err)
 		return err
 	}
 	return nil

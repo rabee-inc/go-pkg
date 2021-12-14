@@ -33,7 +33,7 @@ func (c *Client) UploadForDataURL(
 	// Base64をデコード
 	res, err := dataurl.DecodeString(dataURL)
 	if err != nil {
-		log.Warningm(ctx, "dataurl.DecodeString", err)
+		log.Warning(ctx, err)
 		err = errcode.Set(err, http.StatusBadRequest)
 		return "", err
 	}
@@ -73,11 +73,11 @@ func (c *Client) Upload(
 
 	// アップロード
 	if _, err := w.Write(data); err != nil {
-		log.Errorm(ctx, "w.Write", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	if err := w.Close(); err != nil {
-		log.Errorm(ctx, "w.Close", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 
@@ -95,7 +95,7 @@ func (c *Client) GetReader(
 		Object(path).
 		NewReader(ctx)
 	if err != nil {
-		log.Errorm(ctx, "c.cli.NewReader", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 

@@ -18,7 +18,7 @@ func Get(ctx context.Context, url string) (*OpenGraph, error) {
 	// OGP取得
 	og, err := opengraph.Fetch(url)
 	if err != nil {
-		log.Debugm(ctx, "opengraph.Fetch", err)
+		log.Debug(ctx, err)
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func GetMulti(ctx context.Context, urls []string) ([]*OpenGraph, error) {
 		eg.Go(func() error {
 			og, err := Get(ctx, url)
 			if err != nil {
-				log.Debugm(ctx, "Get", err)
+				log.Debug(ctx, err)
 				return err
 			}
 			mutex.Lock()
@@ -59,7 +59,7 @@ func GetMulti(ctx context.Context, urls []string) ([]*OpenGraph, error) {
 		})
 	}
 	if err := eg.Wait(); err != nil {
-		log.Debugm(ctx, "eg.Wait", err)
+		log.Debug(ctx, err)
 		return ogs, err
 	}
 	return ogs, nil

@@ -30,7 +30,7 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		// 認証
 		userID, claims, err := m.Svc.Authentication(ctx, ah)
 		if err != nil {
-			log.Warningm(ctx, "m.Svc.Authentication", err)
+			log.Warning(ctx, err)
 			m.renderError(ctx, w, err)
 			return
 		}

@@ -35,7 +35,7 @@ func (s *service) CreateToken(ctx context.Context, userID string, customClaims m
 	// 署名
 	signedToken, err := token.SignedString(s.signKey)
 	if err != nil {
-		log.Errorm(ctx, "token.SignedString", err)
+		log.Error(ctx, err)
 		return "", err
 	}
 	return signedToken, nil
@@ -57,7 +57,7 @@ func (s *service) Authentication(ctx context.Context, ah string) (string, map[st
 		return s.signKey, nil
 	})
 	if err != nil {
-		log.Warningm(ctx, "jwt.Parse", err)
+		log.Warning(ctx, err)
 		return "", nil, err
 	}
 

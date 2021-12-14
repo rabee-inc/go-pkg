@@ -26,7 +26,7 @@ type HTTPOption struct {
 func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -42,7 +42,7 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 func GetForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -64,7 +64,7 @@ func GetForm(ctx context.Context, url string, param map[string]interface{}, opt 
 func GetQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url+"?"+qs, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -85,7 +85,7 @@ func PostForm(ctx context.Context, url string, param map[string]interface{}, opt
 
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(values.Encode()))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -102,13 +102,13 @@ func PostForm(ctx context.Context, url string, param map[string]interface{}, opt
 func PostJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
-		log.Warningm(ctx, "json.Marshal", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jp))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
@@ -127,7 +127,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
-				log.Warningm(ctx, "json.Unmarshal", perr)
+				log.Warning(ctx, perr)
 				err = perr
 			}
 		} else {
@@ -143,7 +143,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -159,13 +159,13 @@ func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (in
 func PutJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
-		log.Warningm(ctx, "json.Marshal", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jp))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
@@ -184,7 +184,7 @@ func PutJSON(ctx context.Context, url string, param interface{}, res interface{}
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
-				log.Warningm(ctx, "json.Unmarshal", perr)
+				log.Warning(ctx, perr)
 				err = perr
 			}
 		} else {
@@ -200,7 +200,7 @@ func PutJSON(ctx context.Context, url string, param interface{}, res interface{}
 func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -216,7 +216,7 @@ func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int
 func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -232,7 +232,7 @@ func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, erro
 func DeleteForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -254,7 +254,7 @@ func DeleteForm(ctx context.Context, url string, param map[string]interface{}, o
 func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url+"?"+qs, nil)
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
@@ -270,13 +270,13 @@ func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOpti
 func DeleteJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
-		log.Warningm(ctx, "json.Marshal", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(jp))
 	if err != nil {
-		log.Warningm(ctx, "http.NewRequest", err)
+		log.Warning(ctx, err)
 		return 0, err
 	}
 
@@ -295,7 +295,7 @@ func DeleteJSON(ctx context.Context, url string, param interface{}, res interfac
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
-				log.Warningm(ctx, "json.Unmarshal", perr)
+				log.Warning(ctx, perr)
 				err = perr
 			}
 		} else {
@@ -317,13 +317,13 @@ func send(ctx context.Context, req *http.Request, opt *HTTPOption) (int, []byte,
 
 	res, err := client.Do(req)
 	if err != nil {
-		log.Warningm(ctx, "client.Do", err)
+		log.Warning(ctx, err)
 		return 0, nil, err
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Warningm(ctx, "ioutil.ReadAll", err)
+		log.Warning(ctx, err)
 		return res.StatusCode, nil, nil
 	}
 	defer res.Body.Close()

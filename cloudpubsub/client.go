@@ -32,7 +32,7 @@ func (c *Client) Publish(ctx context.Context, topicID string, src interface{}) e
 	}
 	bSrc, err := json.Marshal(src)
 	if err != nil {
-		log.Errorm(ctx, "json.Marshal", err)
+		log.Error(ctx, err)
 		return err
 	}
 	result := topic.Publish(ctx, &pubsub.Message{
@@ -44,7 +44,7 @@ func (c *Client) Publish(ctx context.Context, topicID string, src interface{}) e
 	}
 	_, err = result.Get(ctx)
 	if err != nil {
-		log.Errorm(ctx, "result.Get", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -54,24 +54,24 @@ func (c *Client) Publish(ctx context.Context, topicID string, src interface{}) e
 func (c *Client) Receive(ctx context.Context, subID string, maxMessageCount int, dsts interface{}) error {
 	ackIDs, msgs, err := c.sendPull(ctx, subID, maxMessageCount)
 	if err != nil {
-		log.Errorm(ctx, "c.sendPull", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if len(ackIDs) > 0 {
 		err = c.sendAcknowledge(ctx, subID, ackIDs)
 		if err != nil {
-			log.Errorm(ctx, "c.sendAcknowledge", err)
+			log.Error(ctx, err)
 			return err
 		}
 	}
 	bMsg, err := json.Marshal(msgs)
 	if err != nil {
-		log.Errorm(ctx, "json.Marshal", err)
+		log.Error(ctx, err)
 		return err
 	}
 	err = json.Unmarshal(bMsg, dsts)
 	if err != nil {
-		log.Errorm(ctx, "json.Unmarshal", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -84,7 +84,7 @@ func (c *Client) sendPull(ctx context.Context, subID string, maxMessageCount int
 		MaxMessages:       int32(maxMessageCount),
 	})
 	if err != nil {
-		log.Errorm(ctx, "c.psaClient.Pull", err)
+		log.Error(ctx, err)
 		return nil, nil, err
 	}
 	if len(res.ReceivedMessages) == 0 {
@@ -107,7 +107,7 @@ func (c *Client) sendAcknowledge(ctx context.Context, subID string, ackIDs []str
 		AckIds:       ackIDs,
 	})
 	if err != nil {
-		log.Errorm(ctx, "c.psaClient.Acknowledge", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil

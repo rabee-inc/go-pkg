@@ -18,7 +18,7 @@ import (
 func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 	bytes, err := csvutil.Marshal(srcs)
 	if err != nil {
-		log.Errorm(ctx, "csvutil.Marshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	str := bytesutil.ToStr(bytes)
@@ -26,7 +26,7 @@ func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 	r := csv.NewReader(strings.NewReader(str))
 	rows, err := r.ReadAll()
 	if err != nil {
-		log.Errorm(ctx, "csvutil.Marshal", err)
+		log.Error(ctx, err)
 		return nil, err
 	}
 	return rows, nil
@@ -36,7 +36,7 @@ func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 	status, body, err := httpclient.Get(ctx, url, nil)
 	if err != nil {
-		log.Errorm(ctx, "httpclient.Get", err)
+		log.Error(ctx, err)
 		return err
 	}
 	if status != http.StatusOK {
@@ -45,7 +45,7 @@ func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 	}
 	err = GetByBytes(ctx, body, dsts)
 	if err != nil {
-		log.Errorm(ctx, "GetByBytes", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -56,7 +56,7 @@ func GetByStr(ctx context.Context, str string, dsts interface{}) error {
 	bytes := stringutil.ToBytes(str)
 	err := GetByBytes(ctx, bytes, dsts)
 	if err != nil {
-		log.Errorm(ctx, "GetByBytes", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
@@ -66,7 +66,7 @@ func GetByStr(ctx context.Context, str string, dsts interface{}) error {
 func GetByBytes(ctx context.Context, bytes []byte, dsts interface{}) error {
 	err := csvutil.Unmarshal(bytes, dsts)
 	if err != nil {
-		log.Errorm(ctx, "csvutil.Unmarshal", err)
+		log.Error(ctx, err)
 		return err
 	}
 	return nil
