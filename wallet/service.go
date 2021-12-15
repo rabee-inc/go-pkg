@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"cloud.google.com/go/firestore"
-
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/timeutil"
 )
@@ -107,7 +105,6 @@ func (s *Service) getByItem(items []*Item, kind ItemKind) *Item {
 // Give ... 配布する
 func (s *Service) Give(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
 	amounts map[ItemKind]float64,
 	data map[string]interface{},
@@ -117,7 +114,7 @@ func (s *Service) Give(
 	for kind := range amounts {
 		kinds = append(kinds, kind)
 	}
-	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
+	itemsMap, err := s.repo.GetMultiItem(ctx, userID, kinds)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -132,7 +129,7 @@ func (s *Service) Give(
 
 	// アイテムを更新
 	now := timeutil.NowUnix()
-	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
+	itemsMap, err = s.updateItems(ctx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -143,7 +140,7 @@ func (s *Service) Give(
 		if amount <= 0 {
 			continue
 		}
-		_, err = s.repo.TxCreateHistory(ctx, tx, userID, kind, amount, data, comment, now)
+		_, err = s.repo.CreateHistory(ctx, userID, kind, amount, data, comment, now)
 		if err != nil {
 			log.Error(ctx, err)
 			return nil, err
@@ -155,7 +152,6 @@ func (s *Service) Give(
 // Use ... 消費する
 func (s *Service) Use(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
 	amounts map[ItemKind]float64,
 	data map[string]interface{},
@@ -167,7 +163,7 @@ func (s *Service) Use(
 	for kind := range amounts {
 		kinds = append(kinds, kind)
 	}
-	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
+	itemsMap, err := s.repo.GetMultiItem(ctx, userID, kinds)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -181,7 +177,7 @@ func (s *Service) Use(
 	}
 
 	// アイテムを更新
-	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
+	itemsMap, err = s.updateItems(ctx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -192,7 +188,7 @@ func (s *Service) Use(
 		if amount <= 0 {
 			continue
 		}
-		_, err = s.repo.TxCreateHistory(ctx, tx, userID, kind, -amount, data, comment, now)
+		_, err = s.repo.CreateHistory(ctx, userID, kind, -amount, data, comment, now)
 		if err != nil {
 			log.Error(ctx, err)
 			return nil, err
@@ -204,7 +200,6 @@ func (s *Service) Use(
 // Exchange ... 両替する
 func (s *Service) Exchange(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
 	fromKind ItemKind,
 	toKind ItemKind,
@@ -215,7 +210,7 @@ func (s *Service) Exchange(
 
 	// アイテムを取得
 	kinds := []ItemKind{fromKind, toKind}
-	itemsMap, err := s.repo.TxGetMultiItem(ctx, tx, userID, kinds)
+	itemsMap, err := s.repo.GetMultiItem(ctx, userID, kinds)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -273,19 +268,19 @@ func (s *Service) Exchange(
 	for kind, amount := range giveUpdateAmounts {
 		updateAmounts[kind] = amount
 	}
-	itemsMap, err = s.updateItems(ctx, tx, userID, kinds, itemsMap, updateAmounts, now)
+	itemsMap, err = s.updateItems(ctx, userID, kinds, itemsMap, updateAmounts, now)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
 	}
 
 	// 履歴を記録
-	_, err = s.repo.TxCreateHistory(ctx, tx, userID, fromKind, -amount, data, comment, now)
+	_, err = s.repo.CreateHistory(ctx, userID, fromKind, -amount, data, comment, now)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
 	}
-	_, err = s.repo.TxCreateHistory(ctx, tx, userID, toKind, amount, data, comment, now)
+	_, err = s.repo.CreateHistory(ctx, userID, toKind, amount, data, comment, now)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -324,7 +319,7 @@ func (s *Service) HistoriesByPeriod(
 	return histories, nil
 }
 
-func (s *Service) updateItems(ctx context.Context, tx *firestore.Transaction, userID string, kinds []ItemKind, itemsMap map[ItemKind]*Item, amounts map[ItemKind]float64, now int64) (map[ItemKind]*Item, error) {
+func (s *Service) updateItems(ctx context.Context, userID string, kinds []ItemKind, itemsMap map[ItemKind]*Item, amounts map[ItemKind]float64, now int64) (map[ItemKind]*Item, error) {
 	for _, kind := range kinds {
 		if item, ok := itemsMap[kind]; ok {
 			item.UpdatedAt = now
@@ -355,7 +350,7 @@ func (s *Service) updateItems(ctx context.Context, tx *firestore.Transaction, us
 			item.TotalUse -= amount
 		}
 		var err error
-		item, err = s.repo.TxSetItem(ctx, tx, userID, item.Kind, item)
+		item, err = s.repo.SetItem(ctx, userID, item.Kind, item)
 		if err != nil {
 			log.Error(ctx, err)
 			return nil, err

@@ -5,13 +5,14 @@ import (
 
 	"cloud.google.com/go/firestore"
 
+	"github.com/rabee-inc/go-pkg/cloudfirestore"
 	"github.com/rabee-inc/go-pkg/log"
 )
 
 // Client ... ウォレットのクライアント
 type Client struct {
-	svc  *Service
-	fCli *firestore.Client
+	svc        *Service
+	cFirestore *firestore.Client
 }
 
 // Get ... 指定のアイテムが入ったウォレットを取得する
@@ -63,8 +64,8 @@ func (c *Client) Give(
 	comment string) (map[ItemKind]*Item, error) {
 	var dsts map[ItemKind]*Item
 	var err error
-	err = c.fCli.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		dsts, err = c.svc.Give(ctx, tx, userID, amounts, data, comment)
+	err = cloudfirestore.RunTransaction(ctx, c.cFirestore, func(ctx context.Context) error {
+		dsts, err = c.svc.Give(ctx, userID, amounts, data, comment)
 		if err != nil {
 			log.Warning(ctx, err)
 			return err
@@ -87,8 +88,8 @@ func (c *Client) Use(
 	comment string) (map[ItemKind]*Item, error) {
 	var dsts map[ItemKind]*Item
 	var err error
-	err = c.fCli.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		dsts, err = c.svc.Use(ctx, tx, userID, amounts, data, comment)
+	err = cloudfirestore.RunTransaction(ctx, c.cFirestore, func(ctx context.Context) error {
+		dsts, err = c.svc.Use(ctx, userID, amounts, data, comment)
 		if err != nil {
 			log.Warning(ctx, err)
 			return err
@@ -113,8 +114,8 @@ func (c *Client) Exchange(
 	comment string) (map[ItemKind]*Item, error) {
 	var dsts map[ItemKind]*Item
 	var err error
-	err = c.fCli.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		dsts, err = c.svc.Exchange(ctx, tx, userID, fromKind, toKind, amount, data, comment)
+	err = cloudfirestore.RunTransaction(ctx, c.cFirestore, func(ctx context.Context) error {
+		dsts, err = c.svc.Exchange(ctx, userID, fromKind, toKind, amount, data, comment)
 		if err != nil {
 			log.Warning(ctx, err)
 			return err
@@ -159,11 +160,11 @@ func (c *Client) HistoriesByPeriod(
 }
 
 // NewClient ... リポジトリを作成する
-func NewClient(fCli *firestore.Client) *Client {
-	repo := NewRepository(fCli)
+func NewClient(cFirestore *firestore.Client) *Client {
+	repo := NewRepository(cFirestore)
 	svc := NewService(repo)
 	return &Client{
-		svc:  svc,
-		fCli: fCli,
+		svc:        svc,
+		cFirestore: cFirestore,
 	}
 }

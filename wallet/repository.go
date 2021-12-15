@@ -11,14 +11,18 @@ import (
 
 // Repository ... ウォレットのリポジトリ
 type Repository struct {
-	fCli *firestore.Client
+	cFirestore *firestore.Client
 }
 
 // Item
 
 // GetItem ... アイテムを取得する
-func (r *Repository) GetItem(ctx context.Context, userID string, kind ItemKind) (*Item, error) {
-	q := ItemRef(r.fCli).
+func (r *Repository) GetItem(
+	ctx context.Context,
+	userID string,
+	kind ItemKind,
+) (*Item, error) {
+	q := ItemRef(r.cFirestore).
 		Where("user_id", "==", userID).
 		Where("kind", "==", kind)
 	dst := &Item{}
@@ -33,20 +37,20 @@ func (r *Repository) GetItem(ctx context.Context, userID string, kind ItemKind) 
 	return dst, nil
 }
 
-// TxGetMultiItem ... アイテムを複数取得する
-func (r *Repository) TxGetMultiItem(
+// GetMultiItem ... アイテムを複数取得する
+func (r *Repository) GetMultiItem(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
-	kinds []ItemKind) (map[ItemKind]*Item, error) {
+	kinds []ItemKind,
+) (map[ItemKind]*Item, error) {
 	docRefs := []*firestore.DocumentRef{}
 	for _, kind := range kinds {
 		id := GenerateItemID(userID, kind)
-		docRef := ItemRef(r.fCli).Doc(id)
+		docRef := ItemRef(r.cFirestore).Doc(id)
 		docRefs = append(docRefs, docRef)
 	}
 	items := []*Item{}
-	err := cloudfirestore.TxGetMulti(ctx, tx, docRefs, &items)
+	err := cloudfirestore.GetMulti(ctx, r.cFirestore, docRefs, &items)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -59,8 +63,11 @@ func (r *Repository) TxGetMultiItem(
 }
 
 // ListItem ... アイテムリストを取得する
-func (r *Repository) ListItem(ctx context.Context, userID string) ([]*Item, error) {
-	q := ItemRef(r.fCli).Where("user_id", "==", userID)
+func (r *Repository) ListItem(
+	ctx context.Context,
+	userID string,
+) ([]*Item, error) {
+	q := ItemRef(r.cFirestore).Where("user_id", "==", userID)
 	dsts := []*Item{}
 	err := cloudfirestore.ListByQuery(ctx, q, &dsts)
 	if err != nil {
@@ -70,16 +77,16 @@ func (r *Repository) ListItem(ctx context.Context, userID string) ([]*Item, erro
 	return dsts, nil
 }
 
-// TxSetItem ... アイテムを設定する
-func (r *Repository) TxSetItem(
+// SetItem ... アイテムを設定する
+func (r *Repository) SetItem(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
 	kind ItemKind,
-	src *Item) (*Item, error) {
+	src *Item,
+) (*Item, error) {
 	id := GenerateItemID(userID, kind)
-	docRef := ItemRef(r.fCli).Doc(id)
-	err := cloudfirestore.TxSet(ctx, tx, docRef, src)
+	docRef := ItemRef(r.cFirestore).Doc(id)
+	err := cloudfirestore.Set(ctx, docRef, src)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -95,15 +102,16 @@ func (r *Repository) ListHistoryByCursor(
 	userID string,
 	kinds []ItemKind,
 	limit int,
-	cursor string) ([]*ItemHistory, string, error) {
-	q := ItemHistoryRef(r.fCli).
+	cursor string,
+) ([]*ItemHistory, string, error) {
+	q := ItemHistoryRef(r.cFirestore).
 		Where("user_id", "==", userID).
 		Where("kind", "in", kinds).
 		OrderBy("created_at", firestore.Desc)
 	var dsnp *firestore.DocumentSnapshot
 	var err error
 	if cursor != "" {
-		dsnp, err = ItemHistoryRef(r.fCli).Doc(cursor).Get(ctx)
+		dsnp, err = ItemHistoryRef(r.cFirestore).Doc(cursor).Get(ctx)
 		if err != nil {
 			log.Error(ctx, err)
 			return nil, "", err
@@ -128,8 +136,9 @@ func (r *Repository) ListHistoryByPeriod(
 	userID string,
 	kinds []ItemKind,
 	startAt int64,
-	endAt int64) ([]*ItemHistory, error) {
-	q := ItemHistoryRef(r.fCli).
+	endAt int64,
+) ([]*ItemHistory, error) {
+	q := ItemHistoryRef(r.cFirestore).
 		Where("user_id", "==", userID).
 		Where("kind", "in", kinds).
 		Where("created_at", ">=", startAt).
@@ -143,10 +152,9 @@ func (r *Repository) ListHistoryByPeriod(
 	return dsts, nil
 }
 
-// TxCreateHistory ... 履歴を作成する
-func (r *Repository) TxCreateHistory(
+// CreateHistory ... 履歴を作成する
+func (r *Repository) CreateHistory(
 	ctx context.Context,
-	tx *firestore.Transaction,
 	userID string,
 	kind ItemKind,
 	amount float64,
@@ -165,8 +173,8 @@ func (r *Repository) TxCreateHistory(
 	} else {
 		src.Data = data
 	}
-	colRef := ItemHistoryRef(r.fCli)
-	err := cloudfirestore.TxCreate(ctx, tx, colRef, src)
+	colRef := ItemHistoryRef(r.cFirestore)
+	err := cloudfirestore.Create(ctx, colRef, src)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -175,8 +183,8 @@ func (r *Repository) TxCreateHistory(
 }
 
 // NewRepository ... リポジトリを作成する
-func NewRepository(fCli *firestore.Client) *Repository {
+func NewRepository(cFirestore *firestore.Client) *Repository {
 	return &Repository{
-		fCli: fCli,
+		cFirestore: cFirestore,
 	}
 }

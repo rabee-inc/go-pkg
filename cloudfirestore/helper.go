@@ -14,11 +14,11 @@ import (
 )
 
 // GenerateDocumentRef ... ドキュメント参照を作成する
-func GenerateDocumentRef(fCli *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
+func GenerateDocumentRef(client *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
 	var dst *firestore.DocumentRef
 	for i, docRef := range docRefs {
 		if i == 0 {
-			dst = fCli.Collection(docRef.CollectionName).Doc(docRef.DocID)
+			dst = client.Collection(docRef.CollectionName).Doc(docRef.DocID)
 		} else {
 			dst = dst.Collection(docRef.CollectionName).Doc(docRef.DocID)
 		}
@@ -26,12 +26,43 @@ func GenerateDocumentRef(fCli *firestore.Client, docRefs []*DocRef) *firestore.D
 	return dst
 }
 
-// Get ... １つ取得する
+func RunTransaction(ctx context.Context, client *firestore.Client, fn func(ctx context.Context) error, opts ...firestore.TransactionOption) error {
+	return client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		ctx = setContextTransaction(ctx, tx)
+		return fn(ctx)
+	}, opts...)
+}
+
+func RunWriteBatch(ctx context.Context, client *firestore.Client) context.Context {
+	bt := client.Batch()
+	return setContextWriteBatch(ctx, bt)
+}
+
+func CommitWriteBatch(ctx context.Context) (context.Context, error) {
+	if bt := getContextWriteBatch(ctx); bt != nil {
+		ctx = setContextWriteBatch(ctx, nil)
+		if _, err := bt.Commit(ctx); err != nil {
+			return ctx, err
+		}
+	} else {
+		err := log.Errore(ctx, "no running write batch")
+		return ctx, err
+	}
+	return ctx, nil
+}
+
+// Get ... 単体取得する(tx対応)
 func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
 	if docRef == nil || docRef.ID == "" {
 		return false, nil
 	}
-	dsnp, err := docRef.Get(ctx)
+	var dsnp *firestore.DocumentSnapshot
+	var err error
+	if tx := getContextTransaction(ctx); tx != nil {
+		dsnp, err = tx.Get(docRef)
+	} else {
+		dsnp, err = docRef.Get(ctx)
+	}
 	if dsnp != nil && !dsnp.Exists() {
 		return false, nil
 	}
@@ -49,8 +80,8 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 	return true, nil
 }
 
-// GetMulti ... 複数取得する
-func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+// GetMulti ... 複数取得する(tx対応)
+func GetMulti(ctx context.Context, client *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
 			return docRef != nil && docRef.ID != ""
@@ -59,7 +90,13 @@ func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.
 	if len(docRefs) == 0 {
 		return nil
 	}
-	dsnps, err := fCli.GetAll(ctx, docRefs)
+	var dsnps []*firestore.DocumentSnapshot
+	var err error
+	if tx := getContextTransaction(ctx); tx != nil {
+		dsnps, err = tx.GetAll(docRefs)
+	} else {
+		dsnps, err = client.GetAll(ctx, docRefs)
+	}
 	if err != nil {
 		log.Warning(ctx, err)
 		return err
@@ -84,9 +121,14 @@ func GetMulti(ctx context.Context, fCli *firestore.Client, docRefs []*firestore.
 	return nil
 }
 
-// GetByQuery ... クエリで１つ取得する
+// GetByQuery ... クエリで単体取得する(tx対応)
 func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
-	it := query.Documents(ctx)
+	var it *firestore.DocumentIterator
+	if tx := getContextTransaction(ctx); tx != nil {
+		it = tx.Documents(query)
+	} else {
+		it = query.Documents(ctx)
+	}
 	defer it.Stop()
 	dsnp, err := it.Next()
 	if err == iterator.Done {
@@ -172,242 +214,97 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 	return nil, nil
 }
 
-// TxGet ... １つ取得する（トランザクション）
-func TxGet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
-	if docRef == nil || docRef.ID == "" {
-		return false, nil
-	}
-	dsnp, err := tx.Get(docRef)
-	if dsnp != nil && !dsnp.Exists() {
-		return false, nil
-	}
-	if err != nil {
-		log.Warning(ctx, err)
-		return false, err
-	}
-	err = dsnp.DataTo(dst)
-	if err != nil {
-		log.Error(ctx, err)
-		return false, err
-	}
-	setDocByDst(dst, dsnp.Ref)
-	setEmptyBySlice(dst)
-	return true, nil
-}
-
-// TxGetMulti ... 複数取得する（トランザクション）
-func TxGetMulti(ctx context.Context, tx *firestore.Transaction, docRefs []*firestore.DocumentRef, dsts interface{}) error {
-	docRefs = sliceutil.StreamOf(docRefs).
-		Filter(func(docRef *firestore.DocumentRef) bool {
-			return docRef != nil && docRef.ID != ""
-		}).
-		Out().([]*firestore.DocumentRef)
-	if len(docRefs) == 0 {
-		return nil
-	}
-	dsnps, err := tx.GetAll(docRefs)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	rv := reflect.Indirect(reflect.ValueOf(dsts))
-	rrt := rv.Type().Elem().Elem()
-	for _, dsnp := range dsnps {
-		if !dsnp.Exists() {
-			continue
-		}
-		v := reflect.New(rrt).Interface()
-		err = dsnp.DataTo(&v)
-		if err != nil {
-			log.Error(ctx, err)
-			return err
-		}
-		rrv := reflect.ValueOf(v)
-		setDocByDsts(rrv, rrt, dsnp.Ref)
-		setEmptyBySlices(rrv, rrt)
-		rv.Set(reflect.Append(rv, rrv))
-	}
-	return nil
-}
-
-// TxGetByQuery ... クエリで１つ取得する（トランザクション）
-func TxGetByQuery(ctx context.Context, tx *firestore.Transaction, query firestore.Query, dst interface{}) (bool, error) {
-	it := tx.Documents(query)
-	defer it.Stop()
-	dsnp, err := it.Next()
-	if err == iterator.Done {
-		return false, nil
-	}
-	if err != nil {
-		log.Warning(ctx, err)
-		return false, err
-	}
-	err = dsnp.DataTo(dst)
-	if err != nil {
-		log.Error(ctx, err)
-		return false, err
-	}
-	setDocByDst(dst, dsnp.Ref)
-	setEmptyBySlice(dst)
-	return true, nil
-}
-
-// TxListByQuery ... クエリで複数取得する（トランザクション）
-func TxListByQuery(ctx context.Context, tx *firestore.Transaction, query firestore.Query, dsts interface{}) error {
-	it := tx.Documents(query)
-	defer it.Stop()
-	rv := reflect.Indirect(reflect.ValueOf(dsts))
-	rrt := rv.Type().Elem().Elem()
-	for {
-		dsnp, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
+// Create ... 作成する(tx, bt対応)
+func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
+	setEmptyBySlice(src)
+	var docRef *firestore.DocumentRef
+	if tx := getContextTransaction(ctx); tx != nil {
+		id := stringutil.UniqueID()
+		docRef = colRef.Doc(id)
+		err := tx.Create(docRef, src)
 		if err != nil {
 			log.Warning(ctx, err)
 			return err
 		}
-		v := reflect.New(rrt).Interface()
-		err = dsnp.DataTo(&v)
+	} else if bt := getContextWriteBatch(ctx); bt != nil {
+		id := stringutil.UniqueID()
+		docRef = colRef.Doc(id)
+		bt.Create(docRef, src)
+	} else {
+		var err error
+		docRef, _, err = colRef.Add(ctx, src)
 		if err != nil {
-			log.Error(ctx, err)
+			log.Warning(ctx, err)
 			return err
 		}
-		rrv := reflect.ValueOf(v)
-		setDocByDsts(rrv, rrt, dsnp.Ref)
-		setEmptyBySlices(rrv, rrt)
-		rv.Set(reflect.Append(rv, rrv))
 	}
+	setDocByDst(src, docRef)
 	return nil
 }
 
-// Create ... 作成する
-func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
-	setEmptyBySlice(src)
-	ref, _, err := colRef.Add(ctx, src)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	setDocByDst(src, ref)
-	return nil
-}
-
-// BtCreate ... 作成する（バッチ書き込み）
-func BtCreate(ctx context.Context, bt *firestore.WriteBatch, colRef *firestore.CollectionRef, src interface{}) {
-	setEmptyBySlice(src)
-	id := stringutil.UniqueID()
-	ref := colRef.Doc(id)
-	bt.Create(ref, src)
-	setDocByDst(src, ref)
-}
-
-// TxCreate ... 作成する（トランザクション）
-func TxCreate(ctx context.Context, tx *firestore.Transaction, colRef *firestore.CollectionRef, src interface{}) error {
-	setEmptyBySlice(src)
-	id := stringutil.UniqueID()
-	ref := colRef.Doc(id)
-	err := tx.Create(ref, src)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	setDocByDst(src, ref)
-	return nil
-}
-
-// Update ... 更新する
+// Update ... 更新する(tx, bt対応)
 func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]interface{}) error {
 	srcs := []firestore.Update{}
 	for k, v := range kv {
 		src := firestore.Update{Path: k, Value: v}
 		srcs = append(srcs, src)
 	}
-	_, err := docRef.Update(ctx, srcs)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
+	if tx := getContextTransaction(ctx); tx != nil {
+		err := tx.Update(docRef, srcs)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
+	} else if bt := getContextWriteBatch(ctx); bt != nil {
+		_ = bt.Update(docRef, srcs)
+	} else {
+		_, err := docRef.Update(ctx, srcs)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	}
 	return nil
 }
 
-// BtUpdate ... 更新する（バッチ書き込み）
-func BtUpdate(ctx context.Context, bt *firestore.WriteBatch, docRef *firestore.DocumentRef, kv map[string]interface{}) {
-	srcs := []firestore.Update{}
-	for k, v := range kv {
-		src := firestore.Update{Path: k, Value: v}
-		srcs = append(srcs, src)
-	}
-	_ = bt.Update(docRef, srcs)
-}
-
-// TxUpdate ... 更新する（トランザクション）
-func TxUpdate(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef, kv map[string]interface{}) error {
-	srcs := []firestore.Update{}
-	for k, v := range kv {
-		src := firestore.Update{Path: k, Value: v}
-		srcs = append(srcs, src)
-	}
-	err := tx.Update(docRef, srcs)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	return nil
-}
-
-// Set ... 上書きする
+// Set ... 上書きする(tx, bt対応)
 func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) error {
 	setEmptyBySlice(src)
-	_, err := docRef.Set(ctx, src)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
+	if tx := getContextTransaction(ctx); tx != nil {
+		err := tx.Set(docRef, src)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
+	} else if bt := getContextWriteBatch(ctx); bt != nil {
+		_ = bt.Set(docRef, src)
+	} else {
+		_, err := docRef.Set(ctx, src)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	}
 	setDocByDst(src, docRef)
 	return nil
 }
 
-// BtSet ... 上書きする（バッチ書き込み）
-func BtSet(ctx context.Context, bt *firestore.WriteBatch, docRef *firestore.DocumentRef, src interface{}) {
-	setEmptyBySlice(src)
-	_ = bt.Set(docRef, src)
-	setDocByDst(src, docRef)
-}
-
-// TxSet ... 上書きする（トランザクション）
-func TxSet(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef, src interface{}) error {
-	setEmptyBySlice(src)
-	err := tx.Set(docRef, src)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	setDocByDst(src, docRef)
-	return nil
-}
-
-// Delete ... 削除する
+// Delete ... 削除する(tx, bt対応)
 func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
-	_, err := docRef.Delete(ctx)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
-	}
-	return nil
-}
-
-// BtDelete ... 削除する（バッチ書き込み）
-func BtDelete(ctx context.Context, bt *firestore.WriteBatch, docRef *firestore.DocumentRef) {
-	_ = bt.Delete(docRef)
-}
-
-// TxDelete ... 削除する（トランザクション）
-func TxDelete(ctx context.Context, tx *firestore.Transaction, docRef *firestore.DocumentRef) error {
-	err := tx.Delete(docRef)
-	if err != nil {
-		log.Warning(ctx, err)
-		return err
+	if tx := getContextTransaction(ctx); tx != nil {
+		err := tx.Delete(docRef)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
+	} else if bt := getContextWriteBatch(ctx); bt != nil {
+		_ = bt.Delete(docRef)
+	} else {
+		_, err := docRef.Delete(ctx)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	}
 	return nil
 }
