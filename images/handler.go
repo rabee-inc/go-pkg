@@ -20,7 +20,6 @@ type Handler struct {
 func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Paramを取得
 	var param struct {
 		Key     string    `json:"key"     validate:"required"`
 		Objects []*Object `json:"objects" validate:"required"`
@@ -28,24 +27,22 @@ func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request)
 	err := parameter.GetJSON(r, &param)
 	if err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
-		renderer.HandleError(ctx, w, "parameter.GetJSON", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
-	// Validation
 	if err := h.v.Struct(param); err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
-		renderer.HandleError(ctx, w, "v.Struct", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
 	err = h.repo.UpdateByConvertObjects(ctx, param.Key, param.Objects)
 	if err != nil {
-		renderer.HandleError(ctx, w, "h.sSvc.UpdateByConvertObjects", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
-	// Response
 	renderer.Success(ctx, w)
 }
 
@@ -53,7 +50,6 @@ func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request)
 func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Paramを取得
 	var param struct {
 		Key string `json:"key" validate:"required"`
 		ID  string `json:"id"  validate:"required"`
@@ -62,24 +58,22 @@ func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 	err := parameter.GetJSON(r, &param)
 	if err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
-		renderer.HandleError(ctx, w, "parameter.GetJSON", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
-	// Validation
 	if err := h.v.Struct(param); err != nil {
 		err = errcode.Set(err, http.StatusBadRequest)
-		renderer.HandleError(ctx, w, "v.Struct", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
 	err = h.repo.UpdateByGenerateURL(ctx, param.Key, param.ID, param.URL)
 	if err != nil {
-		renderer.HandleError(ctx, w, "h.sSvc.UpdateByGenerateURL", err)
+		renderer.HandleError(ctx, w, err)
 		return
 	}
 
-	// Response
 	renderer.Success(ctx, w)
 }
 

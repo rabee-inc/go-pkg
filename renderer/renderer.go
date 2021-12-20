@@ -17,7 +17,7 @@ import (
 )
 
 // HandleError ... よく使うエラーハンドリング
-func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 	code, ok := errcode.Get(err)
 	if !ok {
 		Error(ctx, w, http.StatusInternalServerError, err.Error())
@@ -27,9 +27,6 @@ func HandleError(ctx context.Context, w http.ResponseWriter, msg string, err err
 	if code > 0 {
 		text := strconv.Itoa(code)
 		texts = append(texts, text)
-	}
-	if msg != "" {
-		texts = append(texts, msg)
 	}
 	if err != nil {
 		text := err.Error()
