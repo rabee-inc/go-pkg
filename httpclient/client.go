@@ -212,6 +212,63 @@ func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int
 	return send(ctx, req, opt)
 }
 
+// PatchJSON ... Patchリクエスト(URL, JSON)
+func PatchJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+	jp, err := json.Marshal(param)
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jp))
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+
+	if opt == nil {
+		opt = &HTTPOption{
+			Headers: map[string]string{},
+		}
+	}
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range opt.Headers {
+		req.Header.Set(key, value)
+	}
+
+	status, body, err := send(ctx, req, opt)
+	if body != nil && len(body) > 0 {
+		if status == http.StatusOK {
+			perr := json.Unmarshal(body, res)
+			if perr != nil {
+				log.Warning(ctx, perr)
+				err = perr
+			}
+		} else {
+			errRes := map[string]interface{}{}
+			err = json.Unmarshal(body, &errRes)
+			log.Warningf(ctx, "%v", errRes)
+		}
+	}
+	return status, err
+}
+
+// PatchBody ... Patchリクエスト(URL, Body)
+func PatchBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
+	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(body))
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, nil, err
+	}
+
+	if opt != nil {
+		for key, value := range opt.Headers {
+			req.Header.Set(key, value)
+		}
+	}
+	return send(ctx, req, opt)
+}
+
 // Delete ... Deleteリクエスト(URL)
 func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
