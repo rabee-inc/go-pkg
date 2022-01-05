@@ -15,7 +15,7 @@ import (
 func Load(service string) {
 	// 環境変数設定ファイル読み込み
 	localEnvFilePath := "./env.yaml"
-	serverEnvFilePath := fmt.Sprintf("./%s/env.yaml", service)
+	serverEnvFilePath := fmt.Sprintf("./appengine/%s/env.yaml", service)
 	file, err := ioutil.ReadFile(serverEnvFilePath)
 	if err != nil {
 		file, err = ioutil.ReadFile(localEnvFilePath)
