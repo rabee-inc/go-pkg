@@ -1,7 +1,6 @@
 package environment
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -27,32 +26,12 @@ func Load(envFilePath string) {
 	// 値を設定
 	var src map[string]string
 	if deploy.IsLocal() {
-		file, err := ioutil.ReadFile("../../project.json")
-		if err != nil {
-			panic(err)
-		}
-		prj := &Project{}
-		err = json.Unmarshal(file, &prj)
-		if err != nil {
-			panic(err)
-		}
 		src = val.Local
-		src["PROJECT_ID"] = prj.Local
 		src["DEPLOY"] = "local"
 	} else if deploy.IsStaging() {
-		prj := os.Getenv("GOOGLE_CLOUD_PROJECT")
-		if prj == "" {
-			panic("env not found GOOGLE_CLOUD_PROJECT")
-		}
 		src = val.Staging
-		src["PROJECT_ID"] = prj
 	} else if deploy.IsProduction() {
-		prj := os.Getenv("GOOGLE_CLOUD_PROJECT")
-		if prj == "" {
-			panic("env not found GOOGLE_CLOUD_PROJECT")
-		}
 		src = val.Production
-		src["PROJECT_ID"] = prj
 	} else {
 		panic(fmt.Errorf("invalid deploy: %s", os.Getenv("DEPLOY")))
 	}
