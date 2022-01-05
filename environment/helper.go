@@ -12,16 +12,11 @@ import (
 )
 
 // Load ... 環境変数を読み込む
-func Load(service string) {
+func Load(envFilePath string) {
 	// 環境変数設定ファイル読み込み
-	localEnvFilePath := "./env.yaml"
-	serverEnvFilePath := fmt.Sprintf("./appengine/%s/env.yaml", service)
-	file, err := ioutil.ReadFile(serverEnvFilePath)
+	file, err := ioutil.ReadFile(envFilePath)
 	if err != nil {
-		file, err = ioutil.ReadFile(localEnvFilePath)
-		if err != nil {
-			panic(err)
-		}
+		panic(err)
 	}
 	val := &Variable{}
 	err = yaml.Unmarshal(file, &val)
