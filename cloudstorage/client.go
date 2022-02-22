@@ -15,12 +15,34 @@ import (
 
 	"github.com/rabee-inc/go-pkg/errcode"
 	"github.com/rabee-inc/go-pkg/log"
+	"github.com/rabee-inc/go-pkg/timeutil"
 )
 
 // Client ... GCSのクライアント
 type Client struct {
-	cli    *storage.Client
-	bucket string
+	cli          *storage.Client
+	bucketHandle *storage.BucketHandle
+	bucket       string
+}
+
+// NewClient ... クライアントを作成する
+func NewClient(bucket string) *Client {
+	ctx := context.Background()
+	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
+		Time:                1 * time.Second,
+		Timeout:             5 * time.Second,
+		PermitWithoutStream: true,
+	}))
+	cli, err := storage.NewClient(ctx, gOpt)
+	if err != nil {
+		panic(err)
+	}
+	bucketHandle := cli.Bucket(bucket)
+	return &Client{
+		cli,
+		bucketHandle,
+		bucket,
+	}
 }
 
 // UploadForDataURL ... DataURLのファイルをアップロードする
@@ -98,7 +120,6 @@ func (c *Client) GetReader(
 		log.Error(ctx, err)
 		return nil, err
 	}
-
 	return reader, nil
 }
 
@@ -107,20 +128,41 @@ func (c *Client) GetBucket() string {
 	return c.bucket
 }
 
-// NewClient ... クライアントを作成する
-func NewClient(bucket string) *Client {
-	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	cli, err := storage.NewClient(ctx, gOpt)
+func (c *Client) GetDownloadSignedURL(
+	ctx context.Context,
+	path string,
+	contentType string,
+	expire time.Duration,
+) (string, error) {
+	expires := timeutil.Now().Add(expire)
+	opts := &storage.SignedURLOptions{
+		Expires: expires,
+	}
+	opts.Method = http.MethodGet
+	singedURL, err := c.bucketHandle.SignedURL(path, opts)
 	if err != nil {
-		panic(err)
+		log.Error(ctx, err)
+		return "", err
 	}
-	return &Client{
-		cli:    cli,
-		bucket: bucket,
+	return singedURL, nil
+}
+
+func (c *Client) GetUploadSignedURL(
+	ctx context.Context,
+	path string,
+	contentType string,
+	expire time.Duration,
+) (string, error) {
+	expires := timeutil.Now().Add(expire)
+	opts := &storage.SignedURLOptions{
+		Expires: expires,
 	}
+	opts.Method = http.MethodPut
+	opts.ContentType = contentType
+	singedURL, err := c.bucketHandle.SignedURL(path, opts)
+	if err != nil {
+		log.Error(ctx, err)
+		return "", err
+	}
+	return singedURL, nil
 }

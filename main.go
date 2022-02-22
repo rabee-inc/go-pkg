@@ -36,7 +36,6 @@ import (
 	_ "github.com/rabee-inc/go-pkg/stringutil"
 	_ "github.com/rabee-inc/go-pkg/timeutil"
 	_ "github.com/rabee-inc/go-pkg/validation"
-	_ "github.com/rabee-inc/go-pkg/wallet"
 )
 
 func main() {
