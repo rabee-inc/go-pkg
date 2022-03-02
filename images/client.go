@@ -9,9 +9,37 @@ import (
 
 // Client ... クライアント
 type Client struct {
-	psCli            *cloudpubsub.Client
+	cPubSub          *cloudpubsub.Client
 	converterTopicID string
 	generatorTopicID string
+}
+
+// NewClient ... クライアントを作成する
+func NewClient(cPubSub *cloudpubsub.Client) *Client {
+	return &Client{
+		cPubSub:          cPubSub,
+		converterTopicID: ConverterTopicID,
+		generatorTopicID: GeneratorTopicID,
+	}
+}
+
+// NewClientWithOption ... オプションを指定してクライアントを作成する
+func NewClientWithOption(cPubSub *cloudpubsub.Client, reqOption *ClientOption) *Client {
+	option := &ClientOption{
+		ConverterTopicID: ConverterTopicID,
+		GeneratorTopicID: GeneratorTopicID,
+	}
+	if reqOption != nil && reqOption.ConverterTopicID != "" {
+		option.ConverterTopicID = reqOption.ConverterTopicID
+	}
+	if reqOption != nil && reqOption.GeneratorTopicID != "" {
+		option.GeneratorTopicID = reqOption.GeneratorTopicID
+	}
+	return &Client{
+		cPubSub:          cPubSub,
+		converterTopicID: option.ConverterTopicID,
+		generatorTopicID: option.GeneratorTopicID,
+	}
 }
 
 // SendConvertRequest ... 画像変換リクエストを送信する
@@ -37,7 +65,7 @@ func (c *Client) SendConvertRequest(
 		SourceURLs:  srcURLs,
 		DstFilePath: dstFilePath,
 	}
-	err := c.psCli.Publish(ctx, c.converterTopicID, src)
+	err := c.cPubSub.Publish(ctx, c.converterTopicID, src)
 	if err != nil {
 		log.Error(ctx, err)
 		return err
@@ -66,38 +94,10 @@ func (c *Client) SendGenerateRequest(
 		Height:      height,
 		DstFilePath: dstFilePath,
 	}
-	err := c.psCli.Publish(ctx, c.generatorTopicID, src)
+	err := c.cPubSub.Publish(ctx, c.generatorTopicID, src)
 	if err != nil {
 		log.Error(ctx, err)
 		return err
 	}
 	return nil
-}
-
-// NewClient ... クライアントを作成する
-func NewClient(psCli *cloudpubsub.Client) *Client {
-	return &Client{
-		psCli:            psCli,
-		converterTopicID: ConverterTopicID,
-		generatorTopicID: GeneratorTopicID,
-	}
-}
-
-// NewClientWithOption ... オプションを指定してクライアントを作成する
-func NewClientWithOption(psCli *cloudpubsub.Client, reqOption *ClientOption) *Client {
-	option := &ClientOption{
-		ConverterTopicID: ConverterTopicID,
-		GeneratorTopicID: GeneratorTopicID,
-	}
-	if reqOption != nil && reqOption.ConverterTopicID != "" {
-		option.ConverterTopicID = reqOption.ConverterTopicID
-	}
-	if reqOption != nil && reqOption.GeneratorTopicID != "" {
-		option.GeneratorTopicID = reqOption.GeneratorTopicID
-	}
-	return &Client{
-		psCli:            psCli,
-		converterTopicID: option.ConverterTopicID,
-		generatorTopicID: option.GeneratorTopicID,
-	}
 }

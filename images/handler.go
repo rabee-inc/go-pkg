@@ -16,6 +16,15 @@ type Handler struct {
 	v    *validator.Validate
 }
 
+// NewHandler ... ハンドラを作成する
+func NewHandler(repo Repository) *Handler {
+	v := validator.New()
+	return &Handler{
+		repo: repo,
+		v:    v,
+	}
+}
+
 // UpdateByConvertObjects ... 変換後の画像をアップデートする
 func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -75,13 +84,4 @@ func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderer.Success(ctx, w)
-}
-
-// NewHandler ... ハンドラを作成する
-func NewHandler(repo Repository) *Handler {
-	v := validator.New()
-	return &Handler{
-		repo: repo,
-		v:    v,
-	}
 }
