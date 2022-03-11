@@ -3,12 +3,12 @@ module github.com/rabee-inc/go-pkg
 go 1.16
 
 require (
-	cloud.google.com/go/bigquery v1.28.0
-	cloud.google.com/go/cloudtasks v1.2.0
-	cloud.google.com/go/compute v1.3.0 // indirect
+	cloud.google.com/go/bigquery v1.29.0
+	cloud.google.com/go/cloudtasks v1.3.0
 	cloud.google.com/go/firestore v1.6.1
-	cloud.google.com/go/iam v0.2.0 // indirect
-	cloud.google.com/go/pubsub v1.18.0
+	cloud.google.com/go/iam v0.3.0 // indirect
+	cloud.google.com/go/pubsub v1.19.0
+	cloud.google.com/go/secretmanager v1.3.0
 	cloud.google.com/go/storage v1.21.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
@@ -25,11 +25,13 @@ require (
 	github.com/rs/xid v1.3.0
 	github.com/unrolled/render v1.4.1
 	github.com/vincent-petithory/dataurl v1.0.0
+	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
 	golang.org/x/text v0.3.7
-	google.golang.org/api v0.69.0
-	google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c
-	google.golang.org/grpc v1.44.0
+	google.golang.org/api v0.71.0
+	google.golang.org/genproto v0.0.0-20220310185008-1973136f34c6
+	google.golang.org/grpc v1.45.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
