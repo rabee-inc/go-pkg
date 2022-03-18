@@ -7,7 +7,6 @@ require (
 	cloud.google.com/go/cloudtasks v1.3.0
 	cloud.google.com/go/firestore v1.6.1
 	cloud.google.com/go/pubsub v1.19.0
-	cloud.google.com/go/secretmanager v1.3.0
 	cloud.google.com/go/storage v1.21.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
