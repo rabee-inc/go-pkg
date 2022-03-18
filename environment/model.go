@@ -13,8 +13,3 @@ type Variable struct {
 	Staging    map[string]string `yaml:"staging"`
 	Production map[string]string `yaml:"production"`
 }
-
-type LoadSecretParam struct {
-	Key     string
-	Version string
-}
