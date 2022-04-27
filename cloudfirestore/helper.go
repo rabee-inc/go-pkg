@@ -148,9 +148,14 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 	return true, nil
 }
 
-// ListByQuery ... クエリで複数取得する
+// ListByQuery ... クエリで複数取得する(tx対応)
 func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) error {
-	it := query.Documents(ctx)
+	var it *firestore.DocumentIterator
+	if tx := getContextTransaction(ctx); tx != nil {
+		it = tx.Documents(query)
+	} else {
+		it = query.Documents(ctx)
+	}
 	defer it.Stop()
 	rv := reflect.Indirect(reflect.ValueOf(dsts))
 	rrt := rv.Type().Elem().Elem()
