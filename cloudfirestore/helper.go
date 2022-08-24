@@ -123,6 +123,7 @@ func GetMulti(ctx context.Context, client *firestore.Client, docRefs []*firestor
 
 // GetByQuery ... クエリで単体取得する(tx対応)
 func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
+	query = query.Limit(1)
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
 		it = tx.Documents(query)
