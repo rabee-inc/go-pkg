@@ -5,36 +5,46 @@ import (
 	"strings"
 )
 
-// Middleware ... Headerに関する機能を提供する
 type Middleware struct {
-	hdsStr string
+	origins []string
+	header  string
 }
 
-// Handle ... CORS対応
+func NewMiddleware(origins []string, headers []string) *Middleware {
+	if len(origins) == 0 {
+		origins = []string{}
+	}
+	if headers == nil {
+		headers = []string{}
+	}
+	headers = append(headers, "Origin")
+	headers = append(headers, "Content-Type")
+	headers = append(headers, "Authorization")
+	header := strings.Join(headers, ", ")
+	return &Middleware{origins, header}
+}
+
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		var host string
+		if headers, ok := r.Header["Origin"]; ok {
+			if len(headers) > 0 {
+				host = headers[0]
+			}
+		}
+		var origin string
+		for _, o := range m.origins {
+			if strings.Contains(o, host) {
+				origin = o
+				break
+			}
+		}
+		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", m.hdsStr)
+		w.Header().Set("Access-Control-Allow-Headers", m.header)
 		if r.Method == "OPTIONS" {
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-// NewMiddleware ... Middlewareを作成する
-func NewMiddleware(headers []string) *Middleware {
-	hds := []string{
-		"Origin",
-		"Content-Type",
-		"Authorization",
-	}
-	for _, header := range headers {
-		hds = append(hds, header)
-	}
-	hdsStr := strings.Join(hds, ", ")
-	return &Middleware{
-		hdsStr: hdsStr,
-	}
 }

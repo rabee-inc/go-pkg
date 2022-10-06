@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "github.com/rabee-inc/go-pkg/accesscontrol"
-	_ "github.com/rabee-inc/go-pkg/basicauth"
 	_ "github.com/rabee-inc/go-pkg/bigquery"
 	_ "github.com/rabee-inc/go-pkg/bytesutil"
 	_ "github.com/rabee-inc/go-pkg/cloudfirestore"
@@ -20,10 +19,8 @@ import (
 	_ "github.com/rabee-inc/go-pkg/images"
 	_ "github.com/rabee-inc/go-pkg/internalauth"
 	_ "github.com/rabee-inc/go-pkg/jsonrpc2"
-	_ "github.com/rabee-inc/go-pkg/jwtauth"
 	_ "github.com/rabee-inc/go-pkg/language"
 	_ "github.com/rabee-inc/go-pkg/log"
-	_ "github.com/rabee-inc/go-pkg/maintenance"
 	_ "github.com/rabee-inc/go-pkg/memcache"
 	_ "github.com/rabee-inc/go-pkg/ogp"
 	_ "github.com/rabee-inc/go-pkg/pagination"

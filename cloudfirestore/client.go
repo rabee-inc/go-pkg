@@ -24,9 +24,9 @@ func NewClient(projectID string) *firestore.Client {
 	if err != nil {
 		panic(err)
 	}
-	cli, err := app.Firestore(ctx)
+	cFirestore, err := app.Firestore(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return cli
+	return cFirestore
 }

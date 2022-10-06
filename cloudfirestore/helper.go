@@ -14,11 +14,11 @@ import (
 )
 
 // GenerateDocumentRef ... ドキュメント参照を作成する
-func GenerateDocumentRef(client *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
+func GenerateDocumentRef(cFirestore *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
 	var dst *firestore.DocumentRef
 	for i, docRef := range docRefs {
 		if i == 0 {
-			dst = client.Collection(docRef.CollectionName).Doc(docRef.DocID)
+			dst = cFirestore.Collection(docRef.CollectionName).Doc(docRef.DocID)
 		} else {
 			dst = dst.Collection(docRef.CollectionName).Doc(docRef.DocID)
 		}
@@ -26,15 +26,15 @@ func GenerateDocumentRef(client *firestore.Client, docRefs []*DocRef) *firestore
 	return dst
 }
 
-func RunTransaction(ctx context.Context, client *firestore.Client, fn func(ctx context.Context) error, opts ...firestore.TransactionOption) error {
-	return client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+func RunTransaction(ctx context.Context, cFirestore *firestore.Client, fn func(ctx context.Context) error, opts ...firestore.TransactionOption) error {
+	return cFirestore.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		ctx = setContextTransaction(ctx, tx)
 		return fn(ctx)
 	}, opts...)
 }
 
-func RunWriteBatch(ctx context.Context, client *firestore.Client) context.Context {
-	bt := client.Batch()
+func RunWriteBatch(ctx context.Context, cFirestore *firestore.Client) context.Context {
+	bt := cFirestore.Batch()
 	return setContextWriteBatch(ctx, bt)
 }
 
@@ -81,7 +81,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 }
 
 // GetMulti ... 複数取得する(tx対応)
-func GetMulti(ctx context.Context, client *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
 			return docRef != nil && docRef.ID != ""
@@ -95,7 +95,7 @@ func GetMulti(ctx context.Context, client *firestore.Client, docRefs []*firestor
 	if tx := getContextTransaction(ctx); tx != nil {
 		dsnps, err = tx.GetAll(docRefs)
 	} else {
-		dsnps, err = client.GetAll(ctx, docRefs)
+		dsnps, err = cFirestore.GetAll(ctx, docRefs)
 	}
 	if err != nil {
 		log.Warning(ctx, err)
@@ -123,7 +123,6 @@ func GetMulti(ctx context.Context, client *firestore.Client, docRefs []*firestor
 
 // GetByQuery ... クエリで単体取得する(tx対応)
 func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
-	query = query.Limit(1)
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
 		it = tx.Documents(query)
@@ -151,7 +150,12 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 
 // ListByQuery ... クエリで複数取得する
 func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) error {
-	it := query.Documents(ctx)
+	var it *firestore.DocumentIterator
+	if tx := getContextTransaction(ctx); tx != nil {
+		it = tx.Documents(query)
+	} else {
+		it = query.Documents(ctx)
+	}
 	defer it.Stop()
 	rv := reflect.Indirect(reflect.ValueOf(dsts))
 	rrt := rv.Type().Elem().Elem()
@@ -183,7 +187,13 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 	if cursor != nil {
 		query = query.StartAfter(cursor)
 	}
-	it := query.Limit(limit).Documents(ctx)
+	var it *firestore.DocumentIterator
+	query = query.Limit(limit)
+	if tx := getContextTransaction(ctx); tx != nil {
+		it = tx.Documents(query)
+	} else {
+		it = query.Documents(ctx)
+	}
 	defer it.Stop()
 	rv := reflect.Indirect(reflect.ValueOf(dsts))
 	rrt := rv.Type().Elem().Elem()

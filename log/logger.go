@@ -46,14 +46,21 @@ func (l *Logger) AddApplicationLog(severity Severity, file string, line int64, f
 
 // WriteRequest ... リクエストログを出力する
 func (l *Logger) WriteRequest(r *http.Request, at time.Time, dr time.Duration) {
-	l.Writer.Request(
-		l.MaxOuttedSeverity,
-		l.TraceID,
-		l.ApplicationLogs,
-		r,
-		l.ResponseStatus,
-		at,
-		dr)
+	if l.IsLogging(l.MaxOuttedSeverity) {
+		l.Writer.Request(
+			l.MaxOuttedSeverity,
+			l.TraceID,
+			l.ApplicationLogs,
+			r,
+			l.ResponseStatus,
+			at,
+			dr)
+	}
+}
+
+// WriteJob ... ジョブログを出力する
+func (l *Logger) WriteJob(ctx context.Context) {
+	l.Writer.Job(l.MaxOuttedSeverity, l.TraceID, l.ApplicationLogs)
 }
 
 // NewLogger ... Loggerを作成する
@@ -427,7 +434,7 @@ func Errorc(ctx context.Context, code int, format string, args ...interface{}) e
 }
 
 // Critical ... Criticalログの定形を出力する
-func Critical(ctx context.Context, method string, err error) {
+func Critical(ctx context.Context, err error) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {

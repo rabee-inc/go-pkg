@@ -92,3 +92,25 @@ func LastDayByMonth(at int64) int {
 	t = time.Date(t.Year(), t.Month(), 1, 23, 59, 59, 0, ZoneJST()).AddDate(0, 1, -1)
 	return t.Day()
 }
+
+// GetWeekJP ... 曜日(日本語)を取得する
+func GetWeekJP(t time.Time) string {
+	var week string
+	switch t.Weekday() {
+	case time.Sunday:
+		week = "日"
+	case time.Monday:
+		week = "月"
+	case time.Tuesday:
+		week = "火"
+	case time.Wednesday:
+		week = "水"
+	case time.Thursday:
+		week = "木"
+	case time.Friday:
+		week = "金"
+	case time.Saturday:
+		week = "土"
+	}
+	return week
+}

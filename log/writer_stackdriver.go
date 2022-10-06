@@ -13,6 +13,10 @@ type writerStackdriver struct {
 	ProjectID string
 }
 
+func NewWriterStackdriver(projectID string) Writer {
+	return &writerStackdriver{projectID}
+}
+
 func (w *writerStackdriver) Request(
 	severity Severity,
 	traceID string,
@@ -20,7 +24,8 @@ func (w *writerStackdriver) Request(
 	r *http.Request,
 	status int,
 	at time.Time,
-	dr time.Duration) {
+	dr time.Duration,
+) {
 	u := *r.URL
 	u.Fragment = ""
 
@@ -60,6 +65,27 @@ func (w *writerStackdriver) Request(
 	fmt.Fprintf(os.Stderr, string(b)+"\n")
 }
 
+func (w *writerStackdriver) Job(
+	severity Severity,
+	traceID string,
+	applicationLogs []*EntryChild,
+) {
+	e := &Entry{
+		Severity:    severity.String(),
+		Time:        Time(time.Now()),
+		Trace:       fmt.Sprintf("projects/%s/traces/%s", w.ProjectID, traceID),
+		TraceID:     traceID,
+		Childs:      applicationLogs,
+		Message:     "",
+		HTTPRequest: &EntryHTTPRequest{},
+	}
+	b, err := json.Marshal(e)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintf(os.Stderr, string(b)+"\n")
+}
+
 func (w *writerStackdriver) Application(
 	severity Severity,
 	traceID string,
@@ -67,7 +93,8 @@ func (w *writerStackdriver) Application(
 	file string,
 	line int64,
 	function string,
-	at time.Time) {
+	at time.Time,
+) {
 	e := &Entry{
 		Severity: severity.String(),
 		Time:     Time(at),
@@ -79,11 +106,4 @@ func (w *writerStackdriver) Application(
 		panic(err)
 	}
 	fmt.Fprintf(os.Stdout, string(b)+"\n")
-}
-
-// NewWriterStackdriver ... ログ出力を作成する
-func NewWriterStackdriver(projectID string) Writer {
-	return &writerStackdriver{
-		ProjectID: projectID,
-	}
 }

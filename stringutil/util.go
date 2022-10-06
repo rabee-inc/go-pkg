@@ -2,7 +2,6 @@ package stringutil
 
 import (
 	"bytes"
-	"crypto/rand"
 	"math"
 	"strconv"
 	"strings"
@@ -11,34 +10,9 @@ import (
 	"github.com/rs/xid"
 )
 
-const (
-	letters       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-	letterIdxMask = 0x3F
-)
-
 // ToBytes ... 文字列をバイト列に変換する
 func ToBytes(str string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&str))
-}
-
-// Rand ... nビットのランダムな文字列を生成する。
-func Rand(n int) (string, error) {
-	buf := make([]byte, n)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	for i := 0; i < n; {
-		idx := int(buf[i] & letterIdxMask)
-		if idx < len(letters) {
-			buf[i] = letters[idx]
-			i++
-		} else {
-			if _, err := rand.Read(buf[i : i+1]); err != nil {
-				return "", err
-			}
-		}
-	}
-	return string(buf), nil
 }
 
 // UniqueID ... ユニークでソータブルなIDを作成する

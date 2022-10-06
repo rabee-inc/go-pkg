@@ -1,7 +1,6 @@
 package internalauth
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -9,33 +8,26 @@ import (
 	"github.com/rabee-inc/go-pkg/renderer"
 )
 
-// Middleware ... 内部認証機能を提供するミドルウェア
 type Middleware struct {
 	Token string
 }
 
-// Handle ... ハンドラ
+func NewMiddleware(token string) *Middleware {
+	return &Middleware{
+		token,
+	}
+}
+
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		ah := r.Header.Get("Authorization")
 		if ah == "" || ah != m.Token {
-			ctx := r.Context()
-			m.renderError(ctx, w, http.StatusForbidden, "Internal auth error token: %s", ah)
+			msg := fmt.Sprintf("Internal auth error token: %s", ah)
+			log.Warningf(ctx, msg)
+			renderer.Error(ctx, w, http.StatusForbidden, msg)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func (m *Middleware) renderError(ctx context.Context, w http.ResponseWriter, status int, format string, args ...string) {
-	msg := fmt.Sprintf(format, args)
-	log.Warningf(ctx, msg)
-	renderer.Error(ctx, w, status, msg)
-}
-
-// NewMiddleware ... Middlewareを作成する
-func NewMiddleware(token string) *Middleware {
-	return &Middleware{
-		Token: token,
-	}
 }

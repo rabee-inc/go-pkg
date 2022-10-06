@@ -1,18 +1,22 @@
 package firebaseauth
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/renderer"
 )
 
-// Middleware ... Firebase認証のミドルウェア
 type Middleware struct {
-	svc      Service
-	optional bool
+	sFirebaseAuth Service
+	optional      bool
+}
+
+func NewMiddleware(sFirebaseAuth Service, optional bool) *Middleware {
+	return &Middleware{
+		sFirebaseAuth,
+		optional,
+	}
 }
 
 // Handle ... Firebase認証をする
@@ -24,7 +28,8 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		ah := r.Header.Get("Authorization")
 		if ah == "" {
 			if !m.optional {
-				m.renderError(ctx, w, http.StatusForbidden, "no Authorization header")
+				log.Warningf(ctx, "no authorization header")
+				renderer.Error(ctx, w, http.StatusUnauthorized, "アカウントの認証に失敗しました")
 				return
 			}
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -33,32 +38,20 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		ctx = setAuthHeader(ctx, ah)
 
 		// 認証
-		userID, claims, err := m.svc.Authentication(ctx, ah)
+		userID, claims, err := m.sFirebaseAuth.Authentication(ctx, ah)
 		if err != nil {
-			m.renderError(ctx, w, http.StatusForbidden, err.Error())
+			log.Warning(ctx, err)
+			renderer.Error(ctx, w, http.StatusUnauthorized, "アカウントの認証に失敗しました")
 			return
 		}
 
 		// 認証結果を設定
 		ctx = setUserID(ctx, userID)
-		log.Debugf(ctx, "UserID: %s", userID)
+		log.Infof(ctx, "UserID: %s", userID)
 
 		ctx = setClaims(ctx, claims)
 		log.Debugf(ctx, "Claims: %v", claims)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func (m *Middleware) renderError(ctx context.Context, w http.ResponseWriter, status int, msg string) {
-	log.Warningf(ctx, msg)
-	renderer.Error(ctx, w, status, fmt.Sprintf("%d Authorization failed", status))
-}
-
-// NewMiddleware ... Middlewareを作成する
-func NewMiddleware(svc Service, optional bool) *Middleware {
-	return &Middleware{
-		svc:      svc,
-		optional: optional,
-	}
 }

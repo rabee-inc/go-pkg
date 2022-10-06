@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/rabee-inc/go-pkg/stringutil"
@@ -11,6 +12,14 @@ import (
 type Middleware struct {
 	Writer         Writer
 	MinOutSeverity Severity
+}
+
+func NewMiddleware(writer Writer, minOutSeverity string) *Middleware {
+	mos := NewSeverity(minOutSeverity)
+	return &Middleware{
+		writer,
+		mos,
+	}
 }
 
 // Handle ... ロガーを初期化する
@@ -52,11 +61,14 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 	})
 }
 
-// NewMiddleware ... ミドルウェアを作成する
-func NewMiddleware(writer Writer, minOutSeverity string) *Middleware {
-	mos := NewSeverity(minOutSeverity)
-	return &Middleware{
-		Writer:         writer,
-		MinOutSeverity: mos,
+func (m *Middleware) SetLogger(ctx context.Context) context.Context {
+	traceID := stringutil.UniqueID()
+	logger := NewLogger(m.Writer, m.MinOutSeverity, traceID)
+	return SetLogger(ctx, logger)
+}
+
+func (m *Middleware) WriteJob(ctx context.Context) {
+	if logger := GetLogger(ctx); logger != nil {
+		logger.WriteJob(ctx)
 	}
 }

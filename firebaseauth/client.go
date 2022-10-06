@@ -24,9 +24,9 @@ func NewClient(projectID string) *auth.Client {
 	if err != nil {
 		panic(err)
 	}
-	cli, err := app.Auth(ctx)
+	cFirebaseAuth, err := app.Auth(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return cli
+	return cFirebaseAuth
 }

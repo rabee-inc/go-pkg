@@ -10,6 +10,12 @@ type writerStdout struct {
 	TimeFormat string
 }
 
+func NewWriterStdout() Writer {
+	return &writerStdout{
+		"2006-01-02 15:04:05.000",
+	}
+}
+
 func (w *writerStdout) Request(
 	severity Severity,
 	traceID string,
@@ -24,6 +30,14 @@ func (w *writerStdout) Request(
 	fmt.Printf("%s \"%s %s\" %d %dms\n", date, r.Method, u.RequestURI(), status, dr/1000000)
 }
 
+func (w *writerStdout) Job(
+	severity Severity,
+	traceID string,
+	applicationLogs []*EntryChild,
+) {
+	fmt.Printf("end job\n")
+}
+
 func (w *writerStdout) Application(
 	severity Severity,
 	traceID string,
@@ -34,11 +48,4 @@ func (w *writerStdout) Application(
 	at time.Time) {
 	date := at.Format(w.TimeFormat)
 	fmt.Printf("%s [%s] %s:%d [%s] %s\n", date, severity.String(), file, line, function, msg)
-}
-
-// NewWriterStdout ... ログ出力を作成する
-func NewWriterStdout() Writer {
-	return &writerStdout{
-		TimeFormat: "2006-01-02 15:04:05.000",
-	}
 }

@@ -14,7 +14,15 @@ type Writer interface {
 		r *http.Request,
 		status int,
 		at time.Time,
-		dr time.Duration)
+		dr time.Duration,
+	)
+
+	Job(
+		severity Severity,
+		traceID string,
+		applicationLogs []*EntryChild,
+	)
+
 	Application(
 		severity Severity,
 		traceID string,
@@ -22,5 +30,6 @@ type Writer interface {
 		file string,
 		line int64,
 		function string,
-		at time.Time)
+		at time.Time,
+	)
 }

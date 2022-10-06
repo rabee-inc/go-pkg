@@ -14,7 +14,7 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
-const defaultTimeout time.Duration = 20 * time.Second
+const defaultTimeout time.Duration = 7 * time.Second
 
 // HTTPOption ... HTTP通信モジュールの追加設定
 type HTTPOption struct {
