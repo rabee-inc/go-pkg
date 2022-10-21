@@ -2,8 +2,10 @@ package cloudfirestore
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -12,6 +14,42 @@ import (
 	"github.com/rabee-inc/go-pkg/sliceutil"
 	"github.com/rabee-inc/go-pkg/stringutil"
 )
+
+var reInvalidDocID = regexp.MustCompile(`\.|/`)
+
+// ValidateDocumentID ... 正常な DocumentID かチェック
+func ValidateDocumentID(str string) bool {
+	return !reInvalidDocID.MatchString(str)
+}
+
+// ValidateCollectionRef ... 正常な Path かチェック
+func ValidateCollectionRef(colRef *firestore.CollectionRef) bool {
+	var docRef *firestore.DocumentRef
+	for colRef != nil || docRef != nil {
+		if colRef != nil {
+			if !ValidateDocumentID(colRef.ID) {
+				return false
+			}
+			docRef = colRef.Parent
+			colRef = nil
+		} else {
+			if !ValidateDocumentID(docRef.ID) {
+				return false
+			}
+			colRef = docRef.Parent
+			docRef = nil
+		}
+	}
+	return true
+}
+
+// ValidateDocumentRef ... 正常な Path かチェック
+func ValidateDocumentRef(docRef *firestore.DocumentRef) bool {
+	if !ValidateDocumentID(docRef.ID) {
+		return false
+	}
+	return ValidateCollectionRef(docRef.Parent)
+}
 
 // GenerateDocumentRef ... ドキュメント参照を作成する
 func GenerateDocumentRef(cFirestore *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
@@ -53,7 +91,7 @@ func CommitWriteBatch(ctx context.Context) (context.Context, error) {
 
 // Get ... 単体取得する(tx対応)
 func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
-	if docRef == nil || docRef.ID == "" {
+	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
 		return false, nil
 	}
 	var dsnp *firestore.DocumentSnapshot
@@ -84,7 +122,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
-			return docRef != nil && docRef.ID != ""
+			return docRef != nil && docRef.ID != "" && ValidateDocumentID(docRef.ID)
 		}).
 		Out().([]*firestore.DocumentRef)
 	if len(docRefs) == 0 {
@@ -123,6 +161,7 @@ func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*fire
 
 // GetByQuery ... クエリで単体取得する(tx対応)
 func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
+	query = query.Limit(1)
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
 		it = tx.Documents(query)
@@ -148,7 +187,7 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 	return true, nil
 }
 
-// ListByQuery ... クエリで複数取得する
+// ListByQuery ... クエリで複数取得する(tx対応)
 func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) error {
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
@@ -227,6 +266,10 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 
 // Create ... 作成する(tx, bt対応)
 func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
+	// 不正なIDがないかチェック
+	if !ValidateCollectionRef(colRef) {
+		return errors.New("Invalid Collection Path: " + colRef.Path)
+	}
 	setEmptyBySlice(src)
 	var docRef *firestore.DocumentRef
 	if tx := getContextTransaction(ctx); tx != nil {
@@ -280,6 +323,10 @@ func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]in
 
 // Set ... 上書きする(tx, bt対応)
 func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) error {
+	// 不正なIDがないかチェック
+	if !ValidateDocumentRef(docRef) {
+		return errors.New("Invalid Document Path: " + docRef.Path)
+	}
 	setEmptyBySlice(src)
 	if tx := getContextTransaction(ctx); tx != nil {
 		err := tx.Set(docRef, src)
