@@ -48,3 +48,15 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (m *Middleware) HandleWildcard(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", m.header)
+		if r.Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
