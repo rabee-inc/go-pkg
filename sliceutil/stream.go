@@ -5,9 +5,15 @@ import (
 	"sort"
 )
 
-// Stream ... スライス操作
 type Stream struct {
 	slice reflect.Value
+}
+
+func StreamOf(slice interface{}) *Stream {
+	rv := reflect.ValueOf(slice)
+	return &Stream{
+		slice: rv,
+	}
 }
 
 /*
@@ -16,7 +22,7 @@ dst := StreamOf(hoges).
 		return hoge.Num > 3
 	}).Out().([]*Hoge)
 */
-// Filter ... 要素のフィルタリング
+// 要素のフィルタリング
 func (s *Stream) Filter(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
 	srv := reflect.MakeSlice(s.slice.Type(), 0, 0)
@@ -37,7 +43,7 @@ dst := StreamOf(hoges).
 		return hoge.ID
 	}).Out().([]string)
 */
-// Map ... 要素の変換
+// 要素の変換
 func (s *Stream) Map(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
 	srt := reflect.SliceOf(frv.Type().Out(0))
@@ -57,7 +63,7 @@ dst := StreamOf(hoges).
 		return dst + num
 	}).(int)
 */
-// Reduce ... 要素の集計
+// 要素の集計
 func (s *Stream) Reduce(fn interface{}) interface{} {
 	frv := reflect.ValueOf(fn)
 	rt := frv.Type().Out(0)
@@ -76,6 +82,7 @@ dst := StreamOf(hoges).
 		return prev.SortNum < next.SortNum
 	}).Out().([]*Hoge)
 */
+// ソート
 func (s *Stream) Sort(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
 	slice := s.slice.Interface()
@@ -93,7 +100,7 @@ dst := StreamOf(hoges).
 		return hoge.ID == "abc"
 	})
 */
-// Contains ... 要素の存在確認
+// 要素の存在確認
 func (s *Stream) Contains(fn interface{}) bool {
 	frv := reflect.ValueOf(fn)
 	for i := 0; i < s.slice.Len(); i++ {
@@ -112,7 +119,7 @@ dst := StreamOf(hoges).
 		hoge.ID = "abc"
 	})
 */
-// ForEach ... 要素のループ
+// 要素のループ
 func (s *Stream) ForEach(fn interface{}) *Stream {
 	frv := reflect.ValueOf(fn)
 	if frv.Type().NumIn() == 1 {
@@ -132,20 +139,12 @@ func (s *Stream) ForEach(fn interface{}) *Stream {
 /*
 dst := StreamOf(hoges).Count()
 */
-// Count ... 要素数を取得
+// 要素数を取得
 func (s *Stream) Count() int {
 	return s.slice.Len()
 }
 
-// Out ... 結果を出力する
+// 結果を出力する
 func (s *Stream) Out() interface{} {
 	return s.slice.Interface()
-}
-
-// StreamOf ... スライスからスライス操作を作成する
-func StreamOf(slice interface{}) *Stream {
-	rv := reflect.ValueOf(slice)
-	return &Stream{
-		slice: rv,
-	}
 }

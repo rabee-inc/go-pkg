@@ -7,14 +7,12 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
-// Client ... クライアント
 type Client struct {
 	cPubSub          *cloudpubsub.Client
 	converterTopicID string
 	generatorTopicID string
 }
 
-// NewClient ... クライアントを作成する
 func NewClient(cPubSub *cloudpubsub.Client) *Client {
 	return &Client{
 		cPubSub:          cPubSub,
@@ -23,7 +21,6 @@ func NewClient(cPubSub *cloudpubsub.Client) *Client {
 	}
 }
 
-// NewClientWithOption ... オプションを指定してクライアントを作成する
 func NewClientWithOption(cPubSub *cloudpubsub.Client, reqOption *ClientOption) *Client {
 	option := &ClientOption{
 		ConverterTopicID: ConverterTopicID,
@@ -42,13 +39,14 @@ func NewClientWithOption(cPubSub *cloudpubsub.Client, reqOption *ClientOption) *
 	}
 }
 
-// SendConvertRequest ... 画像変換リクエストを送信する
+// 画像変換リクエストを送信する
 func (c *Client) SendConvertRequest(
 	ctx context.Context,
 	key string,
 	sourceID string,
 	sources []*Object,
-	dstFilePath string) error {
+	dstFilePath string,
+) error {
 	srcURLs := []string{}
 	for _, source := range sources {
 		if source == nil || source.URL == "" {
@@ -73,7 +71,7 @@ func (c *Client) SendConvertRequest(
 	return nil
 }
 
-// SendGenerateRequest ... 画像作成リクエストを送信する
+// 画像作成リクエストを送信する
 func (c *Client) SendGenerateRequest(
 	ctx context.Context,
 	key string,
@@ -81,7 +79,8 @@ func (c *Client) SendGenerateRequest(
 	sourceURL string,
 	width int,
 	height int,
-	dstFilePath string) error {
+	dstFilePath string,
+) error {
 	if sourceID == "" || sourceURL == "" || dstFilePath == "" {
 		err := log.Errore(ctx, "invalid param sourceID: %s, sourceURL: %s, dstFilePath: %s", sourceID, sourceURL, dstFilePath)
 		return err

@@ -9,14 +9,21 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 )
 
-// Client ... JSONRPC2のリクエストを行う
 type Client struct {
 	URL      string
 	Headers  map[string]string
 	Requests []*ClientRequest
 }
 
-// AddRequest ... JSONRPC2のリクエストを登録する
+func NewClient(url string, headers map[string]string) *Client {
+	return &Client{
+		url,
+		headers,
+		[]*ClientRequest{},
+	}
+}
+
+// JSONRPC2のリクエストを登録する
 func (c *Client) AddRequest(ctx context.Context, id string, method string, params interface{}) error {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
@@ -32,7 +39,7 @@ func (c *Client) AddRequest(ctx context.Context, id string, method string, param
 	return nil
 }
 
-// DoSingle ... JSONRPC2のシングルリクエストを行う
+// JSONRPC2のシングルリクエストを行う
 func (c *Client) DoSingle(ctx context.Context, method string, params interface{}) (*json.RawMessage, *ErrorResponse, error) {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
@@ -59,7 +66,7 @@ func (c *Client) DoSingle(ctx context.Context, method string, params interface{}
 	return res.Result, res.Error, nil
 }
 
-// DoBatch ... JSONRPC2のバッチリクエストを行う
+// JSONRPC2のバッチリクエストを行う
 func (c *Client) DoBatch(ctx context.Context) ([]*ClientResponse, error) {
 	var res []*ClientResponse
 	status, err := httpclient.PostJSON(ctx, c.URL, c.Requests, &res, nil)
@@ -82,12 +89,4 @@ func (c *Client) marshalRawMessage(ctx context.Context, params interface{}) (*js
 	}
 	rawMessage := json.RawMessage(bParams)
 	return &rawMessage, nil
-}
-
-// NewClient ... Clientを作成する
-func NewClient(url string, headers map[string]string) *Client {
-	return &Client{
-		URL:     url,
-		Headers: headers,
-	}
 }

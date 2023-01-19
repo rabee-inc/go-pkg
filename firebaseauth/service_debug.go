@@ -19,7 +19,7 @@ func NewServiceDebug(cFirebaseAuth *auth.Client, dummyClaims map[string]interfac
 	}
 }
 
-// Authentication ... 認証を行う
+// 認証を行う
 func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, map[string]interface{}, error) {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	if user := getUserByAuthHeader(ah); user != "" {
@@ -28,7 +28,7 @@ func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, m
 	return s.sFirebaseAuth.Authentication(ctx, ah)
 }
 
-// SetCustomClaims ... カスタムClaimsを設定
+// カスタムClaimsを設定
 func (s *serviceDebug) SetCustomClaims(ctx context.Context, userID string, claims map[string]interface{}) error {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	ah := getAuthHeader(ctx)

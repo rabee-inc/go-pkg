@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	neturl "net/url"
 	"strings"
@@ -16,13 +16,12 @@ import (
 
 const defaultTimeout time.Duration = 7 * time.Second
 
-// HTTPOption ... HTTP通信モジュールの追加設定
 type HTTPOption struct {
 	Headers map[string]string
 	Timeout time.Duration
 }
 
-// Get ... Getリクエスト(URL)
+// Getリクエスト(URL)
 func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -38,7 +37,7 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 	return send(ctx, req, opt)
 }
 
-// GetForm ... Getリクエスト(URL, param)
+// Getリクエスト(URL, param)
 func GetForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -60,7 +59,7 @@ func GetForm(ctx context.Context, url string, param map[string]interface{}, opt 
 	return send(ctx, req, opt)
 }
 
-// GetQueryString ... Getリクエスト(URL, QueryString)
+// Getリクエスト(URL, QueryString)
 func GetQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url+"?"+qs, nil)
 	if err != nil {
@@ -76,7 +75,7 @@ func GetQueryString(ctx context.Context, url string, qs string, opt *HTTPOption)
 	return send(ctx, req, opt)
 }
 
-// PostForm ... Postリクエスト(URL, param)
+// Postリクエスト(URL, param)
 func PostForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	values := neturl.Values{}
 	for key, value := range param {
@@ -98,7 +97,7 @@ func PostForm(ctx context.Context, url string, param map[string]interface{}, opt
 	return send(ctx, req, opt)
 }
 
-// PostJSON ... Postリクエスト(URL, JSON)
+// Postリクエスト(URL, JSON)
 func PostJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
@@ -123,7 +122,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 	}
 
 	status, body, err := send(ctx, req, opt)
-	if body != nil && len(body) > 0 {
+	if len(body) > 0 {
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
@@ -139,7 +138,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 	return status, err
 }
 
-// PostBody ... Postリクエスト(URL, Body)
+// Postリクエスト(URL, Body)
 func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -155,7 +154,7 @@ func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (in
 	return send(ctx, req, opt)
 }
 
-// PutJSON ... Putリクエスト(URL, JSON)
+// Putリクエスト(URL, JSON)
 func PutJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
@@ -180,7 +179,7 @@ func PutJSON(ctx context.Context, url string, param interface{}, res interface{}
 	}
 
 	status, body, err := send(ctx, req, opt)
-	if body != nil && len(body) > 0 {
+	if len(body) > 0 {
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
@@ -196,7 +195,7 @@ func PutJSON(ctx context.Context, url string, param interface{}, res interface{}
 	return status, err
 }
 
-// PutBody ... Putリクエスト(URL, Body)
+// Putリクエスト(URL, Body)
 func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -212,7 +211,7 @@ func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int
 	return send(ctx, req, opt)
 }
 
-// PatchJSON ... Patchリクエスト(URL, JSON)
+// Patchリクエスト(URL, JSON)
 func PatchJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
@@ -237,7 +236,7 @@ func PatchJSON(ctx context.Context, url string, param interface{}, res interface
 	}
 
 	status, body, err := send(ctx, req, opt)
-	if body != nil && len(body) > 0 {
+	if len(body) > 0 {
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
@@ -253,7 +252,7 @@ func PatchJSON(ctx context.Context, url string, param interface{}, res interface
 	return status, err
 }
 
-// PatchBody ... Patchリクエスト(URL, Body)
+// Patchリクエスト(URL, Body)
 func PatchBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -269,7 +268,7 @@ func PatchBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (i
 	return send(ctx, req, opt)
 }
 
-// Delete ... Deleteリクエスト(URL)
+// Deleteリクエスト(URL)
 func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
@@ -285,7 +284,7 @@ func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, erro
 	return send(ctx, req, opt)
 }
 
-// DeleteForm ... Deleteリクエスト(URL, param)
+// Deleteリクエスト(URL, param)
 func DeleteForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
@@ -307,7 +306,7 @@ func DeleteForm(ctx context.Context, url string, param map[string]interface{}, o
 	return send(ctx, req, opt)
 }
 
-// DeleteQueryString ... Deleteリクエスト(URL, QueryString)
+// Deleteリクエスト(URL, QueryString)
 func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url+"?"+qs, nil)
 	if err != nil {
@@ -323,7 +322,7 @@ func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOpti
 	return send(ctx, req, opt)
 }
 
-// DeleteJSON ... Deleteリクエスト(URL, JSON)
+// Deleteリクエスト(URL, JSON)
 func DeleteJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
@@ -348,7 +347,7 @@ func DeleteJSON(ctx context.Context, url string, param interface{}, res interfac
 	}
 
 	status, body, err := send(ctx, req, opt)
-	if body != nil && len(body) > 0 {
+	if len(body) > 0 {
 		if status == http.StatusOK {
 			perr := json.Unmarshal(body, res)
 			if perr != nil {
@@ -378,7 +377,7 @@ func send(ctx context.Context, req *http.Request, opt *HTTPOption) (int, []byte,
 		return 0, nil, err
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Warning(ctx, err)
 		return res.StatusCode, nil, nil

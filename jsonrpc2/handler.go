@@ -8,18 +8,22 @@ import (
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/unrolled/render"
-
 	"github.com/rabee-inc/go-pkg/errcode"
 	"github.com/rabee-inc/go-pkg/log"
+	"github.com/unrolled/render"
 )
 
-// Handler ... JSONRPC2に準拠したアクション
 type Handler struct {
 	actions map[string]Action
 }
 
-// Register ... JSONRPC2のリクエストを登録する
+func NewHandler() *Handler {
+	return &Handler{
+		map[string]Action{},
+	}
+}
+
+// JSONRPC2のリクエストを登録する
 func (h *Handler) Register(method string, action Action) {
 	if method == "" || action == nil {
 		panic(fmt.Errorf("invalid method name: %s, action: %v", method, action))
@@ -27,7 +31,7 @@ func (h *Handler) Register(method string, action Action) {
 	h.actions[method] = action
 }
 
-// Handle ... JSONRPC2のリクエストをハンドルする
+// JSONRPC2のリクエストをハンドルする
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	w.Header().Set("Content-Type", contentType)
@@ -40,10 +44,10 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// リクエストのContent-TypeもしくはAcceptがapplication/jsonであること
-	contentType := r.Header.Get("Content-Type")
-	if contentType != contentType {
+	ct := r.Header.Get("Content-Type")
+	if ct != contentType {
 		log.SetResponseStatus(ctx, http.StatusUnsupportedMediaType)
-		h.renderError(ctx, w, http.StatusUnsupportedMediaType, "invalid http header content-type: %s", contentType)
+		h.renderError(ctx, w, http.StatusUnsupportedMediaType, "invalid http header content-type: %s", ct)
 		return
 	}
 
@@ -154,11 +158,4 @@ func (h *Handler) renderErrorJSON(ctx context.Context, rpcID string, rpcStatus i
 		log.Errorf(ctx, msg)
 	}
 	return newErrorResponse(rpcID, rpcStatus, msg)
-}
-
-// NewHandler ... Handlerを作成する
-func NewHandler() *Handler {
-	return &Handler{
-		actions: map[string]Action{},
-	}
 }

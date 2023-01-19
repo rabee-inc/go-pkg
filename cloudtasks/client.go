@@ -8,17 +8,15 @@ import (
 	"time"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
-	"google.golang.org/api/option"
-	taskspb "google.golang.org/genproto/googleapis/cloud/tasks/v2"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
-
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/rabee-inc/go-pkg/deploy"
 	"github.com/rabee-inc/go-pkg/httpclient"
 	"github.com/rabee-inc/go-pkg/log"
+	"google.golang.org/api/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
-// Client ... CloudTasksのクライアント
 type Client struct {
 	cli        *cloudtasks.Client
 	port       int
@@ -29,62 +27,6 @@ type Client struct {
 	authToken  string
 }
 
-// AddTask ... リクエストをEnqueueする
-func (c *Client) AddTask(ctx context.Context, queue string, path string, params interface{}) error {
-	headers := map[string]string{
-		"Content-Type":  "application/json",
-		"Authorization": c.authToken,
-	}
-	body, err := json.Marshal(params)
-	if err != nil {
-		log.Error(ctx, err)
-		return err
-	}
-	req := &taskspb.AppEngineHttpRequest{
-		AppEngineRouting: &taskspb.AppEngineRouting{
-			Service: c.serviceID,
-		},
-		HttpMethod:  taskspb.HttpMethod_POST,
-		RelativeUri: path,
-		Headers:     headers,
-		Body:        body,
-	}
-	return c.addTask(ctx, queue, req)
-}
-
-func (c *Client) addTask(ctx context.Context, queue string, aeReq *taskspb.AppEngineHttpRequest) error {
-	if deploy.IsLocal() {
-		url := fmt.Sprintf("http://localhost:%d%s", c.port, aeReq.RelativeUri)
-		status, _, err := httpclient.PostBody(ctx, url, aeReq.Body, &httpclient.HTTPOption{
-			Headers: aeReq.Headers,
-		})
-		if err != nil {
-			log.Error(ctx, err)
-			return err
-		}
-		if status != http.StatusOK {
-			err = log.Errore(ctx, "task http status: %d", status)
-			return err
-		}
-	} else {
-		req := &taskspb.CreateTaskRequest{
-			Parent: fmt.Sprintf("projects/%s/locations/%s/queues/%s", c.projectID, c.locationID, queue),
-			Task: &taskspb.Task{
-				MessageType: &taskspb.Task_AppEngineHttpRequest{
-					AppEngineHttpRequest: aeReq,
-				},
-			},
-		}
-		_, err := c.cli.CreateTask(ctx, req)
-		if err != nil {
-			log.Error(ctx, err)
-			return err
-		}
-	}
-	return nil
-}
-
-// NewClient ... クライアントを作成する
 func NewClient(
 	port int,
 	deploy string,
@@ -103,12 +45,67 @@ func NewClient(
 		panic(err)
 	}
 	return &Client{
-		cli:        cli,
-		port:       port,
-		deploy:     deploy,
-		projectID:  projectID,
-		serviceID:  serviceID,
-		locationID: locationID,
-		authToken:  authToken,
+		cli,
+		port,
+		deploy,
+		projectID,
+		serviceID,
+		locationID,
+		authToken,
 	}
+}
+
+// リクエストをEnqueueする
+func (c *Client) AddTask(ctx context.Context, queue string, path string, params interface{}) error {
+	headers := map[string]string{
+		"Content-Type":  "application/json",
+		"Authorization": c.authToken,
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		log.Error(ctx, err)
+		return err
+	}
+	req := &cloudtaskspb.AppEngineHttpRequest{
+		AppEngineRouting: &cloudtaskspb.AppEngineRouting{
+			Service: c.serviceID,
+		},
+		HttpMethod:  cloudtaskspb.HttpMethod_POST,
+		RelativeUri: path,
+		Headers:     headers,
+		Body:        body,
+	}
+	return c.addTask(ctx, queue, req)
+}
+
+func (c *Client) addTask(ctx context.Context, queue string, aeReq *cloudtaskspb.AppEngineHttpRequest) error {
+	if deploy.IsLocal() {
+		url := fmt.Sprintf("http://localhost:%d%s", c.port, aeReq.RelativeUri)
+		status, _, err := httpclient.PostBody(ctx, url, aeReq.Body, &httpclient.HTTPOption{
+			Headers: aeReq.Headers,
+		})
+		if err != nil {
+			log.Error(ctx, err)
+			return err
+		}
+		if status != http.StatusOK {
+			err = log.Errore(ctx, "task http status: %d", status)
+			return err
+		}
+	} else {
+		req := &cloudtaskspb.CreateTaskRequest{
+			Parent: fmt.Sprintf("projects/%s/locations/%s/queues/%s", c.projectID, c.locationID, queue),
+			Task: &cloudtaskspb.Task{
+				MessageType: &cloudtaskspb.Task_AppEngineHttpRequest{
+					AppEngineHttpRequest: aeReq,
+				},
+			},
+		}
+		_, err := c.cli.CreateTask(ctx, req)
+		if err != nil {
+			log.Error(ctx, err)
+			return err
+		}
+	}
+	return nil
 }

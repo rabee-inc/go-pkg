@@ -3,20 +3,17 @@ package images
 import (
 	"net/http"
 
-	"gopkg.in/go-playground/validator.v9"
-
 	"github.com/rabee-inc/go-pkg/errcode"
 	"github.com/rabee-inc/go-pkg/parameter"
 	"github.com/rabee-inc/go-pkg/renderer"
+	"gopkg.in/go-playground/validator.v9"
 )
 
-// Handler ... スポットのハンドラ
 type Handler struct {
 	repo Repository
 	v    *validator.Validate
 }
 
-// NewHandler ... ハンドラを作成する
 func NewHandler(repo Repository) *Handler {
 	v := validator.New()
 	return &Handler{
@@ -25,7 +22,7 @@ func NewHandler(repo Repository) *Handler {
 	}
 }
 
-// UpdateByConvertObjects ... 変換後の画像をアップデートする
+// 変換後の画像をアップデートする
 func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -55,7 +52,7 @@ func (h *Handler) UpdateByConvertObjects(w http.ResponseWriter, r *http.Request)
 	renderer.Success(ctx, w)
 }
 
-// UpdateByGenerateURL ... 作成したOGPをアップデートする
+// 作成したOGPをアップデートする
 func (h *Handler) UpdateByGenerateURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

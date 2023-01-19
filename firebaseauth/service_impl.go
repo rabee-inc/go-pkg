@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"firebase.google.com/go/auth"
-
 	"github.com/rabee-inc/go-pkg/log"
 )
 
@@ -16,7 +15,7 @@ func NewService(cFirebaseAuth *auth.Client) Service {
 	return &service{cFirebaseAuth}
 }
 
-// Authentication ... 認証を行う
+// 認証を行う
 func (s *service) Authentication(ctx context.Context, ah string) (string, map[string]interface{}, error) {
 	token := getTokenByAuthHeader(ah)
 	if token == "" {
@@ -32,7 +31,7 @@ func (s *service) Authentication(ctx context.Context, ah string) (string, map[st
 	return t.UID, t.Claims, nil
 }
 
-// SetCustomClaims ... カスタムClaimsを設定
+// カスタムClaimsを設定
 func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map[string]interface{}) error {
 	err := s.cFirebaseAuth.SetCustomUserClaims(ctx, userID, claims)
 	if err != nil {

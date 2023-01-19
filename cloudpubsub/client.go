@@ -7,21 +7,18 @@ import (
 
 	pubsub "cloud.google.com/go/pubsub"
 	pubsubapi "cloud.google.com/go/pubsub/apiv1"
+	"github.com/rabee-inc/go-pkg/log"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-
-	"github.com/rabee-inc/go-pkg/log"
 )
 
-// Client ... PubSubのクライアント
 type Client struct {
 	cPubSub     *pubsub.Client
 	cSubscriber *pubsubapi.SubscriberClient
 	projectID   string
 }
 
-// NewClient ... PubSubのクライアントを取得する
 func NewClient(projectID string) *Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -44,7 +41,7 @@ func NewClient(projectID string) *Client {
 	}
 }
 
-// Publish ... メッセージを送信する
+// メッセージを送信する
 func (c *Client) Publish(
 	ctx context.Context,
 	topicID string,

@@ -7,14 +7,13 @@ import (
 	"strings"
 
 	"github.com/jszwec/csvutil"
-
 	"github.com/rabee-inc/go-pkg/bytesutil"
 	"github.com/rabee-inc/go-pkg/httpclient"
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/stringutil"
 )
 
-// ToResponse ... レスポンス形式に変換する
+// レスポンス形式に変換する
 func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 	bytes, err := csvutil.Marshal(srcs)
 	if err != nil {
@@ -32,7 +31,7 @@ func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 	return rows, nil
 }
 
-// GetByURL ... URLからCSVデータを取得する
+// URLからCSVデータを取得する
 func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 	status, body, err := httpclient.Get(ctx, url, nil)
 	if err != nil {
@@ -51,7 +50,7 @@ func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 	return nil
 }
 
-// GetByStr ... 文字列からCSVデータを取得する
+// 文字列からCSVデータを取得する
 func GetByStr(ctx context.Context, str string, dsts interface{}) error {
 	bytes := stringutil.ToBytes(str)
 	err := GetByBytes(ctx, bytes, dsts)
@@ -62,7 +61,7 @@ func GetByStr(ctx context.Context, str string, dsts interface{}) error {
 	return nil
 }
 
-// GetByBytes ... バイト列からCSVデータを取得する
+// バイト列からCSVデータを取得する
 func GetByBytes(ctx context.Context, bytes []byte, dsts interface{}) error {
 	err := csvutil.Unmarshal(bytes, dsts)
 	if err != nil {

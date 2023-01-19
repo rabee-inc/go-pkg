@@ -2,7 +2,7 @@ package geolocutil
 
 import "math"
 
-// Distance ... ２点間の距離(メートル)を求める
+// ２点間の距離(メートル)を求める
 func Distance(lat1 float64, lng1 float64, lat2 float64, lng2 float64) int {
 	// 緯度経度をラジアンに変換
 	rlat1 := lat1 * math.Pi / 180

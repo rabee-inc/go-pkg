@@ -2,7 +2,7 @@ package jsonrpc2
 
 import "encoding/json"
 
-// ClientResponse ... JSONRPC2実行のレスポンス
+// JSONRPC2実行のレスポンス
 type ClientResponse struct {
 	Version string           `json:"jsonrpc"`
 	ID      string           `json:"id"`
@@ -17,7 +17,7 @@ type response struct {
 	Error   *ErrorResponse `json:"error,omitempty"`
 }
 
-// ErrorResponse ... JSONRPC2のエラーレスポンス
+// JSONRPC2のエラーレスポンス
 type ErrorResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

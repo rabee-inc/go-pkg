@@ -6,20 +6,18 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
+	"github.com/rabee-inc/go-pkg/log"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-
-	"github.com/rabee-inc/go-pkg/log"
 )
 
-// Client ... BigQueryのクライアント
 type Client struct {
 	client *bigquery.Client
 }
 
-// List ... クエリを実行し、データを取得する
+// クエリを実行し、データを取得する
 func (c *Client) List(ctx context.Context, query string, limit int, cursor string, dsts interface{}) (string, error) {
 	q := c.client.Query(query)
 	it, err := q.Read(ctx)
@@ -59,7 +57,7 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 	return token, nil
 }
 
-// NewClient ... クライアントを作成する
+// クライアントを作成する
 func NewClient(projectID string) *Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{

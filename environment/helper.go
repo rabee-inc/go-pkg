@@ -2,18 +2,17 @@ package environment
 
 import (
 	"fmt"
-	"io/ioutil"
+
 	"os"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/rabee-inc/go-pkg/deploy"
+	"gopkg.in/yaml.v3"
 )
 
-// Load ... 環境変数を読み込む
+// 環境変数を読み込む
 func Load(envFilePath string) {
 	// 環境変数設定ファイル読み込み
-	file, err := ioutil.ReadFile(envFilePath)
+	file, err := os.ReadFile(envFilePath)
 	if err != nil {
 		panic(err)
 	}

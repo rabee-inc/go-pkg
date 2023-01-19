@@ -11,10 +11,14 @@ const (
 )
 
 func getAuthHeader(ctx context.Context) string {
-	return ctx.Value(authHeaderContextKey).(string)
+	ah := ctx.Value(authHeaderContextKey)
+	if ah, ok := ah.(string); ok {
+		return ah
+	}
+	return ""
 }
 
-// GetUserID ... FirebaseAuthのユーザーIDを取得
+// FirebaseAuthのユーザーIDを取得
 func GetUserID(ctx context.Context) string {
 	if dst := ctx.Value(userIDContextKey); dst != nil {
 		return dst.(string)
@@ -22,7 +26,7 @@ func GetUserID(ctx context.Context) string {
 	return ""
 }
 
-// GetClaims ... FirebaseAuthのJWTClaimsの値を取得
+// FirebaseAuthのJWTClaimsの値を取得
 func GetClaims(ctx context.Context) (map[string]interface{}, bool) {
 	if dst := ctx.Value(claimsContextKey); dst != nil {
 		return dst.(map[string]interface{}), true

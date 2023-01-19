@@ -2,13 +2,13 @@ package cloudstorage
 
 import "time"
 
-// CacheMode ... キャッシュ設定
+// キャッシュ設定
 type CacheMode struct {
 	Disabled bool
 	Expire   time.Duration
 }
 
-// UploadResponse ... アップロードのレスポンス
+// アップロードのレスポンス
 type UploadResponse struct {
 	URL string
 }
