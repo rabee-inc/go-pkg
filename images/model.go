@@ -1,6 +1,6 @@
 package images
 
-// Object ... 画像オブジェクト
+// 画像オブジェクト
 type Object struct {
 	ID            string           `firestore:"id"             json:"id"`
 	OriginalURL   string           `firestore:"original_url"   json:"original_url"`
@@ -12,14 +12,14 @@ type Object struct {
 	IsDefault     bool             `firestore:"is_default"     json:"is_default"`
 }
 
-// Size ... サイズ
+// サイズ
 type Size struct {
 	URL    string `firestore:"url"    json:"url"`
 	Width  int    `firestore:"width"  json:"width"`
 	Height int    `firestore:"height" json:"height"`
 }
 
-// ConvertRequest ... 画像変換リクエスト
+// 画像変換リクエスト
 type ConvertRequest struct {
 	Key         string   `json:"key"`
 	SourceID    string   `json:"source_id"`
@@ -27,7 +27,7 @@ type ConvertRequest struct {
 	DstFilePath string   `json:"dst_file_path"`
 }
 
-// GenerateRequest ... 画像作成リクエスト
+// 画像作成リクエスト
 type GenerateRequest struct {
 	Key         string `json:"key"`
 	SourceID    string `json:"source_id"`

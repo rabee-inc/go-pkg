@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-// NewClient ... Firestoreのクライアントを取得する
 func NewClient(projectID string) *firestore.Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{

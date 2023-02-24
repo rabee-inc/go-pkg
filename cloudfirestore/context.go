@@ -10,7 +10,7 @@ type contextKey string
 
 const (
 	ctxTxKey contextKey = "firestore:tx"
-	ctxBtKey contextKey = "firestore:bt"
+	ctxBwKey contextKey = "firestore:bw"
 )
 
 func getContextTransaction(ctx context.Context) *firestore.Transaction {
@@ -24,13 +24,13 @@ func setContextTransaction(ctx context.Context, tx *firestore.Transaction) conte
 	return context.WithValue(ctx, ctxTxKey, tx)
 }
 
-func getContextWriteBatch(ctx context.Context) *firestore.WriteBatch {
-	if bt, ok := ctx.Value(ctxBtKey).(*firestore.WriteBatch); ok {
-		return bt
+func getContextBulkWriter(ctx context.Context) *firestore.BulkWriter {
+	if bw, ok := ctx.Value(ctxBwKey).(*firestore.BulkWriter); ok {
+		return bw
 	}
 	return nil
 }
 
-func setContextWriteBatch(ctx context.Context, bt *firestore.WriteBatch) context.Context {
-	return context.WithValue(ctx, ctxBtKey, bt)
+func setContextBulkWriter(ctx context.Context, bt *firestore.BulkWriter) context.Context {
+	return context.WithValue(ctx, ctxBwKey, bt)
 }

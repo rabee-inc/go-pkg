@@ -172,7 +172,7 @@ func GetFormByIntSlice(ctx context.Context, r *http.Request, key string) []int {
 }
 
 // GetForms ... リクエストからFormパラメータを取得する
-func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
+func GetForms(ctx context.Context, r *http.Request, dst any) error {
 	if reflect.TypeOf(dst).Kind() != reflect.Ptr {
 		err := log.Errore(ctx, "dst isn't a pointer")
 		return err
@@ -237,7 +237,7 @@ func GetForms(ctx context.Context, r *http.Request, dst interface{}) error {
 }
 
 // GetJSON ... リクエストからJSONパラメータを取得する
-func GetJSON(r *http.Request, dst interface{}) error {
+func GetJSON(r *http.Request, dst any) error {
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(dst)
 	if err != nil {

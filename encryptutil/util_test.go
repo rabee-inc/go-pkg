@@ -44,6 +44,10 @@ func TestEventApplyStrategyEveryone(t *testing.T) {
 			}
 			fmt.Println(encText)
 			decText, err := encryptutil.Decrypt(encText, key)
+			if err != nil {
+				t.Error(err)
+				return
+			}
 			if text != decText {
 				t.Errorf("no match text: %s != %s", text, decText)
 				return

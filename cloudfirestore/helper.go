@@ -8,21 +8,20 @@ import (
 	"regexp"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
-
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/sliceutil"
 	"github.com/rabee-inc/go-pkg/stringutil"
+	"google.golang.org/api/iterator"
 )
 
 var reInvalidDocID = regexp.MustCompile(`\.|/`)
 
-// ValidateDocumentID ... 正常な DocumentID かチェック
+// 正常な DocumentID かチェック
 func ValidateDocumentID(str string) bool {
 	return !reInvalidDocID.MatchString(str)
 }
 
-// ValidateCollectionRef ... 正常な Path かチェック
+// 正常な Path かチェック
 func ValidateCollectionRef(colRef *firestore.CollectionRef) bool {
 	var docRef *firestore.DocumentRef
 	for colRef != nil || docRef != nil {
@@ -43,7 +42,7 @@ func ValidateCollectionRef(colRef *firestore.CollectionRef) bool {
 	return true
 }
 
-// ValidateDocumentRef ... 正常な Path かチェック
+// 正常な Path かチェック
 func ValidateDocumentRef(docRef *firestore.DocumentRef) bool {
 	if !ValidateDocumentID(docRef.ID) {
 		return false
@@ -51,7 +50,7 @@ func ValidateDocumentRef(docRef *firestore.DocumentRef) bool {
 	return ValidateCollectionRef(docRef.Parent)
 }
 
-// GenerateDocumentRef ... ドキュメント参照を作成する
+// ドキュメント参照を作成する
 func GenerateDocumentRef(cFirestore *firestore.Client, docRefs []*DocRef) *firestore.DocumentRef {
 	var dst *firestore.DocumentRef
 	for i, docRef := range docRefs {
@@ -71,26 +70,24 @@ func RunTransaction(ctx context.Context, cFirestore *firestore.Client, fn func(c
 	}, opts...)
 }
 
-func RunWriteBatch(ctx context.Context, cFirestore *firestore.Client) context.Context {
-	bt := cFirestore.Batch()
-	return setContextWriteBatch(ctx, bt)
+func RunBulkWriter(ctx context.Context, cFirestore *firestore.Client) context.Context {
+	bw := cFirestore.BulkWriter(ctx)
+	return setContextBulkWriter(ctx, bw)
 }
 
-func CommitWriteBatch(ctx context.Context) (context.Context, error) {
-	if bt := getContextWriteBatch(ctx); bt != nil {
-		ctx = setContextWriteBatch(ctx, nil)
-		if _, err := bt.Commit(ctx); err != nil {
-			return ctx, err
-		}
+func CommitBulkWriter(ctx context.Context) (context.Context, error) {
+	if bw := getContextBulkWriter(ctx); bw != nil {
+		ctx = setContextBulkWriter(ctx, nil)
+		bw.Flush()
 	} else {
-		err := log.Errore(ctx, "no running write batch")
+		err := log.Errore(ctx, "no running bulk writer")
 		return ctx, err
 	}
 	return ctx, nil
 }
 
-// Get ... 単体取得する(tx対応)
-func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
+// 単体取得する(tx対応)
+func Get(ctx context.Context, docRef *firestore.DocumentRef, dst any) (bool, error) {
 	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
 		return false, nil
 	}
@@ -118,8 +115,8 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 	return true, nil
 }
 
-// GetMulti ... 複数取得する(tx対応)
-func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+// 複数取得する(tx対応)
+func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts any) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
 			return docRef != nil && docRef.ID != "" && ValidateDocumentID(docRef.ID)
@@ -159,8 +156,8 @@ func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*fire
 	return nil
 }
 
-// GetByQuery ... クエリで単体取得する(tx対応)
-func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
+// クエリで単体取得する(tx対応)
+func GetByQuery(ctx context.Context, query firestore.Query, dst any) (bool, error) {
 	query = query.Limit(1)
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
@@ -187,8 +184,8 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 	return true, nil
 }
 
-// ListByQuery ... クエリで複数取得する(tx対応)
-func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) error {
+// クエリで複数取得する(tx対応)
+func ListByQuery(ctx context.Context, query firestore.Query, dsts any) error {
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
 		it = tx.Documents(query)
@@ -221,8 +218,8 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) e
 	return nil
 }
 
-// ListByQueryCursor ... クエリで複数取得する（ページング）
-func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cursor *firestore.DocumentSnapshot, dsts interface{}) (*firestore.DocumentSnapshot, error) {
+// クエリで複数取得する（ページング）
+func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cursor *firestore.DocumentSnapshot, dsts any) (*firestore.DocumentSnapshot, error) {
 	if cursor != nil {
 		query = query.StartAfter(cursor)
 	}
@@ -264,8 +261,8 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 	return nil, nil
 }
 
-// Create ... 作成する(tx, bt対応)
-func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
+// 作成する(tx, bw対応)
+func Create(ctx context.Context, colRef *firestore.CollectionRef, src any) error {
 	// 不正なIDがないかチェック
 	if !ValidateCollectionRef(colRef) {
 		return errors.New("Invalid Collection Path: " + colRef.Path)
@@ -280,10 +277,14 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 			log.Warning(ctx, err)
 			return err
 		}
-	} else if bt := getContextWriteBatch(ctx); bt != nil {
+	} else if bw := getContextBulkWriter(ctx); bw != nil {
 		id := stringutil.UniqueID()
 		docRef = colRef.Doc(id)
-		bt.Create(docRef, src)
+		_, err := bw.Create(docRef, src)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	} else {
 		var err error
 		docRef, _, err = colRef.Add(ctx, src)
@@ -296,8 +297,8 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 	return nil
 }
 
-// Update ... 更新する(tx, bt対応)
-func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]interface{}) error {
+// 更新する(tx, bw対応)
+func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]any) error {
 	srcs := []firestore.Update{}
 	for k, v := range kv {
 		src := firestore.Update{Path: k, Value: v}
@@ -309,8 +310,12 @@ func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]in
 			log.Warning(ctx, err)
 			return err
 		}
-	} else if bt := getContextWriteBatch(ctx); bt != nil {
-		_ = bt.Update(docRef, srcs)
+	} else if bw := getContextBulkWriter(ctx); bw != nil {
+		_, err := bw.Update(docRef, srcs)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	} else {
 		_, err := docRef.Update(ctx, srcs)
 		if err != nil {
@@ -321,8 +326,8 @@ func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]in
 	return nil
 }
 
-// Set ... 上書きする(tx, bt対応)
-func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) error {
+// 上書きする(tx, bw対応)
+func Set(ctx context.Context, docRef *firestore.DocumentRef, src any) error {
 	// 不正なIDがないかチェック
 	if !ValidateDocumentRef(docRef) {
 		return errors.New("Invalid Document Path: " + docRef.Path)
@@ -334,8 +339,12 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) er
 			log.Warning(ctx, err)
 			return err
 		}
-	} else if bt := getContextWriteBatch(ctx); bt != nil {
-		_ = bt.Set(docRef, src)
+	} else if bw := getContextBulkWriter(ctx); bw != nil {
+		_, err := bw.Set(docRef, src)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	} else {
 		_, err := docRef.Set(ctx, src)
 		if err != nil {
@@ -347,7 +356,7 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) er
 	return nil
 }
 
-// Delete ... 削除する(tx, bt対応)
+// 削除する(tx, bw対応)
 func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
 	if tx := getContextTransaction(ctx); tx != nil {
 		err := tx.Delete(docRef)
@@ -355,8 +364,12 @@ func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
 			log.Warning(ctx, err)
 			return err
 		}
-	} else if bt := getContextWriteBatch(ctx); bt != nil {
-		_ = bt.Delete(docRef)
+	} else if bw := getContextBulkWriter(ctx); bw != nil {
+		_, err := bw.Delete(docRef)
+		if err != nil {
+			log.Warning(ctx, err)
+			return err
+		}
 	} else {
 		_, err := docRef.Delete(ctx)
 		if err != nil {
@@ -367,7 +380,7 @@ func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
 	return nil
 }
 
-// AddStartWith ... 前方一致クエリを追加する
+// 前方一致クエリを追加する
 func AddStartWith(q firestore.Query, key string, word string) firestore.Query {
 	return q.OrderBy(key, firestore.Asc).
 		StartAt(word).

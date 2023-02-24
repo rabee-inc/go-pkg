@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"gopkg.in/go-playground/validator.v9"
-
 	"github.com/rabee-inc/go-pkg/errcode"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 func ConvertErrorMessage(err error, prefix string, fn func(tag, field, value string) string) error {

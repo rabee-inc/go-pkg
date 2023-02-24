@@ -8,24 +8,21 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/rabee-inc/go-pkg/errcode"
+	"github.com/rabee-inc/go-pkg/log"
+	"github.com/rabee-inc/go-pkg/timeutil"
 	"github.com/vincent-petithory/dataurl"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-
-	"github.com/rabee-inc/go-pkg/errcode"
-	"github.com/rabee-inc/go-pkg/log"
-	"github.com/rabee-inc/go-pkg/timeutil"
 )
 
-// Client ... GCSのクライアント
 type Client struct {
 	cli          *storage.Client
 	bucketHandle *storage.BucketHandle
 	bucket       string
 }
 
-// NewClient ... クライアントを作成する
 func NewClient(bucket string) *Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -45,7 +42,7 @@ func NewClient(bucket string) *Client {
 	}
 }
 
-// UploadForDataURL ... DataURLのファイルをアップロードする
+// DataURLのファイルをアップロードする
 func (c *Client) UploadForDataURL(
 	ctx context.Context,
 	path string,
@@ -64,7 +61,7 @@ func (c *Client) UploadForDataURL(
 	return c.Upload(ctx, path, name, res.ContentType(), cacheMode, res.Data)
 }
 
-// Upload ... ファイルをアップロードする
+// ファイルをアップロードする
 func (c *Client) Upload(
 	ctx context.Context,
 	path string,
@@ -108,7 +105,7 @@ func (c *Client) Upload(
 	return url, nil
 }
 
-// GetReader ... 指定ファイルのReaderを取得する
+// 指定ファイルのReaderを取得する
 func (c *Client) GetReader(
 	ctx context.Context,
 	path string) (*storage.Reader, error) {
@@ -123,7 +120,7 @@ func (c *Client) GetReader(
 	return reader, nil
 }
 
-// GetBucket ... バケット名
+// バケット名
 func (c *Client) GetBucket() string {
 	return c.bucket
 }

@@ -2,7 +2,7 @@ package jsonrpc2
 
 import "encoding/json"
 
-// ClientRequest ... JSONRPC2実行のリクエスト
+// JSONRPC2実行のリクエスト
 type ClientRequest struct {
 	Version string           `json:"jsonrpc"`
 	ID      string           `json:"id"`
@@ -33,8 +33,8 @@ func (r *request) isValid() bool {
 	return true
 }
 
-// GenerateRequestBody ... JSONRPC2のリクエストBodyを作成する
-func GenerateRequestBody(id string, method string, params interface{}) (*json.RawMessage, error) {
+// JSONRPC2のリクエストBodyを作成する
+func GenerateRequestBody(id string, method string, params any) (*json.RawMessage, error) {
 	jsonParams, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func GenerateRequestBody(id string, method string, params interface{}) (*json.Ra
 	return &rawRequest, nil
 }
 
-// GenerateBatchRequestBody ... JSONRPC2のバッチリクエストBodyを作成する
+// JSONRPC2のバッチリクエストBodyを作成する
 func GenerateBatchRequestBody(requests []*json.RawMessage) (*json.RawMessage, error) {
 	jsonRequests, err := json.Marshal(requests)
 	if err != nil {

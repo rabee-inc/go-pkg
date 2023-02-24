@@ -7,19 +7,19 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-// DocRef ... 個別のドキュメント参照
+// 個別のドキュメント参照
 type DocRef struct {
 	CollectionName string `json:"collection_name"`
 	DocID          string `json:"doc_id"`
 }
 
-// SummaryDocRef ... 最小のドキュメント参照(フロントに返せる)
+// 最小のドキュメント参照(フロントに返せる)
 type SummaryDocRef struct {
 	ID   string `json:"id"`
 	Path string `json:"path"`
 }
 
-// GenerateSummaryDocRef ... 最小のドキュメント参照を取得する
+// 最小のドキュメント参照を取得する
 func GenerateSummaryDocRef(docRef *firestore.DocumentRef, rootCollectionPath string) *SummaryDocRef {
 	if docRef == nil {
 		return nil

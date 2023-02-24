@@ -1,7 +1,7 @@
 package validation
 
-// IsZero ... 値がゼロ値かどうかを判断する(true: ゼロ値, false: ゼロ値以外)
-func IsZero(val interface{}) bool {
+// 値がゼロ値かどうかを判断する(true: ゼロ値, false: ゼロ値以外)
+func IsZero(val any) bool {
 	switch val.(type) {
 	case nil:
 		return true

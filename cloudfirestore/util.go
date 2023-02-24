@@ -6,7 +6,7 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-func setDocByDst(dst interface{}, ref *firestore.DocumentRef) {
+func setDocByDst(dst any, ref *firestore.DocumentRef) {
 	rv := reflect.Indirect(reflect.ValueOf(dst))
 	rt := rv.Type()
 	if rt.Kind() == reflect.Struct {
@@ -42,7 +42,7 @@ func setDocByDsts(rv reflect.Value, rt reflect.Type, ref *firestore.DocumentRef)
 	}
 }
 
-func setEmptyBySlice(dst interface{}) {
+func setEmptyBySlice(dst any) {
 	rv := reflect.Indirect(reflect.ValueOf(dst))
 	rt := rv.Type()
 	if rt.Kind() == reflect.Struct {

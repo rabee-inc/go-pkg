@@ -14,7 +14,7 @@ import (
 	"github.com/rabee-inc/go-pkg/stringutil"
 )
 
-// ToSHA256 ... 文字列のハッシュ(SHA256)を取得する
+// 文字列のハッシュ(SHA256)を取得する
 func ToSHA256(str string) string {
 	c := sha256.Sum256([]byte(str))
 	return hex.EncodeToString(c[:])
@@ -26,7 +26,7 @@ func ToHmacSHA256(str string, key string) string {
 	return hex.EncodeToString(mac.Sum(nil))
 }
 
-// Encrypt ... 暗号化
+// 暗号化
 func Encrypt(plainText string, key string) (string, error) {
 	if plainText == "" {
 		return "", nil
@@ -48,7 +48,7 @@ func Encrypt(plainText string, key string) (string, error) {
 	return cipherTextBase64, nil
 }
 
-// Decrypt ... 復号化
+// 復号化
 func Decrypt(encText string, key string) (string, error) {
 	if encText == "" {
 		return "", nil

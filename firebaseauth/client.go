@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-// NewClient ... クライアントを作成
 func NewClient(projectID string) *auth.Client {
 	ctx := context.Background()
 	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{

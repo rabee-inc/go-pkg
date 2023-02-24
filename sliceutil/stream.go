@@ -5,9 +5,15 @@ import (
 	"sort"
 )
 
-// Stream ... スライス操作
 type Stream struct {
 	slice reflect.Value
+}
+
+func StreamOf(slice any) *Stream {
+	rv := reflect.ValueOf(slice)
+	return &Stream{
+		slice: rv,
+	}
 }
 
 /*
@@ -16,8 +22,8 @@ dst := StreamOf(hoges).
 		return hoge.Num > 3
 	}).Out().([]*Hoge)
 */
-// Filter ... 要素のフィルタリング
-func (s *Stream) Filter(fn interface{}) *Stream {
+// 要素のフィルタリング
+func (s *Stream) Filter(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	srv := reflect.MakeSlice(s.slice.Type(), 0, 0)
 	for i := 0; i < s.slice.Len(); i++ {
@@ -37,8 +43,8 @@ dst := StreamOf(hoges).
 		return hoge.ID
 	}).Out().([]string)
 */
-// Map ... 要素の変換
-func (s *Stream) Map(fn interface{}) *Stream {
+// 要素の変換
+func (s *Stream) Map(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	srt := reflect.SliceOf(frv.Type().Out(0))
 	srv := reflect.MakeSlice(srt, 0, 0)
@@ -57,8 +63,8 @@ dst := StreamOf(hoges).
 		return dst + num
 	}).(int)
 */
-// Reduce ... 要素の集計
-func (s *Stream) Reduce(fn interface{}) interface{} {
+// 要素の集計
+func (s *Stream) Reduce(fn any) any {
 	frv := reflect.ValueOf(fn)
 	rt := frv.Type().Out(0)
 	dst := reflect.New(rt).Elem()
@@ -76,7 +82,8 @@ dst := StreamOf(hoges).
 		return prev.SortNum < next.SortNum
 	}).Out().([]*Hoge)
 */
-func (s *Stream) Sort(fn interface{}) *Stream {
+// ソート
+func (s *Stream) Sort(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	slice := s.slice.Interface()
 	sort.SliceStable(slice, func(i, j int) bool {
@@ -93,8 +100,8 @@ dst := StreamOf(hoges).
 		return hoge.ID == "abc"
 	})
 */
-// Contains ... 要素の存在確認
-func (s *Stream) Contains(fn interface{}) bool {
+// 要素の存在確認
+func (s *Stream) Contains(fn any) bool {
 	frv := reflect.ValueOf(fn)
 	for i := 0; i < s.slice.Len(); i++ {
 		rv := s.slice.Index(i)
@@ -112,8 +119,8 @@ dst := StreamOf(hoges).
 		hoge.ID = "abc"
 	})
 */
-// ForEach ... 要素のループ
-func (s *Stream) ForEach(fn interface{}) *Stream {
+// 要素のループ
+func (s *Stream) ForEach(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	if frv.Type().NumIn() == 1 {
 		for i := 0; i < s.slice.Len(); i++ {
@@ -132,20 +139,12 @@ func (s *Stream) ForEach(fn interface{}) *Stream {
 /*
 dst := StreamOf(hoges).Count()
 */
-// Count ... 要素数を取得
+// 要素数を取得
 func (s *Stream) Count() int {
 	return s.slice.Len()
 }
 
-// Out ... 結果を出力する
-func (s *Stream) Out() interface{} {
+// 結果を出力する
+func (s *Stream) Out() any {
 	return s.slice.Interface()
-}
-
-// StreamOf ... スライスからスライス操作を作成する
-func StreamOf(slice interface{}) *Stream {
-	rv := reflect.ValueOf(slice)
-	return &Stream{
-		slice: rv,
-	}
 }

@@ -82,7 +82,7 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 	nanos := time.Duration(d).Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 	v["seconds"] = int64(secs)
 	v["nanos"] = int32(nanos)
 	return json.Marshal(v)

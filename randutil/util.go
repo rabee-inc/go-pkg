@@ -14,19 +14,19 @@ func seed() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// Bool ... 指定確率でbool値を生成する
+// 指定確率でbool値を生成する
 func Bool(rate float32) bool {
 	seed()
 	return rand.Float32()*100 < rate
 }
 
-// Int ... 指定範囲の乱数を生成する
+// 指定範囲の乱数を生成する
 func Int(min int, max int) int {
 	seed()
 	return rand.Intn((max+1)-min) + min
 }
 
-// String ... nビットのランダムな文字列を生成する
+// nビットのランダムな文字列を生成する
 func String(n int) (string, error) {
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {
@@ -46,7 +46,7 @@ func String(n int) (string, error) {
 	return string(buf), nil
 }
 
-// StringByChar ... nビットのランダムな文字列を生成する
+// nビットのランダムな文字列を生成する
 func StringByChar(n int, cr string) (string, error) {
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {
