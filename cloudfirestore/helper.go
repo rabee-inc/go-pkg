@@ -87,7 +87,7 @@ func CommitBulkWriter(ctx context.Context) (context.Context, error) {
 }
 
 // 単体取得する(tx対応)
-func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (bool, error) {
+func Get(ctx context.Context, docRef *firestore.DocumentRef, dst any) (bool, error) {
 	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
 		return false, nil
 	}
@@ -116,7 +116,7 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst interface{}) (b
 }
 
 // 複数取得する(tx対応)
-func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts interface{}) error {
+func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts any) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
 			return docRef != nil && docRef.ID != "" && ValidateDocumentID(docRef.ID)
@@ -157,7 +157,7 @@ func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*fire
 }
 
 // クエリで単体取得する(tx対応)
-func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bool, error) {
+func GetByQuery(ctx context.Context, query firestore.Query, dst any) (bool, error) {
 	query = query.Limit(1)
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
@@ -185,7 +185,7 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst interface{}) (bo
 }
 
 // クエリで複数取得する(tx対応)
-func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) error {
+func ListByQuery(ctx context.Context, query firestore.Query, dsts any) error {
 	var it *firestore.DocumentIterator
 	if tx := getContextTransaction(ctx); tx != nil {
 		it = tx.Documents(query)
@@ -219,7 +219,7 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts interface{}) e
 }
 
 // クエリで複数取得する（ページング）
-func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cursor *firestore.DocumentSnapshot, dsts interface{}) (*firestore.DocumentSnapshot, error) {
+func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cursor *firestore.DocumentSnapshot, dsts any) (*firestore.DocumentSnapshot, error) {
 	if cursor != nil {
 		query = query.StartAfter(cursor)
 	}
@@ -262,7 +262,7 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 }
 
 // 作成する(tx, bw対応)
-func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{}) error {
+func Create(ctx context.Context, colRef *firestore.CollectionRef, src any) error {
 	// 不正なIDがないかチェック
 	if !ValidateCollectionRef(colRef) {
 		return errors.New("Invalid Collection Path: " + colRef.Path)
@@ -298,7 +298,7 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src interface{
 }
 
 // 更新する(tx, bw対応)
-func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]interface{}) error {
+func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]any) error {
 	srcs := []firestore.Update{}
 	for k, v := range kv {
 		src := firestore.Update{Path: k, Value: v}
@@ -327,7 +327,7 @@ func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]in
 }
 
 // 上書きする(tx, bw対応)
-func Set(ctx context.Context, docRef *firestore.DocumentRef, src interface{}) error {
+func Set(ctx context.Context, docRef *firestore.DocumentRef, src any) error {
 	// 不正なIDがないかチェック
 	if !ValidateDocumentRef(docRef) {
 		return errors.New("Invalid Document Path: " + docRef.Path)

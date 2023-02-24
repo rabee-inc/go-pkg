@@ -71,14 +71,14 @@ func Error(ctx context.Context, w http.ResponseWriter, status int, msg string) {
 }
 
 // JSON ... JSONをレンダリングする
-func JSON(ctx context.Context, w http.ResponseWriter, status int, v interface{}) {
+func JSON(ctx context.Context, w http.ResponseWriter, status int, v any) {
 	r := render.New()
 	r.JSON(w, status, v)
 	log.SetResponseStatus(ctx, status)
 }
 
 // HTML ... HTMLをレンダリングする
-func HTML(ctx context.Context, w http.ResponseWriter, status int, name string, values interface{}) {
+func HTML(ctx context.Context, w http.ResponseWriter, status int, name string, values any) {
 	r := render.New()
 	r.HTML(w, status, name, values)
 	log.SetResponseStatus(ctx, status)

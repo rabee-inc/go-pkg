@@ -103,7 +103,7 @@ func Debug(ctx context.Context, err error) {
 }
 
 // Debugf ... Debugログを出力する
-func Debugf(ctx context.Context, format string, args ...interface{}) {
+func Debugf(ctx context.Context, format string, args ...any) {
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
@@ -124,7 +124,7 @@ func Debugf(ctx context.Context, format string, args ...interface{}) {
 }
 
 // Debuge ... Debugログを出力してエラーを生成する
-func Debuge(ctx context.Context, format string, args ...interface{}) error {
+func Debuge(ctx context.Context, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
@@ -147,7 +147,7 @@ func Debuge(ctx context.Context, format string, args ...interface{}) error {
 }
 
 // Debugc ... Debugログを出力してコード付きのエラーを生成する
-func Debugc(ctx context.Context, code int, format string, args ...interface{}) error {
+func Debugc(ctx context.Context, code int, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityDebug
 	logger := GetLogger(ctx)
@@ -191,7 +191,7 @@ func Info(ctx context.Context, err error) {
 }
 
 // Infof ... Infoログを出力する
-func Infof(ctx context.Context, format string, args ...interface{}) {
+func Infof(ctx context.Context, format string, args ...any) {
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
@@ -212,7 +212,7 @@ func Infof(ctx context.Context, format string, args ...interface{}) {
 }
 
 // Infoe ... Infoログを出力してエラーを生成する
-func Infoe(ctx context.Context, format string, args ...interface{}) error {
+func Infoe(ctx context.Context, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
@@ -235,7 +235,7 @@ func Infoe(ctx context.Context, format string, args ...interface{}) error {
 }
 
 // Infoc ... Infoログを出力してコード付きのエラーを生成する
-func Infoc(ctx context.Context, code int, format string, args ...interface{}) error {
+func Infoc(ctx context.Context, code int, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityInfo
 	logger := GetLogger(ctx)
@@ -279,7 +279,7 @@ func Warning(ctx context.Context, err error) {
 }
 
 // Warningf ... Warningログを出力する
-func Warningf(ctx context.Context, format string, args ...interface{}) {
+func Warningf(ctx context.Context, format string, args ...any) {
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
@@ -300,7 +300,7 @@ func Warningf(ctx context.Context, format string, args ...interface{}) {
 }
 
 // Warninge ... Warningログを出力してエラーを生成する
-func Warninge(ctx context.Context, format string, args ...interface{}) error {
+func Warninge(ctx context.Context, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
@@ -323,7 +323,7 @@ func Warninge(ctx context.Context, format string, args ...interface{}) error {
 }
 
 // Warningc ... Warningログを出力してコード付きのエラーを生成する
-func Warningc(ctx context.Context, code int, format string, args ...interface{}) error {
+func Warningc(ctx context.Context, code int, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityWarning
 	logger := GetLogger(ctx)
@@ -367,7 +367,7 @@ func Error(ctx context.Context, err error) {
 }
 
 // Errorf ... Errorログを出力する
-func Errorf(ctx context.Context, format string, args ...interface{}) {
+func Errorf(ctx context.Context, format string, args ...any) {
 	severity := SeverityError
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
@@ -388,7 +388,7 @@ func Errorf(ctx context.Context, format string, args ...interface{}) {
 }
 
 // Errore ... Errorログを出力してエラーを生成する
-func Errore(ctx context.Context, format string, args ...interface{}) error {
+func Errore(ctx context.Context, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityError
 	logger := GetLogger(ctx)
@@ -411,7 +411,7 @@ func Errore(ctx context.Context, format string, args ...interface{}) error {
 }
 
 // Errorc ... Errorログを出力してコード付きのエラーを生成する
-func Errorc(ctx context.Context, code int, format string, args ...interface{}) error {
+func Errorc(ctx context.Context, code int, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityError
 	logger := GetLogger(ctx)
@@ -455,7 +455,7 @@ func Critical(ctx context.Context, err error) {
 }
 
 // Criticalf ... Criticalログを出力する
-func Criticalf(ctx context.Context, format string, args ...interface{}) {
+func Criticalf(ctx context.Context, format string, args ...any) {
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
 	if logger != nil && logger.IsLogging(severity) {
@@ -476,7 +476,7 @@ func Criticalf(ctx context.Context, format string, args ...interface{}) {
 }
 
 // Criticale ... Criticalログを出力してエラーを生成する
-func Criticale(ctx context.Context, format string, args ...interface{}) error {
+func Criticale(ctx context.Context, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
@@ -499,7 +499,7 @@ func Criticale(ctx context.Context, format string, args ...interface{}) error {
 }
 
 // Criticalc ... Criticalログを出力してコード付きのエラーを生成する
-func Criticalc(ctx context.Context, code int, format string, args ...interface{}) error {
+func Criticalc(ctx context.Context, code int, format string, args ...any) error {
 	err := fmt.Errorf(format, args...)
 	severity := SeverityCritical
 	logger := GetLogger(ctx)
@@ -522,7 +522,7 @@ func Criticalc(ctx context.Context, code int, format string, args ...interface{}
 }
 
 // Panic ... Panicをハンドリングする
-func Panic(ctx context.Context, rcvr interface{}) string {
+func Panic(ctx context.Context, rcvr any) string {
 	traces := []string{}
 	for depth := 0; ; depth++ {
 		if depth < 2 {

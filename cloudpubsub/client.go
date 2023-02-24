@@ -45,7 +45,7 @@ func NewClient(projectID string) *Client {
 func (c *Client) Publish(
 	ctx context.Context,
 	topicID string,
-	msg interface{},
+	msg any,
 ) error {
 	bMsg, err := json.Marshal(msg)
 	if err != nil {

@@ -13,7 +13,7 @@ type ClientResponse struct {
 type response struct {
 	Version string         `json:"jsonrpc"`
 	ID      string         `json:"id"`
-	Result  interface{}    `json:"result,omitempty"`
+	Result  any            `json:"result,omitempty"`
 	Error   *ErrorResponse `json:"error,omitempty"`
 }
 
@@ -23,7 +23,7 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func newResponse(id string, result interface{}) response {
+func newResponse(id string, result any) response {
 	return response{
 		Version: version,
 		ID:      id,

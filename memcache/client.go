@@ -13,7 +13,7 @@ type Client struct {
 }
 
 // GetOrSet ... キャッシュを取得（設定）する
-func (c *Client) GetOrSet(key string, fn func(key string) (interface{}, int, error)) (interface{}, error) {
+func (c *Client) GetOrSet(key string, fn func(key string) (any, int, error)) (any, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 

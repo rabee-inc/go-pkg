@@ -38,7 +38,7 @@ func Get(ctx context.Context, url string, opt *HTTPOption) (int, []byte, error) 
 }
 
 // Getリクエスト(URL, param)
-func GetForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
+func GetForm(ctx context.Context, url string, param map[string]any, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -76,7 +76,7 @@ func GetQueryString(ctx context.Context, url string, qs string, opt *HTTPOption)
 }
 
 // Postリクエスト(URL, param)
-func PostForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
+func PostForm(ctx context.Context, url string, param map[string]any, opt *HTTPOption) (int, []byte, error) {
 	values := neturl.Values{}
 	for key, value := range param {
 		values.Add(key, fmt.Sprintf("%v", value))
@@ -98,7 +98,7 @@ func PostForm(ctx context.Context, url string, param map[string]interface{}, opt
 }
 
 // Postリクエスト(URL, JSON)
-func PostJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+func PostJSON(ctx context.Context, url string, param any, res any, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -130,7 +130,7 @@ func PostJSON(ctx context.Context, url string, param interface{}, res interface{
 				err = perr
 			}
 		} else {
-			errRes := map[string]interface{}{}
+			errRes := map[string]any{}
 			err = json.Unmarshal(body, &errRes)
 			log.Warningf(ctx, "%v", errRes)
 		}
@@ -155,7 +155,7 @@ func PostBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (in
 }
 
 // Putリクエスト(URL, JSON)
-func PutJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+func PutJSON(ctx context.Context, url string, param any, res any, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -187,7 +187,7 @@ func PutJSON(ctx context.Context, url string, param interface{}, res interface{}
 				err = perr
 			}
 		} else {
-			errRes := map[string]interface{}{}
+			errRes := map[string]any{}
 			err = json.Unmarshal(body, &errRes)
 			log.Warningf(ctx, "%v", errRes)
 		}
@@ -212,7 +212,7 @@ func PutBody(ctx context.Context, url string, body []byte, opt *HTTPOption) (int
 }
 
 // Patchリクエスト(URL, JSON)
-func PatchJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+func PatchJSON(ctx context.Context, url string, param any, res any, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -244,7 +244,7 @@ func PatchJSON(ctx context.Context, url string, param interface{}, res interface
 				err = perr
 			}
 		} else {
-			errRes := map[string]interface{}{}
+			errRes := map[string]any{}
 			err = json.Unmarshal(body, &errRes)
 			log.Warningf(ctx, "%v", errRes)
 		}
@@ -285,7 +285,7 @@ func Delete(ctx context.Context, url string, opt *HTTPOption) (int, []byte, erro
 }
 
 // Deleteリクエスト(URL, param)
-func DeleteForm(ctx context.Context, url string, param map[string]interface{}, opt *HTTPOption) (int, []byte, error) {
+func DeleteForm(ctx context.Context, url string, param map[string]any, opt *HTTPOption) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -323,7 +323,7 @@ func DeleteQueryString(ctx context.Context, url string, qs string, opt *HTTPOpti
 }
 
 // Deleteリクエスト(URL, JSON)
-func DeleteJSON(ctx context.Context, url string, param interface{}, res interface{}, opt *HTTPOption) (int, error) {
+func DeleteJSON(ctx context.Context, url string, param any, res any, opt *HTTPOption) (int, error) {
 	jp, err := json.Marshal(param)
 	if err != nil {
 		log.Warning(ctx, err)
@@ -355,7 +355,7 @@ func DeleteJSON(ctx context.Context, url string, param interface{}, res interfac
 				err = perr
 			}
 		} else {
-			errRes := map[string]interface{}{}
+			errRes := map[string]any{}
 			err = json.Unmarshal(body, &errRes)
 			log.Warningf(ctx, "%v", errRes)
 		}

@@ -13,7 +13,7 @@ type CSVWriter interface {
 }
 
 type StreamMarshaler interface {
-	Marshal(row interface{}) error
+	Marshal(row any) error
 	Flush() error
 }
 
@@ -33,7 +33,7 @@ func MarshalFileAsStream(file *os.File) StreamMarshaler {
 	return NewStreamMarshaler(csv.NewWriter(file))
 }
 
-func (s *streamMarshaler) Marshal(row interface{}) error {
+func (s *streamMarshaler) Marshal(row any) error {
 	if s.isFirst {
 		// Headerを取得
 		header := []string{}

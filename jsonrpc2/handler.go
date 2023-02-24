@@ -130,7 +130,7 @@ func (h *Handler) handleRequest(ctx context.Context, r *http.Request, req reques
 	return newResponse(req.ID, result)
 }
 
-func (h *Handler) renderError(ctx context.Context, w http.ResponseWriter, status int, format string, a ...interface{}) {
+func (h *Handler) renderError(ctx context.Context, w http.ResponseWriter, status int, format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
 	switch status {
 	case http.StatusBadRequest:
@@ -145,7 +145,7 @@ func (h *Handler) renderError(ctx context.Context, w http.ResponseWriter, status
 	render.New().Text(w, status, msg)
 }
 
-func (h *Handler) renderErrorJSON(ctx context.Context, rpcID string, rpcStatus int, format string, a ...interface{}) response {
+func (h *Handler) renderErrorJSON(ctx context.Context, rpcID string, rpcStatus int, format string, a ...any) response {
 	msg := fmt.Sprintf(format, a...)
 	switch rpcStatus {
 	case http.StatusBadRequest:

@@ -34,7 +34,7 @@ func (r *request) isValid() bool {
 }
 
 // JSONRPC2のリクエストBodyを作成する
-func GenerateRequestBody(id string, method string, params interface{}) (*json.RawMessage, error) {
+func GenerateRequestBody(id string, method string, params any) (*json.RawMessage, error) {
 	jsonParams, err := json.Marshal(params)
 	if err != nil {
 		return nil, err

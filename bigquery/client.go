@@ -17,8 +17,22 @@ type Client struct {
 	client *bigquery.Client
 }
 
+func NewClient(projectID string) *Client {
+	ctx := context.Background()
+	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
+		Time:                1 * time.Second,
+		Timeout:             5 * time.Second,
+		PermitWithoutStream: true,
+	}))
+	client, err := bigquery.NewClient(ctx, projectID, gOpt)
+	if err != nil {
+		panic(err)
+	}
+	return &Client{client}
+}
+
 // クエリを実行し、データを取得する
-func (c *Client) List(ctx context.Context, query string, limit int, cursor string, dsts interface{}) (string, error) {
+func (c *Client) List(ctx context.Context, query string, limit int, cursor string, dsts any) (string, error) {
 	q := c.client.Query(query)
 	it, err := q.Read(ctx)
 	if err != nil {
@@ -55,21 +69,4 @@ func (c *Client) List(ctx context.Context, query string, limit int, cursor strin
 		token = pageInfo.Token
 	}
 	return token, nil
-}
-
-// クライアントを作成する
-func NewClient(projectID string) *Client {
-	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	client, err := bigquery.NewClient(ctx, projectID, gOpt)
-	if err != nil {
-		panic(err)
-	}
-	return &Client{
-		client: client,
-	}
 }

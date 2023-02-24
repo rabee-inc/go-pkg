@@ -9,7 +9,7 @@ type Stream struct {
 	slice reflect.Value
 }
 
-func StreamOf(slice interface{}) *Stream {
+func StreamOf(slice any) *Stream {
 	rv := reflect.ValueOf(slice)
 	return &Stream{
 		slice: rv,
@@ -23,7 +23,7 @@ dst := StreamOf(hoges).
 	}).Out().([]*Hoge)
 */
 // 要素のフィルタリング
-func (s *Stream) Filter(fn interface{}) *Stream {
+func (s *Stream) Filter(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	srv := reflect.MakeSlice(s.slice.Type(), 0, 0)
 	for i := 0; i < s.slice.Len(); i++ {
@@ -44,7 +44,7 @@ dst := StreamOf(hoges).
 	}).Out().([]string)
 */
 // 要素の変換
-func (s *Stream) Map(fn interface{}) *Stream {
+func (s *Stream) Map(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	srt := reflect.SliceOf(frv.Type().Out(0))
 	srv := reflect.MakeSlice(srt, 0, 0)
@@ -64,7 +64,7 @@ dst := StreamOf(hoges).
 	}).(int)
 */
 // 要素の集計
-func (s *Stream) Reduce(fn interface{}) interface{} {
+func (s *Stream) Reduce(fn any) any {
 	frv := reflect.ValueOf(fn)
 	rt := frv.Type().Out(0)
 	dst := reflect.New(rt).Elem()
@@ -83,7 +83,7 @@ dst := StreamOf(hoges).
 	}).Out().([]*Hoge)
 */
 // ソート
-func (s *Stream) Sort(fn interface{}) *Stream {
+func (s *Stream) Sort(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	slice := s.slice.Interface()
 	sort.SliceStable(slice, func(i, j int) bool {
@@ -101,7 +101,7 @@ dst := StreamOf(hoges).
 	})
 */
 // 要素の存在確認
-func (s *Stream) Contains(fn interface{}) bool {
+func (s *Stream) Contains(fn any) bool {
 	frv := reflect.ValueOf(fn)
 	for i := 0; i < s.slice.Len(); i++ {
 		rv := s.slice.Index(i)
@@ -120,7 +120,7 @@ dst := StreamOf(hoges).
 	})
 */
 // 要素のループ
-func (s *Stream) ForEach(fn interface{}) *Stream {
+func (s *Stream) ForEach(fn any) *Stream {
 	frv := reflect.ValueOf(fn)
 	if frv.Type().NumIn() == 1 {
 		for i := 0; i < s.slice.Len(); i++ {
@@ -145,6 +145,6 @@ func (s *Stream) Count() int {
 }
 
 // 結果を出力する
-func (s *Stream) Out() interface{} {
+func (s *Stream) Out() any {
 	return s.slice.Interface()
 }

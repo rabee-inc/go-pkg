@@ -9,7 +9,7 @@ import (
 	"reflect"
 )
 
-func MarshalString(srcs interface{}) (string, error) {
+func MarshalString(srcs any) (string, error) {
 	records, err := marshal(srcs)
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func MarshalString(srcs interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-func MarshalFile(srcs interface{}, file *os.File) error {
+func MarshalFile(srcs any, file *os.File) error {
 	records, err := marshal(srcs)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func MarshalFile(srcs interface{}, file *os.File) error {
 	return nil
 }
 
-func marshal(srcs interface{}) ([][]string, error) {
+func marshal(srcs any) ([][]string, error) {
 	// Pointerの場合は参照先を取得
 	rvs := reflect.Indirect(reflect.ValueOf(srcs))
 

@@ -14,7 +14,7 @@ import (
 )
 
 // レスポンス形式に変換する
-func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
+func ToResponse(ctx context.Context, srcs any) ([][]string, error) {
 	bytes, err := csvutil.Marshal(srcs)
 	if err != nil {
 		log.Error(ctx, err)
@@ -32,7 +32,7 @@ func ToResponse(ctx context.Context, srcs interface{}) ([][]string, error) {
 }
 
 // URLからCSVデータを取得する
-func GetByURL(ctx context.Context, url string, dsts interface{}) error {
+func GetByURL(ctx context.Context, url string, dsts any) error {
 	status, body, err := httpclient.Get(ctx, url, nil)
 	if err != nil {
 		log.Error(ctx, err)
@@ -51,7 +51,7 @@ func GetByURL(ctx context.Context, url string, dsts interface{}) error {
 }
 
 // 文字列からCSVデータを取得する
-func GetByStr(ctx context.Context, str string, dsts interface{}) error {
+func GetByStr(ctx context.Context, str string, dsts any) error {
 	bytes := stringutil.ToBytes(str)
 	err := GetByBytes(ctx, bytes, dsts)
 	if err != nil {
@@ -62,7 +62,7 @@ func GetByStr(ctx context.Context, str string, dsts interface{}) error {
 }
 
 // バイト列からCSVデータを取得する
-func GetByBytes(ctx context.Context, bytes []byte, dsts interface{}) error {
+func GetByBytes(ctx context.Context, bytes []byte, dsts any) error {
 	err := csvutil.Unmarshal(bytes, dsts)
 	if err != nil {
 		log.Error(ctx, err)

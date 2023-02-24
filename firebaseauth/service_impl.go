@@ -16,7 +16,7 @@ func NewService(cFirebaseAuth *auth.Client) Service {
 }
 
 // 認証を行う
-func (s *service) Authentication(ctx context.Context, ah string) (string, map[string]interface{}, error) {
+func (s *service) Authentication(ctx context.Context, ah string) (string, map[string]any, error) {
 	token := getTokenByAuthHeader(ah)
 	if token == "" {
 		err := log.Warninge(ctx, "token empty error")
@@ -32,7 +32,7 @@ func (s *service) Authentication(ctx context.Context, ah string) (string, map[st
 }
 
 // カスタムClaimsを設定
-func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map[string]interface{}) error {
+func (s *service) SetCustomClaims(ctx context.Context, userID string, claims map[string]any) error {
 	err := s.cFirebaseAuth.SetCustomUserClaims(ctx, userID, claims)
 	if err != nil {
 		log.Error(ctx, err)

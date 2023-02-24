@@ -9,11 +9,11 @@ type Action interface {
 	DecodeParams(
 		ctx context.Context,
 		msg *json.RawMessage,
-	) (interface{}, error)
+	) (any, error)
 
 	Exec(
 		ctx context.Context,
 		method string,
-		params interface{},
-	) (interface{}, error)
+		params any,
+	) (any, error)
 }

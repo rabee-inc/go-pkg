@@ -8,10 +8,10 @@ import (
 
 type serviceDebug struct {
 	sFirebaseAuth Service
-	dummyClaims   map[string]interface{}
+	dummyClaims   map[string]any
 }
 
-func NewServiceDebug(cFirebaseAuth *auth.Client, dummyClaims map[string]interface{}) Service {
+func NewServiceDebug(cFirebaseAuth *auth.Client, dummyClaims map[string]any) Service {
 	sFirebaseAuth := NewService(cFirebaseAuth)
 	return &serviceDebug{
 		sFirebaseAuth,
@@ -20,7 +20,7 @@ func NewServiceDebug(cFirebaseAuth *auth.Client, dummyClaims map[string]interfac
 }
 
 // 認証を行う
-func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, map[string]interface{}, error) {
+func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, map[string]any, error) {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	if user := getUserByAuthHeader(ah); user != "" {
 		return user, s.dummyClaims, nil
@@ -29,7 +29,7 @@ func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, m
 }
 
 // カスタムClaimsを設定
-func (s *serviceDebug) SetCustomClaims(ctx context.Context, userID string, claims map[string]interface{}) error {
+func (s *serviceDebug) SetCustomClaims(ctx context.Context, userID string, claims map[string]any) error {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	ah := getAuthHeader(ctx)
 	if getUserByAuthHeader(ah) != "" {

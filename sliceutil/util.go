@@ -2,6 +2,51 @@ package sliceutil
 
 import "github.com/rabee-inc/go-pkg/randutil"
 
+func Filter[T any](srcs []T, fn func(src T) bool) []T {
+	dsts := []T{}
+	for _, src := range srcs {
+		if fn(src) {
+			dsts = append(dsts, src)
+		}
+	}
+	return dsts
+}
+
+func Map[T, E any](srcs []T, fn func(src T) E) []E {
+	dsts := []E{}
+	for _, src := range srcs {
+		dsts = append(dsts, fn(src))
+	}
+	return dsts
+}
+
+func Reduce[T, E any](srcs []T, fn func(dst E, src T) E) E {
+	var dst E
+	for _, src := range srcs {
+		dst = fn(dst, src)
+	}
+	return dst
+}
+
+// 配列の値の存在確認
+func Contains[T comparable](srcs []T, e T) bool {
+	for _, v := range srcs {
+		if e == v {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainsFunc[T any](srcs []T, fn func(src T) bool) bool {
+	for _, src := range srcs {
+		if fn(src) {
+			return true
+		}
+	}
+	return false
+}
+
 // 配列をシャッフルする
 func Shuffle[T any](srcs []T) []T {
 	n := len(srcs)
@@ -43,16 +88,6 @@ func Uniq[T comparable](srcs []T) []T {
 		}
 	}
 	return dsts
-}
-
-// 配列の値の存在確認
-func Contains[T comparable](srcs []T, e T) bool {
-	for _, v := range srcs {
-		if e == v {
-			return true
-		}
-	}
-	return false
 }
 
 // 配列の分割

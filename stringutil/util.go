@@ -10,24 +10,24 @@ import (
 	"github.com/rs/xid"
 )
 
-// ToBytes ... 文字列をバイト列に変換する
+// 文字列をバイト列に変換する
 func ToBytes(str string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&str))
 }
 
-// UniqueID ... ユニークでソータブルなIDを作成する
+// ユニークでソータブルなIDを作成する
 func UniqueID() string {
 	guid := xid.New()
 	return guid.String()
 }
 
-// IsNumeric ... 数字か確認する
+// 数字か確認する
 func IsNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
 }
 
-// ToComma ... 数字を金額表記にする
+// 数字を金額表記にする
 func ToComma(v int64) string {
 	sign := ""
 	if v == math.MinInt64 {
@@ -54,7 +54,7 @@ func ToComma(v int64) string {
 	return sign + strings.Join(parts[j:], ",")
 }
 
-// ToCommaf ... 数字を金額表記にする
+// 数字を金額表記にする
 func ToCommaf(v float64) string {
 	buf := &bytes.Buffer{}
 	if v < 0 {

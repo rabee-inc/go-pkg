@@ -24,7 +24,7 @@ func NewClient(url string, headers map[string]string) *Client {
 }
 
 // JSONRPC2のリクエストを登録する
-func (c *Client) AddRequest(ctx context.Context, id string, method string, params interface{}) error {
+func (c *Client) AddRequest(ctx context.Context, id string, method string, params any) error {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
 		log.Error(ctx, err)
@@ -40,7 +40,7 @@ func (c *Client) AddRequest(ctx context.Context, id string, method string, param
 }
 
 // JSONRPC2のシングルリクエストを行う
-func (c *Client) DoSingle(ctx context.Context, method string, params interface{}) (*json.RawMessage, *ErrorResponse, error) {
+func (c *Client) DoSingle(ctx context.Context, method string, params any) (*json.RawMessage, *ErrorResponse, error) {
 	rawParams, err := c.marshalRawMessage(ctx, params)
 	if err != nil {
 		log.Error(ctx, err)
@@ -81,7 +81,7 @@ func (c *Client) DoBatch(ctx context.Context) ([]*ClientResponse, error) {
 	return res, nil
 }
 
-func (c *Client) marshalRawMessage(ctx context.Context, params interface{}) (*json.RawMessage, error) {
+func (c *Client) marshalRawMessage(ctx context.Context, params any) (*json.RawMessage, error) {
 	bParams, err := json.Marshal(params)
 	if err != nil {
 		log.Error(ctx, err)

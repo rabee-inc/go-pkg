@@ -56,7 +56,7 @@ func NewClient(
 }
 
 // リクエストをEnqueueする
-func (c *Client) AddTask(ctx context.Context, queue string, path string, params interface{}) error {
+func (c *Client) AddTask(ctx context.Context, queue string, path string, params any) error {
 	headers := map[string]string{
 		"Content-Type":  "application/json",
 		"Authorization": c.authToken,
