@@ -155,8 +155,8 @@ func Uniq[T comparable](srcs []T) Slice[T] {
 }
 
 // Chunk ... 配列の分割
-func Chunk[T any](srcs []T, size int) Slice[Slice[T]] {
-	var chunks Slice[Slice[T]]
+func Chunk[T any](srcs []T, size int) []Slice[T] {
+	var chunks []Slice[T]
 	srcsSize := len(srcs)
 	for i := 0; i < srcsSize; i += size {
 		end := i + size
@@ -249,4 +249,9 @@ func (s Slice[T]) Shift() (T, Slice[T]) {
 // Pop ... 配列の後尾を切り取る
 func (s Slice[T]) Pop() (T, Slice[T]) {
 	return Pop(s)
+}
+
+// Chunk ... 配列の分割
+func (s Slice[T]) Chunk(size int) []Slice[T] {
+	return Chunk(s, size)
 }

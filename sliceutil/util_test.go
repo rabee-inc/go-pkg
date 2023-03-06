@@ -270,14 +270,14 @@ func Test(t *testing.T) {
 		input := []int{1, 2, 3, 4, 5}
 		actual := sliceutil.First(input)
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3, 4, 5}, input)
+		assertSlice(t, []int{1, 2, 3, 4, 5}, input)
 
 		// メソッド
 		expect = 1
 		input = []int{1, 2, 3, 4, 5}
 		actual = sliceutil.NewSlice(input).First()
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3, 4, 5}, input)
+		assertSlice(t, []int{1, 2, 3, 4, 5}, input)
 
 	})
 
@@ -288,14 +288,14 @@ func Test(t *testing.T) {
 		input := []int{1, 2, 3, 4, 5}
 		actual := sliceutil.Last(input)
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3, 4, 5}, input)
+		assertSlice(t, []int{1, 2, 3, 4, 5}, input)
 
 		// メソッド
 		expect = 5
 		input = []int{1, 2, 3, 4, 5}
 		actual = sliceutil.NewSlice(input).Last()
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3, 4, 5}, input)
+		assertSlice(t, []int{1, 2, 3, 4, 5}, input)
 	})
 
 	// Shift
@@ -306,13 +306,13 @@ func Test(t *testing.T) {
 		actual, output := sliceutil.Shift(input)
 		assert.Equal(t, expect, actual)
 		fmt.Println("input: ", input, "actual: ", actual, "expect: ", expect)
-		eqSlice([]int{2, 3, 4, 5}, output)
+		assertSlice(t, []int{2, 3, 4, 5}, output)
 
 		// メソッド
 		expect = 2
 		actual, s := output.Shift()
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{3, 4, 5}, s)
+		assertSlice(t, []int{3, 4, 5}, s)
 	})
 
 	// Pop
@@ -322,14 +322,33 @@ func Test(t *testing.T) {
 		input := []int{1, 2, 3, 4, 5}
 		actual, output := sliceutil.Pop(input)
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3, 4}, output)
+		assertSlice(t, []int{1, 2, 3, 4}, output)
 
 		// メソッド
 		expect = 4
 
 		actual, s := output.Pop()
 		assert.Equal(t, expect, actual)
-		eqSlice([]int{1, 2, 3}, s)
+		assertSlice(t, []int{1, 2, 3}, s)
+	})
+
+	// Chunk
+	t.Run("Chunk", func(t *testing.T) {
+		// 関数
+		expect := [][]int{{1, 2}, {3, 4}, {5}}
+		input := []int{1, 2, 3, 4, 5}
+		actual := sliceutil.Chunk(input, 2)
+		for i, s := range actual {
+			assertSlice(t, expect[i], s)
+		}
+
+		// メソッド
+		expect = [][]int{{1, 2}, {3, 4}, {5}}
+		input = []int{1, 2, 3, 4, 5}
+		actual = sliceutil.NewSlice(input).Chunk(2)
+		for i, s := range actual {
+			assertSlice(t, expect[i], s)
+		}
 	})
 
 }
