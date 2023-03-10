@@ -8,6 +8,7 @@ type JSON map[string]any
 
 // --- Set 関数 ---
 
+// NewSet ... slice から Set を作成する
 func NewSet[T comparable](s []T) set[T] {
 	set := set[T]{}
 	for _, v := range s {
@@ -18,6 +19,7 @@ func NewSet[T comparable](s []T) set[T] {
 
 // --- OrderedSet 関数 ---
 
+// NewOrderedSet ... slice から orderedSet を作成する。orderedSet は Set と違い Keys() の戻り値が挿入した順になります。そのため、uniqなsliceのような扱い方もできます。
 func NewOrderedSet[T comparable](s []T) orderedSet[T] {
 	set := orderedSet[T]{}
 	for _, v := range s {
@@ -28,6 +30,7 @@ func NewOrderedSet[T comparable](s []T) orderedSet[T] {
 
 // --- Map 関数 ---
 
+// NewMap ... Map を作成する
 func NewMap[T comparable, U any](m map[T]U) Map[T, U] {
 	return Map[T, U](m)
 }
@@ -38,7 +41,7 @@ func Has[T comparable, U any](m map[T]U, key T) bool {
 	return ok
 }
 
-// Keys ... キーの配列を返す
+// Keys ... キーのslice を返す
 func Keys[T comparable, U any](m map[T]U) []T {
 	keys := make([]T, len(m))
 	i := 0
@@ -49,7 +52,7 @@ func Keys[T comparable, U any](m map[T]U) []T {
 	return keys
 }
 
-// Values ... 値の配列を返す
+// Values ... 値のslice を返す
 func Values[T comparable, U any](m map[T]U) []U {
 	values := make([]U, len(m))
 	i := 0
@@ -60,7 +63,7 @@ func Values[T comparable, U any](m map[T]U) []U {
 	return values
 }
 
-// ValuesByKeys ... keys 配列の順番で value の配列を返す(map に存在するもののみ)
+// ValuesByKeys ... keys slice の順番で value のslice を返す(map に存在するもののみ)
 func ValuesByKeys[T comparable, U any](m map[T]U, keys []T) []U {
 	values := []U{}
 	for _, k := range keys {
@@ -90,7 +93,7 @@ func (s set[T]) Has(key T) bool {
 	return Has(s, key)
 }
 
-// Keys ... キーの配列を返す
+// Keys ... キーのslice を返す
 func (s set[T]) Keys() []T {
 	return Keys(s)
 }
@@ -122,7 +125,7 @@ func (s orderedSet[T]) Has(key T) bool {
 	return Has(s, key)
 }
 
-// Keys ... キーの配列を返す
+// Keys ... キーのslice を返す
 func (s orderedSet[T]) Keys() []T {
 	keys := make([]T, len(s))
 	for k, v := range s {
@@ -167,17 +170,17 @@ func (m Map[T, U]) Has(key T) bool {
 	return Has(m, key)
 }
 
-// Keys ... キーの配列を返す
+// Keys ... キーのslice を返す
 func (m Map[T, U]) Keys() []T {
 	return Keys(m)
 }
 
-// Values ... 値の配列を返す
+// Values ... 値のslice を返す
 func (m Map[T, U]) Values() []U {
 	return Values(m)
 }
 
-// ValuesByKeys ... keys 配列の順番で value の配列を返す(map に存在するもののみ)
+// ValuesByKeys ... keys slice の順番で value のslice を返す(map に存在するもののみ)
 func (m Map[T, U]) ValuesByKeys(keys []T) []U {
 	return ValuesByKeys(m, keys)
 }
