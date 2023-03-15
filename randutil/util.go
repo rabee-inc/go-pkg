@@ -28,6 +28,7 @@ func Int(min int, max int) int {
 
 // nビットのランダムな文字列を生成する
 func String(n int) (string, error) {
+	seed()
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {
 		return "", err
@@ -48,6 +49,7 @@ func String(n int) (string, error) {
 
 // nビットのランダムな文字列を生成する
 func StringByChar(n int, cr string) (string, error) {
+	seed()
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {
 		return "", err
