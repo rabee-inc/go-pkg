@@ -83,6 +83,7 @@ func (c *Client) addTask(ctx context.Context, queue string, aeReq *cloudtaskspb.
 		url := fmt.Sprintf("http://localhost:%d%s", c.port, aeReq.RelativeUri)
 		status, _, err := httpclient.PostBody(ctx, url, aeReq.Body, &httpclient.HTTPOption{
 			Headers: aeReq.Headers,
+			Timeout: 10 * time.Minute,
 		})
 		if err != nil {
 			log.Error(ctx, err)
