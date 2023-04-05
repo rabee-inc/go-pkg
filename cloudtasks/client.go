@@ -12,9 +12,6 @@ import (
 	"github.com/rabee-inc/go-pkg/deploy"
 	"github.com/rabee-inc/go-pkg/httpclient"
 	"github.com/rabee-inc/go-pkg/log"
-	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 type Client struct {
@@ -35,12 +32,7 @@ func NewClient(
 	locationID string,
 	authToken string) *Client {
 	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	cli, err := cloudtasks.NewClient(ctx, gOpt)
+	cli, err := cloudtasks.NewClient(ctx)
 	if err != nil {
 		panic(err)
 	}

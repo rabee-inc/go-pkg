@@ -12,9 +12,6 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/timeutil"
 	"github.com/vincent-petithory/dataurl"
-	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 type Client struct {
@@ -25,12 +22,7 @@ type Client struct {
 
 func NewClient(bucket string) *Client {
 	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	cli, err := storage.NewClient(ctx, gOpt)
+	cli, err := storage.NewClient(ctx)
 	if err != nil {
 		panic(err)
 	}

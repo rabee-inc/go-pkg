@@ -3,14 +3,10 @@ package bigquery
 import (
 	"context"
 	"reflect"
-	"time"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/rabee-inc/go-pkg/log"
 	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 type Client struct {
@@ -19,12 +15,7 @@ type Client struct {
 
 func NewClient(projectID string) *Client {
 	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	client, err := bigquery.NewClient(ctx, projectID, gOpt)
+	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
 		panic(err)
 	}

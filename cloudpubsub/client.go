@@ -3,14 +3,10 @@ package cloudpubsub
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	pubsub "cloud.google.com/go/pubsub"
 	pubsubapi "cloud.google.com/go/pubsub/apiv1"
 	"github.com/rabee-inc/go-pkg/log"
-	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 type Client struct {
@@ -21,16 +17,11 @@ type Client struct {
 
 func NewClient(projectID string) *Client {
 	ctx := context.Background()
-	gOpt := option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                1 * time.Second,
-		Timeout:             5 * time.Second,
-		PermitWithoutStream: true,
-	}))
-	cPubSub, err := pubsub.NewClient(ctx, projectID, gOpt)
+	cPubSub, err := pubsub.NewClient(ctx, projectID)
 	if err != nil {
 		panic(err)
 	}
-	cSubscriber, err := pubsubapi.NewSubscriberClient(ctx, gOpt)
+	cSubscriber, err := pubsubapi.NewSubscriberClient(ctx)
 	if err != nil {
 		panic(err)
 	}
