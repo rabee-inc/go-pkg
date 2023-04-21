@@ -8,17 +8,22 @@ import (
 )
 
 type Client struct {
-	cPubSub          *cloudpubsub.Client
-	converterTopicID string
-	generatorTopicID string
+	cPubSub               *cloudpubsub.Client
+	converterDstEndpoint  string
+	converterDstAuthToken string
+	converterTopicID      string
+	generatorTopicID      string
 }
 
 func NewClient(
 	cPubSub *cloudpubsub.Client,
-	dstEndpoint string,
+	converterDstEndpoint string,
+	converterDstAuthToken string,
 ) *Client {
 	return &Client{
 		cPubSub,
+		converterDstEndpoint,
+		converterDstAuthToken,
 		ConverterTopicID,
 		GeneratorTopicID,
 	}
@@ -26,6 +31,8 @@ func NewClient(
 
 func NewClientWithOption(
 	cPubSub *cloudpubsub.Client,
+	converterDstEndpoint string,
+	converterDstAuthToken string,
 	reqOption *ClientOption,
 ) *Client {
 	option := &ClientOption{
@@ -40,6 +47,8 @@ func NewClientWithOption(
 	}
 	return &Client{
 		cPubSub,
+		converterDstEndpoint,
+		converterDstAuthToken,
 		option.ConverterTopicID,
 		option.GeneratorTopicID,
 	}
@@ -52,8 +61,6 @@ func (c *Client) SendConvertRequest(
 	sourceID string,
 	sources []*Object,
 	dstFilePath string,
-	dstEndpoint string,
-	dstEndpointAuthToken string,
 ) error {
 	srcURLs := []string{}
 	for _, source := range sources {
@@ -70,8 +77,8 @@ func (c *Client) SendConvertRequest(
 		SourceID:             sourceID,
 		SourceURLs:           srcURLs,
 		DstFilePath:          dstFilePath,
-		DstEndpoint:          dstEndpoint,
-		DstEndpointAuthToken: dstEndpointAuthToken,
+		DstEndpoint:          c.converterDstEndpoint,
+		DstEndpointAuthToken: c.converterDstAuthToken,
 	}
 	err := c.cPubSub.Publish(ctx, c.converterTopicID, src)
 	if err != nil {
