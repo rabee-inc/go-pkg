@@ -21,10 +21,12 @@ type Size struct {
 
 // 画像変換リクエスト
 type ConvertRequest struct {
-	Key         string   `json:"key"`
-	SourceID    string   `json:"source_id"`
-	SourceURLs  []string `json:"source_urls"`
-	DstFilePath string   `json:"dst_file_path"`
+	Key                  string   `json:"key"`
+	SourceID             string   `json:"source_id"`
+	SourceURLs           []string `json:"source_urls"`
+	DstFilePath          string   `json:"dst_file_path"`
+	DstEndpoint          string   `json:"dst_endpoint"`
+	DstEndpointAuthToken string   `json:"dst_endpoint_auth_token"`
 }
 
 // 画像作成リクエスト
