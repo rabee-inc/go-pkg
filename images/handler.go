@@ -15,10 +15,9 @@ type Handler struct {
 }
 
 func NewHandler(repo Repository) *Handler {
-	v := validator.New()
 	return &Handler{
-		repo: repo,
-		v:    v,
+		repo,
+		validator.New(),
 	}
 }
 
