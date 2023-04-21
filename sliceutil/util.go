@@ -61,6 +61,28 @@ func MapWithIndex[T, E any](srcs []T, fn func(index int) E) Slice[E] {
 	return dsts
 }
 
+// FilterMap ... Filter して Map する
+func FilterMap[T, E any](srcs []T, fn func(src T) (bool, E)) Slice[E] {
+	dsts := []E{}
+	for _, src := range srcs {
+		if ok, dst := fn(src); ok {
+			dsts = append(dsts, dst)
+		}
+	}
+	return dsts
+}
+
+// FilterMapWithIndex ... Filter して Map する
+func FilterMapWithIndex[T, E any](srcs []T, fn func(index int) (bool, E)) Slice[E] {
+	dsts := []E{}
+	for i := range srcs {
+		if ok, dst := fn(i); ok {
+			dsts = append(dsts, dst)
+		}
+	}
+	return dsts
+}
+
 // Reduce ... reduce
 func Reduce[T, E any](srcs []T, fn func(dst E, src T) E) E {
 	var dst E
