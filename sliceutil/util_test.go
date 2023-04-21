@@ -350,7 +350,56 @@ func Test(t *testing.T) {
 			assertSlice(t, expect[i], s)
 		}
 	})
+	// Excludes
+	t.Run("Excludes", func(t *testing.T) {
+		// 関数
+		expect := []int{1, 3, 5}
+		input := []int{1, 2, 3, 4, 5}
+		ignore := []int{2, 4}
+		actual := sliceutil.Excludes(input, ignore)
+		assertSlice(t, expect, actual)
+	})
 
+	// FilterMap
+	t.Run("FilterMap", func(t *testing.T) {
+		// 関数
+		expect := []int{1, 3, 5}
+		type num struct {
+			i int
+		}
+		input := []*num{
+			{i: 1},
+			{i: 2},
+			{i: 3},
+			{i: 4},
+			{i: 5},
+		}
+		actual := sliceutil.FilterMap(input, func(n *num) (bool, int) {
+			return n.i%2 == 1, n.i
+		})
+		assertSlice(t, expect, actual)
+	})
+
+	// FilterMapWithIndex
+	t.Run("FilterMapWithIndex", func(t *testing.T) {
+		// 関数
+		expect := []int{1, 3, 5}
+		type num struct {
+			i int
+		}
+		input := []*num{
+			{i: 1},
+			{i: 2},
+			{i: 3},
+			{i: 4},
+			{i: 5},
+		}
+		actual := sliceutil.FilterMapWithIndex(input, func(i int) (bool, int) {
+			n := input[i]
+			return n.i%2 == 1, n.i
+		})
+		assertSlice(t, expect, actual)
+	})
 }
 
 func eqSlice[T comparable](a, b []T) bool {
