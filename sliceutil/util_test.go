@@ -379,6 +379,27 @@ func Test(t *testing.T) {
 		})
 		assertSlice(t, expect, actual)
 	})
+
+	// FilterMapWithIndex
+	t.Run("FilterMapWithIndex", func(t *testing.T) {
+		// 関数
+		expect := []int{1, 3, 5}
+		type num struct {
+			i int
+		}
+		input := []*num{
+			{i: 1},
+			{i: 2},
+			{i: 3},
+			{i: 4},
+			{i: 5},
+		}
+		actual := sliceutil.FilterMapWithIndex(input, func(i int) (bool, int) {
+			n := input[i]
+			return n.i%2 == 1, n.i
+		})
+		assertSlice(t, expect, actual)
+	})
 }
 
 func eqSlice[T comparable](a, b []T) bool {
