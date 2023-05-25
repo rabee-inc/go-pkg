@@ -1,32 +1,7 @@
 package maputil
 
-type empty struct{}
-type Set[T comparable] map[T]empty
-type OrderedSet[T comparable] map[T]int
 type Map[T comparable, U any] map[T]U
 type JSON map[string]any
-
-// --- Set 関数 ---
-
-// NewSet ... slice から Set を作成する
-func NewSet[T comparable](s []T) Set[T] {
-	set := Set[T]{}
-	for _, v := range s {
-		set[v] = empty{}
-	}
-	return set
-}
-
-// --- OrderedSet 関数 ---
-
-// NewOrderedSet ... slice から orderedSet を作成する。orderedSet は Set と違い Keys() の戻り値が挿入した順になります。そのため、uniqなsliceのような扱い方もできます。
-func NewOrderedSet[T comparable](s []T) OrderedSet[T] {
-	set := OrderedSet[T]{}
-	for _, v := range s {
-		set.Add(v)
-	}
-	return set
-}
 
 // --- Map 関数 ---
 
@@ -79,83 +54,6 @@ func Clear[T comparable, U any](m map[T]U) {
 	for k := range m {
 		delete(m, k)
 	}
-}
-
-// --- Set メソッド ---
-
-// Len ... 要素数を返す
-func (s Set[T]) Len() int {
-	return len(s)
-}
-
-// Has ... key が存在するかどうか
-func (s Set[T]) Has(key T) bool {
-	return Has(s, key)
-}
-
-// Keys ... キーのslice を返す
-func (s Set[T]) Keys() []T {
-	return Keys(s)
-}
-
-// Add ... キーを追加する
-func (s Set[T]) Add(key T) {
-	s[key] = empty{}
-}
-
-// Delete ... キーを削除する
-func (s Set[T]) Delete(key T) {
-	delete(s, key)
-}
-
-// Clear ... Set を空にする
-func (s Set[T]) Clear() {
-	Clear(s)
-}
-
-// --- OrderedSet メソッド ---
-
-// Len ... 要素数を返す
-func (s OrderedSet[T]) Len() int {
-	return len(s)
-}
-
-// Has ... key が存在するかどうか
-func (s OrderedSet[T]) Has(key T) bool {
-	return Has(s, key)
-}
-
-// Keys ... キーのslice を返す
-func (s OrderedSet[T]) Keys() []T {
-	keys := make([]T, len(s))
-	for k, v := range s {
-		keys[v] = k
-	}
-	return keys
-}
-
-// Add ... キーを追加する
-func (s OrderedSet[T]) Add(key T) {
-	if !s.Has(key) {
-		s[key] = len(s)
-	}
-}
-
-// Delete ... キーを削除する
-func (s OrderedSet[T]) Delete(key T) {
-	if i, ok := s[key]; ok {
-		for k, v := range s {
-			if v > i {
-				s[k] = v - 1
-			}
-		}
-		delete(s, key)
-	}
-}
-
-// Clear ... Set を空にする
-func (s OrderedSet[T]) Clear() {
-	Clear(s)
 }
 
 // --- Map メソッド ---
