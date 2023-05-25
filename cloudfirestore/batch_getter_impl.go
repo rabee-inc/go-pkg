@@ -7,22 +7,28 @@ import (
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/maputil"
 	"github.com/rabee-inc/go-pkg/sliceutil"
+	"github.com/rabee-inc/go-pkg/util"
 )
 
-type docRefAndData struct {
-	docRef *firestore.DocumentRef
-	data   any
+type batchGetterItem struct {
+	docRef    *firestore.DocumentRef
+	committed bool
+	data      any
 }
 
 type batchGetter struct {
-	docMap     map[string]*docRefAndData
-	cFirestore *firestore.Client
+	docMap             map[string]*batchGetterItem
+	commitEventEmitter util.EventEmitter
+	endEventEmitter    util.EventEmitter
+	cFirestore         *firestore.Client
 }
 
 func NewBatchGetter(cFirestore *firestore.Client) BatchGetter {
 	return &batchGetter{
-		docMap:     map[string]*docRefAndData{},
-		cFirestore: cFirestore,
+		docMap:             map[string]*batchGetterItem{},
+		commitEventEmitter: util.NewEventEmitter(),
+		endEventEmitter:    util.NewEventEmitter(),
+		cFirestore:         cFirestore,
 	}
 }
 
@@ -30,7 +36,7 @@ func (bg *batchGetter) Add(docRef *firestore.DocumentRef, dst any) {
 	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
 		return
 	}
-	bg.docMap[docRef.Path] = &docRefAndData{
+	bg.docMap[docRef.Path] = &batchGetterItem{
 		docRef: docRef,
 		data:   dst,
 	}
@@ -40,14 +46,24 @@ func (bg *batchGetter) Delete(docRef *firestore.DocumentRef) {
 	delete(bg.docMap, docRef.Path)
 }
 
-func (bg *batchGetter) Commit(ctx context.Context) error {
+func (bg *batchGetter) isAllCommitted(ctx context.Context) bool {
+	for _, item := range bg.docMap {
+		if !item.committed {
+			return false
+		}
+	}
+	return true
+}
+
+func (bg *batchGetter) commit(ctx context.Context) error {
 	if len(bg.docMap) == 0 {
 		return nil
 	}
 	docRefs := sliceutil.
-		Map(maputil.Values(bg.docMap), func(src *docRefAndData) *firestore.DocumentRef {
-			return src.docRef
+		FilterMap(maputil.Values(bg.docMap), func(src *batchGetterItem) (bool, *firestore.DocumentRef) {
+			return !src.committed, src.docRef
 		})
+
 	var dsnps []*firestore.DocumentSnapshot
 	var err error
 
@@ -78,8 +94,30 @@ func (bg *batchGetter) Commit(ctx context.Context) error {
 		}
 		setDocByDst(dst, dsnp.Ref)
 		setEmptyBySlice(dst)
+		bg.docMap[dsnp.Ref.Path].committed = true
 	}
 	return nil
+}
+
+func (bg *batchGetter) Commit(ctx context.Context) error {
+	for !bg.isAllCommitted(ctx) {
+		if err := bg.commit(ctx); err != nil {
+			return err
+		}
+		bg.commitEventEmitter.Emit()
+	}
+	bg.commitEventEmitter.Clear()
+
+	bg.endEventEmitter.Emit()
+	bg.endEventEmitter.Clear()
+	return nil
+}
+
+func (bg *batchGetter) IsCommittedItem(path string) bool {
+	if d, ok := bg.docMap[path]; ok {
+		return d.committed
+	}
+	return true
 }
 
 func (bg *batchGetter) Get(path string) any {
@@ -87,4 +125,12 @@ func (bg *batchGetter) Get(path string) any {
 		return d.data
 	}
 	return nil
+}
+
+func (bg *batchGetter) OnCommit(f func()) func() {
+	return bg.commitEventEmitter.Add(f)
+}
+
+func (bg *batchGetter) OnEnd(f func()) func() {
+	return bg.endEventEmitter.Add(f)
 }
