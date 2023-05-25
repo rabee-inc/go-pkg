@@ -84,6 +84,7 @@ func (bg *batchGetter) commit(ctx context.Context) error {
 		var dst any
 		if d, ok := bg.docMap[dsnp.Ref.Path]; ok {
 			dst = d.data
+			d.committed = true
 		} else {
 			continue
 		}
@@ -94,7 +95,6 @@ func (bg *batchGetter) commit(ctx context.Context) error {
 		}
 		setDocByDst(dst, dsnp.Ref)
 		setEmptyBySlice(dst)
-		bg.docMap[dsnp.Ref.Path].committed = true
 	}
 	return nil
 }
