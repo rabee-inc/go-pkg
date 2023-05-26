@@ -16,6 +16,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/unrolled/render v1.6.0
 	github.com/vincent-petithory/dataurl v1.0.0
+	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.9.0
 	google.golang.org/api v0.119.0
