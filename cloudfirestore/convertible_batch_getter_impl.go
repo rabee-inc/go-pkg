@@ -95,7 +95,12 @@ func (cbg *convertibleBatchGetter[S, D]) convertAll() {
 		src := cbg.bg.Get(item.Path)
 		srcs[i] = src
 		if src != nil {
-			*(item.Dst) = *(cbg.convert(src.(*S)))
+			converted := cbg.convert(src.(*S))
+			if converted != nil {
+				*(item.Dst) = *converted
+			} else {
+				srcs[i] = nil
+			}
 		}
 	}
 
