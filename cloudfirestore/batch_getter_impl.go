@@ -36,6 +36,10 @@ func (bg *batchGetter) Add(docRef *firestore.DocumentRef, dst any) {
 	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
 		return
 	}
+	// 既に登録済みの場合は何もしない
+	if _, ok := bg.docMap[docRef.Path]; ok {
+		return
+	}
 	bg.docMap[docRef.Path] = &batchGetterItem{
 		docRef: docRef,
 		data:   dst,
