@@ -23,7 +23,9 @@ type TypeStructure struct {
 	// map, slice, array の要素の型情報。それ以外は nil
 	ElemType *TypeStructure `json:"elem_type,omitempty"`
 	// struct の field の型情報。それ以外は nil
-	Fields map[string]*TypeStructure `json:"fields,omitempty"`
+	Fields    map[string]*TypeStructure `json:"fields,omitempty"`
+	OmitEmpty bool                      `json:"omit_empty,omitempty"`
+	Validate  string                    `json:"validate,omitempty"`
 }
 
 type UnionStructure struct {

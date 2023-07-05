@@ -163,7 +163,6 @@ func (r *router) Trace(pattern string, re RouterElement) {
 	r.handle(http.MethodTrace, pattern, re)
 }
 
-// router のエンドポイントと input, output の型定義を出力する
 func (r *router) GetRouterDefinition() ([]*RouterDefinition, map[string]*TypeStructure) {
 	ts := NewTypeScanner()
 	ts.DisableStructField()
