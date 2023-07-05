@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type typeScanner struct {
@@ -139,13 +141,16 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 				continue
 			}
 
+			omitEmpty := false
 			for _, tagName := range t.structTagNames {
 				tagValue := field.Tag.Get(tagName)
-				tagValue = strings.Split(tagValue, ",")[0]
+				values := strings.Split(tagValue, ",")
+				tagValue = values[0]
 				if tagValue != "-" {
 					keyName = tagValue
 				}
 				if keyName != "" {
+					omitEmpty = slices.Contains(values[1:], "omitempty")
 					break
 				}
 			}
@@ -161,6 +166,8 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 
 			fieldTs := t.scan(field.Type, true)
 			if fieldTs != nil {
+				fieldTs.OmitEmpty = omitEmpty
+				fieldTs.Validate = field.Tag.Get("validate")
 				ts.Fields[keyName] = fieldTs
 			}
 		}
