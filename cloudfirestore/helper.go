@@ -167,7 +167,7 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst any) (bool, erro
 	}
 	defer it.Stop()
 	dsnp, err := it.Next()
-	if err == iterator.Done {
+	if errors.Is(err, iterator.Done) {
 		return false, nil
 	}
 	if err != nil {
@@ -197,7 +197,7 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts any) error {
 	rrt := rv.Type().Elem().Elem()
 	for {
 		dsnp, err := it.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
@@ -236,7 +236,7 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 	var lastDsnp *firestore.DocumentSnapshot
 	for {
 		dsnp, err := it.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
