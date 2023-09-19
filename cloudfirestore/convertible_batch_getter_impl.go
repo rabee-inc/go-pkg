@@ -16,36 +16,36 @@ type convertibleBatchGetterItem[D any] struct {
 	OnEmptyFunc func()
 }
 
-func (a *convertibleBatchGetterItem[D]) After(f func(D)) ConvertibleBatchGetterItem[D] {
-	a.AfterFunc = f
-	return a
+func (cbg *convertibleBatchGetterItem[D]) After(f func(D)) ConvertibleBatchGetterItem[D] {
+	cbg.AfterFunc = f
+	return cbg
 }
 
-func (a *convertibleBatchGetterItem[D]) EmitAfter(d D) {
-	if a.AfterFunc != nil {
-		a.AfterFunc(d)
+func (cbg *convertibleBatchGetterItem[D]) EmitAfter(d D) {
+	if cbg.AfterFunc != nil {
+		cbg.AfterFunc(d)
 	}
 }
 
-func (a *convertibleBatchGetterItem[D]) RemoveAfter() ConvertibleBatchGetterItem[D] {
-	a.AfterFunc = nil
-	return a
+func (cbg *convertibleBatchGetterItem[D]) RemoveAfter() ConvertibleBatchGetterItem[D] {
+	cbg.AfterFunc = nil
+	return cbg
 }
 
-func (a *convertibleBatchGetterItem[D]) OnEmpty(f func()) ConvertibleBatchGetterItem[D] {
-	a.OnEmptyFunc = f
-	return a
+func (cbg *convertibleBatchGetterItem[D]) OnEmpty(f func()) ConvertibleBatchGetterItem[D] {
+	cbg.OnEmptyFunc = f
+	return cbg
 }
 
-func (a *convertibleBatchGetterItem[D]) EmitEmpty() {
-	if a.OnEmptyFunc != nil {
-		a.OnEmptyFunc()
+func (cbg *convertibleBatchGetterItem[D]) EmitEmpty() {
+	if cbg.OnEmptyFunc != nil {
+		cbg.OnEmptyFunc()
 	}
 }
 
-func (a *convertibleBatchGetterItem[D]) RemoveOnEmpty() ConvertibleBatchGetterItem[D] {
-	a.OnEmptyFunc = nil
-	return a
+func (cbg *convertibleBatchGetterItem[D]) RemoveOnEmpty() ConvertibleBatchGetterItem[D] {
+	cbg.OnEmptyFunc = nil
+	return cbg
 }
 
 type convertibleBatchGetter[S, D any] struct {
