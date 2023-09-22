@@ -21,11 +21,6 @@ func ByUnix(u int64) time.Time {
 	return time.Unix(uSec, uNano-(uSec*1000*1000*1000)).In(ZoneJST())
 }
 
-// TimeからUnixTime(ミリ秒)に変換する
-func ToUnix(t time.Time) int64 {
-	return t.UnixNano() / int64(time.Millisecond)
-}
-
 // 日本のタイムゾーンを取得する
 func ZoneJST() *time.Location {
 	return time.FixedZone("Asia/Tokyo", 9*60*60)
@@ -56,7 +51,7 @@ func IsToday(u int64) bool {
 	t := Now()
 	startTime := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, ZoneJST())
 	endTime := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, ZoneJST())
-	return ToUnix(startTime) <= u && u <= ToUnix(endTime)
+	return startTime.UnixMilli() <= u && u <= endTime.UnixMilli()
 }
 
 // 日の範囲(0:00:00〜23:59:59)を取得する
@@ -65,7 +60,7 @@ func DayPeriod(at int64, diff int) (int64, int64) {
 	t = t.AddDate(0, 0, diff)
 	startTime := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, ZoneJST())
 	endTime := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, ZoneJST())
-	return ToUnix(startTime), ToUnix(endTime)
+	return startTime.UnixMilli(), endTime.UnixMilli()
 }
 
 // 月の範囲(1日0:00:00〜最終日23:59:59)を取得する
@@ -74,7 +69,7 @@ func MonthPeriod(at int64, diff int) (int64, int64) {
 	t = t.AddDate(0, diff, 0)
 	startTime := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, ZoneJST())
 	endTime := time.Date(t.Year(), t.Month(), 1, 23, 59, 59, 0, ZoneJST()).AddDate(0, 1, -1)
-	return ToUnix(startTime), ToUnix(endTime)
+	return startTime.UnixMilli(), endTime.UnixMilli()
 }
 
 // 年の範囲(12月1日0:00:00〜12月31日23:59:59)を取得する
@@ -83,7 +78,7 @@ func YearPeriod(at int64, diff int) (int64, int64) {
 	t = t.AddDate(diff, 0, 0)
 	startTime := time.Date(t.Year(), 1, 1, 0, 0, 0, 0, ZoneJST())
 	endTime := time.Date(t.Year(), 1, 1, 23, 59, 59, 0, ZoneJST()).AddDate(1, 0, -1)
-	return ToUnix(startTime), ToUnix(endTime)
+	return startTime.UnixMilli(), endTime.UnixMilli()
 }
 
 // 月の最終日を取得する
@@ -113,4 +108,10 @@ func GetWeekJP(t time.Time) string {
 		week = "土"
 	}
 	return week
+}
+
+// 指定日時をUnixTimeで取得する
+func UnixMilli(year int, month int, day int, hour int, minute int, second int) int64 {
+	t := time.Date(year, time.Month(month), day, hour, minute, second, 0, ZoneJST())
+	return t.UnixMilli()
 }
