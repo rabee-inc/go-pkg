@@ -97,8 +97,9 @@ func (bg *batchGetter) commit(ctx context.Context) error {
 			log.Error(ctx, err)
 			return err
 		}
-		setDocByDst(dst, dsnp.Ref)
-		setEmptyBySlice(dst)
+		SetDocByDst(dst, dsnp.Ref)
+		SetEmptyBySlice(dst)
+		SetEmptyByMap(dst)
 	}
 	return nil
 }

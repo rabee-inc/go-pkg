@@ -6,7 +6,7 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-func setDocByDst(dst any, ref *firestore.DocumentRef) {
+func SetDocByDst(dst any, ref *firestore.DocumentRef) {
 	rv := reflect.Indirect(reflect.ValueOf(dst))
 	rt := rv.Type()
 	if rt.Kind() == reflect.Struct {
@@ -25,7 +25,7 @@ func setDocByDst(dst any, ref *firestore.DocumentRef) {
 	}
 }
 
-func setDocByDsts(rv reflect.Value, rt reflect.Type, ref *firestore.DocumentRef) {
+func SetDocByDsts(rv reflect.Value, rt reflect.Type, ref *firestore.DocumentRef) {
 	if rt.Kind() == reflect.Struct {
 		for i := 0; i < rt.NumField(); i++ {
 			f := rt.Field(i)
@@ -42,7 +42,7 @@ func setDocByDsts(rv reflect.Value, rt reflect.Type, ref *firestore.DocumentRef)
 	}
 }
 
-func setEmptyBySlice(dst any) {
+func SetEmptyBySlice(dst any) {
 	rv := reflect.Indirect(reflect.ValueOf(dst))
 	rt := rv.Type()
 	if rt.Kind() == reflect.Struct {
@@ -58,7 +58,7 @@ func setEmptyBySlice(dst any) {
 	}
 }
 
-func setEmptyBySlices(rv reflect.Value, rt reflect.Type) {
+func SetEmptyBySlices(rv reflect.Value, rt reflect.Type) {
 	if rt.Kind() == reflect.Struct {
 		for i := 0; i < rt.NumField(); i++ {
 			f := rt.Field(i)
@@ -66,6 +66,36 @@ func setEmptyBySlices(rv reflect.Value, rt reflect.Type) {
 				sp := reflect.MakeSlice(f.Type, 0, 0)
 				s := reflect.Indirect(sp)
 				rv.Elem().Field(i).Set(s)
+				continue
+			}
+		}
+	}
+}
+
+func SetEmptyByMap(dst any) {
+	rv := reflect.Indirect(reflect.ValueOf(dst))
+	rt := rv.Type()
+	if rt.Kind() == reflect.Struct {
+		for i := 0; i < rt.NumField(); i++ {
+			f := rt.Field(i)
+			if f.Type.Kind() == reflect.Map && rv.Field(i).Len() == 0 {
+				mp := reflect.MakeMap(f.Type)
+				m := reflect.Indirect(mp)
+				rv.Field(i).Set(m)
+				continue
+			}
+		}
+	}
+}
+
+func SetEmptyByMaps(rv reflect.Value, rt reflect.Type) {
+	if rt.Kind() == reflect.Struct {
+		for i := 0; i < rt.NumField(); i++ {
+			f := rt.Field(i)
+			if f.Type.Kind() == reflect.Map && rv.Elem().Field(i).Len() == 0 {
+				mp := reflect.MakeMap(f.Type)
+				m := reflect.Indirect(mp)
+				rv.Elem().Field(i).Set(m)
 				continue
 			}
 		}

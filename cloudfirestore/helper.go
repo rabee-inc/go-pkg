@@ -110,8 +110,9 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst any) (bool, err
 		log.Error(ctx, err)
 		return false, err
 	}
-	setDocByDst(dst, dsnp.Ref)
-	setEmptyBySlice(dst)
+	SetDocByDst(dst, dsnp.Ref)
+	SetEmptyBySlice(dst)
+	SetEmptyByMap(dst)
 	return true, nil
 }
 
@@ -149,8 +150,9 @@ func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*fire
 			return err
 		}
 		rrv := reflect.ValueOf(v)
-		setDocByDsts(rrv, rrt, dsnp.Ref)
-		setEmptyBySlices(rrv, rrt)
+		SetDocByDsts(rrv, rrt, dsnp.Ref)
+		SetEmptyBySlices(rrv, rrt)
+		SetEmptyByMaps(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
@@ -179,8 +181,9 @@ func GetByQuery(ctx context.Context, query firestore.Query, dst any) (bool, erro
 		log.Error(ctx, err)
 		return false, err
 	}
-	setDocByDst(dst, dsnp.Ref)
-	setEmptyBySlice(dst)
+	SetDocByDst(dst, dsnp.Ref)
+	SetEmptyBySlice(dst)
+	SetEmptyByMap(dst)
 	return true, nil
 }
 
@@ -211,8 +214,9 @@ func ListByQuery(ctx context.Context, query firestore.Query, dsts any) error {
 			return err
 		}
 		rrv := reflect.ValueOf(v)
-		setDocByDsts(rrv, rrt, dsnp.Ref)
-		setEmptyBySlices(rrv, rrt)
+		SetDocByDsts(rrv, rrt, dsnp.Ref)
+		SetEmptyBySlices(rrv, rrt)
+		SetEmptyByMaps(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 	}
 	return nil
@@ -250,8 +254,9 @@ func ListByQueryCursor(ctx context.Context, query firestore.Query, limit int, cu
 			return nil, err
 		}
 		rrv := reflect.ValueOf(v)
-		setDocByDsts(rrv, rrt, dsnp.Ref)
-		setEmptyBySlices(rrv, rrt)
+		SetDocByDsts(rrv, rrt, dsnp.Ref)
+		SetEmptyBySlices(rrv, rrt)
+		SetEmptyByMaps(rrv, rrt)
 		rv.Set(reflect.Append(rv, rrv))
 		lastDsnp = dsnp
 	}
@@ -267,7 +272,8 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src any) error
 	if !ValidateCollectionRef(colRef) {
 		return errors.New("Invalid Collection Path: " + colRef.Path)
 	}
-	setEmptyBySlice(src)
+	SetEmptyBySlice(src)
+	SetEmptyByMap(src)
 	var docRef *firestore.DocumentRef
 	if tx := getContextTransaction(ctx); tx != nil {
 		id := stringutil.UniqueID()
@@ -293,7 +299,7 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src any) error
 			return err
 		}
 	}
-	setDocByDst(src, docRef)
+	SetDocByDst(src, docRef)
 	return nil
 }
 
@@ -332,7 +338,8 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src any) error {
 	if !ValidateDocumentRef(docRef) {
 		return errors.New("Invalid Document Path: " + docRef.Path)
 	}
-	setEmptyBySlice(src)
+	SetEmptyBySlice(src)
+	SetEmptyByMap(src)
 	if tx := getContextTransaction(ctx); tx != nil {
 		err := tx.Set(docRef, src)
 		if err != nil {
@@ -352,7 +359,7 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src any) error {
 			return err
 		}
 	}
-	setDocByDst(src, docRef)
+	SetDocByDst(src, docRef)
 	return nil
 }
 
