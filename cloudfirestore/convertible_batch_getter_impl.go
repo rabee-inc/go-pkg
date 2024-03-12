@@ -49,12 +49,12 @@ func (cbg *convertibleBatchGetterItem[D]) RemoveOnEmpty() ConvertibleBatchGetter
 }
 
 type convertibleBatchGetter[S, D any] struct {
-	bg      BatchGetter
-	items   sliceutil.Slice[*convertibleBatchGetterItem[*D]]
-	dstMap  map[string]*D
-	getDoc  FuncGetDoc
-	getID   FuncGetID[D]
-	convert FuncConvert[S, D]
+	BG      BatchGetter
+	Items   sliceutil.Slice[*convertibleBatchGetterItem[*D]]
+	DstMap  map[string]*D
+	GetDoc  FuncGetDoc
+	GetID   FuncGetID[D]
+	Convert FuncConvert[S, D]
 }
 
 func NewConvertibleBatchGetter[S, D any](
@@ -64,12 +64,12 @@ func NewConvertibleBatchGetter[S, D any](
 	convert FuncConvert[S, D],
 ) ConvertibleBatchGetter[S, D] {
 	cbg := &convertibleBatchGetter[S, D]{
-		bg:      bg,
-		dstMap:  map[string]*D{},
-		items:   []*convertibleBatchGetterItem[*D]{},
-		getDoc:  getDoc,
-		getID:   getID,
-		convert: convert,
+		BG:      bg,
+		DstMap:  map[string]*D{},
+		Items:   []*convertibleBatchGetterItem[*D]{},
+		GetDoc:  getDoc,
+		GetID:   getID,
+		Convert: convert,
 	}
 
 	bg.OnCommit(func() {
@@ -84,18 +84,18 @@ func NewConvertibleBatchGetter[S, D any](
 }
 
 func (cbg *convertibleBatchGetter[S, D]) convertAll() {
-	items := cbg.items.Filter(func(item *convertibleBatchGetterItem[*D]) bool {
-		return !item.Converted && cbg.bg.IsCommittedItem(item.Path)
+	items := cbg.Items.Filter(func(item *convertibleBatchGetterItem[*D]) bool {
+		return !item.Converted && cbg.BG.IsCommittedItem(item.Path)
 	})
 
 	srcs := make([]any, len(items))
 
 	// 変換処理
 	for i, item := range items {
-		src := cbg.bg.Get(item.Path)
+		src := cbg.BG.Get(item.Path)
 		srcs[i] = src
 		if src != nil {
-			converted := cbg.convert(src.(*S))
+			converted := cbg.Convert(src.(*S))
 			if converted != nil {
 				*(item.Dst) = *converted
 			} else {
@@ -114,7 +114,7 @@ func (cbg *convertibleBatchGetter[S, D]) convertAll() {
 		}
 		item.RemoveAfter()
 		item.RemoveOnEmpty()
-		cbg.dstMap[item.Path] = item.Dst
+		cbg.DstMap[item.Path] = item.Dst
 		item.Converted = true
 	}
 }
@@ -126,42 +126,42 @@ func (cbg *convertibleBatchGetter[S, D]) Add(ids ...string) ConvertibleBatchGett
 func (cbg *convertibleBatchGetter[S, D]) Set(d *D, ids ...string) ConvertibleBatchGetterItem[*D] {
 	id := ""
 	if d != nil {
-		id = cbg.getID(d)
+		id = cbg.GetID(d)
 	}
 	return cbg.SetWithID(d, append(ids, id)...)
 }
 
 func (cbg *convertibleBatchGetter[S, D]) SetWithID(d *D, ids ...string) ConvertibleBatchGetterItem[*D] {
-	docRef := cbg.getDoc(ids...)
+	docRef := cbg.GetDoc(ids...)
 	data := new(S)
-	cbg.bg.Add(docRef, data)
+	cbg.BG.Add(docRef, data)
 
 	item := &convertibleBatchGetterItem[*D]{
 		ID:   docRef.ID,
 		Path: docRef.Path,
 		Dst:  d,
 	}
-	cbg.items = append(cbg.items, item)
+	cbg.Items = append(cbg.Items, item)
 	return item
 }
 
 func (cbg *convertibleBatchGetter[S, D]) Delete(ids ...string) {
-	docRef := cbg.getDoc(ids...)
-	cbg.bg.Delete(docRef)
+	docRef := cbg.GetDoc(ids...)
+	cbg.BG.Delete(docRef)
 }
 
 func (cbg *convertibleBatchGetter[S, D]) GetMap() map[string]*D {
-	return maps.Clone(cbg.dstMap)
+	return maps.Clone(cbg.DstMap)
 }
 
 func (cbg *convertibleBatchGetter[S, D]) Get(ids ...string) *D {
-	docRef := cbg.getDoc(ids...)
-	if dst, ok := cbg.dstMap[docRef.Path]; ok {
+	docRef := cbg.GetDoc(ids...)
+	if dst, ok := cbg.DstMap[docRef.Path]; ok {
 		return dst
 	}
 	return nil
 }
 
 func (cbg *convertibleBatchGetter[S, D]) Commit(ctx context.Context) error {
-	return cbg.bg.Commit(ctx)
+	return cbg.BG.Commit(ctx)
 }
