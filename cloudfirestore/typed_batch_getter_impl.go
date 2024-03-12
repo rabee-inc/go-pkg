@@ -10,12 +10,12 @@ func NewTypedBatchGetter[T any](
 		convert = func(t *T) *T { return t }
 	}
 	cbg := &convertibleBatchGetter[T, T]{
-		bg:      bg,
-		dstMap:  map[string]*T{},
-		items:   []*convertibleBatchGetterItem[*T]{},
-		getDoc:  getDoc,
-		getID:   getID,
-		convert: convert,
+		BG:      bg,
+		DstMap:  map[string]*T{},
+		Items:   []*convertibleBatchGetterItem[*T]{},
+		GetDoc:  getDoc,
+		GetID:   getID,
+		Convert: convert,
 	}
 
 	bg.OnCommit(func() {

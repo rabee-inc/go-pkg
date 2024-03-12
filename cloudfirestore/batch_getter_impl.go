@@ -50,7 +50,7 @@ func (bg *batchGetter) Delete(docRef *firestore.DocumentRef) {
 	delete(bg.docMap, docRef.Path)
 }
 
-func (bg *batchGetter) isAllCommitted(ctx context.Context) bool {
+func (bg *batchGetter) isAllCommitted() bool {
 	for _, item := range bg.docMap {
 		if !item.committed {
 			return false
@@ -105,7 +105,7 @@ func (bg *batchGetter) commit(ctx context.Context) error {
 }
 
 func (bg *batchGetter) Commit(ctx context.Context) error {
-	for !bg.isAllCommitted(ctx) {
+	for !bg.isAllCommitted() {
 		if err := bg.commit(ctx); err != nil {
 			return err
 		}
