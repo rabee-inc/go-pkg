@@ -1,6 +1,8 @@
 package codegen
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"go/format"
 	"os"
@@ -27,14 +29,42 @@ func getActualType(t string) string {
 
 var vl = validator.New()
 
+// ExportByYaml ... yaml ファイルからコードを生成し、ファイルに出力する
 func ExportByYaml(path string) {
 	// yaml 読み込み
 	file, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
+
+	formattedCode, val := GenerateByYamlFile(filepath.Base(path), file)
+
+	absOutput, err := filepath.Abs(val.Settings.Output)
+	if err != nil {
+		panic(err)
+	}
+
+	// ディレクトリがない場合は、作る
+	dir := filepath.Dir(absOutput)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0777)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err = os.WriteFile(absOutput, formattedCode, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("generated: " + absOutput)
+}
+
+// GenerateByYamlFile ... yaml ファイルからコードを生成する
+func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	val := &yamlInput{}
-	err = yaml.Unmarshal(file, &val)
+	err := yaml.Unmarshal(file, &val)
 	if err != nil {
 		panic(err)
 	}
@@ -50,8 +80,9 @@ func ExportByYaml(path string) {
 		typeDefs = append(typeDefs, newTypeDef(v))
 	}
 
-	outputCode := getHeader(filepath.Base(path)) + "\n\n"
+	outputCode := getHeader(name) + "\n\n"
 	outputCode += getPackage(val.Settings.Package) + "\n\n"
+	outputCode += getCheckSum(GenerateCheckSum(file)) + "\n\n"
 	outputCode += defaultMetaDataCode + "\n\n"
 
 	// constants struct
@@ -133,32 +164,20 @@ func ExportByYaml(path string) {
 	outputCode += getConstantsMethodGetConstIDs(strings.Join(generateAnySliceCodes, "\n"), strings.Join(anySliceVars, "\n"))
 	outputCode += getInitCode(strings.Join(generateMapCodes, "\n"), strings.Join(constantsInitParams, "\n"))
 
-	absOutput, err := filepath.Abs(val.Settings.Output)
-	if err != nil {
-		panic(err)
-	}
-
 	// コードのフォーマット
 	formattedCode, err := format.Source([]byte(outputCode))
 	if err != nil {
 		panic(err)
 	}
 
-	// ディレクトリがない場合は、作る
-	dir := filepath.Dir(absOutput)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err = os.MkdirAll(dir, 0777)
-		if err != nil {
-			panic(err)
-		}
-	}
+	return formattedCode, val
+}
 
-	err = os.WriteFile(absOutput, formattedCode, 0666)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("generated: " + absOutput)
+// GenerateCheckSum ... チェックサムを生成する
+func GenerateCheckSum(text []byte) string {
+	r := sha256.Sum256(text)
+	checkSum := hex.EncodeToString(r[:])
+	return checkSum
 }
 
 func newTypeDef(ts *typeInput) *typeDef {
@@ -429,6 +448,12 @@ const packageCode = "package %s"
 
 func getPackage(name string) string {
 	return fmt.Sprintf(packageCode, name)
+}
+
+const checkSumCode = `const CheckSum = "%s"`
+
+func getCheckSum(checkSum string) string {
+	return fmt.Sprintf(checkSumCode, checkSum)
 }
 
 const defaultMetaDataCode = `
