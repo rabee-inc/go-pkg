@@ -14,11 +14,28 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-var reInvalidDocID = regexp.MustCompile(`\.|/`)
+var regexpInvalidDocID1 = regexp.MustCompile(`\.|/`)
+var regexpInvalidDocID2 = regexp.MustCompile(`__.*__`)
 
 // 正常な DocumentID かチェック
-func ValidateDocumentID(str string) bool {
-	return !reInvalidDocID.MatchString(str)
+// https://firebase.google.com/docs/firestore/quotas?hl=ja#collections_documents_and_fields
+func ValidateDocumentID(id string) bool {
+	// 1,500 バイト以下にする必要があります
+	if len(id) == 0 || 1500 < len(id) {
+		return false
+	}
+
+	// スラッシュ（/）は使用できません。
+	// 1 つのピリオド（.）または 2 つのピリオド（..）のみで構成することはできません。
+	if regexpInvalidDocID1.MatchString(id) {
+		return false
+	}
+
+	// 次の正規表現とは照合できません: __.*__
+	if regexpInvalidDocID2.MatchString(id) {
+		return false
+	}
+	return true
 }
 
 // 正常な Path かチェック
