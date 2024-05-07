@@ -105,6 +105,11 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		// type
 		outputCode += getConstantType(pascalName, td.BaseType)
 
+		// method
+		outputCode += getConstantMethodString(pascalName)
+		outputCode += getConstantMethodMeta(pascalName)
+		outputCode += getConstantMethodName(pascalName)
+
 		// const
 		constValues := []string{}
 		for _, def := range td.Defs {
@@ -485,6 +490,45 @@ const (
 )
 
 `
+
+const constantMethodStringCode = `
+func (c %s) String() string {
+	return string(c)
+}
+
+`
+
+func getConstantMethodString(name string) string {
+	return fmt.Sprintf(constantMethodStringCode, name)
+}
+
+const constantMethodMetaCode = `
+func (c %s) Meta() (*%s, bool) {
+	m, ok := %s[c]
+	return m, ok
+}
+
+`
+
+func getConstantMethodMeta(name string) string {
+	tName := getConstantMetaDataTypeName(name)
+	mapName := getConstantMetaDataMapVariableName(name)
+	return fmt.Sprintf(constantMethodMetaCode, name, tName, mapName)
+}
+
+const constantMethodNameCode = `
+func (c %s) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+`
+
+func getConstantMethodName(name string) string {
+	return fmt.Sprintf(constantMethodNameCode, name)
+}
 
 func getConstantValues(values string) string {
 	return fmt.Sprintf(constantValuesCode, values)
