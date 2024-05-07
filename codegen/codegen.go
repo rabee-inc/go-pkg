@@ -20,7 +20,7 @@ const (
 	typeInt64  = "int64"
 )
 
-func getActualType(t string) string {
+func actualType(t string) string {
 	if t == typeFloat {
 		return "float64"
 	}
@@ -80,9 +80,9 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		typeDefs = append(typeDefs, newTypeDef(v))
 	}
 
-	outputCode := getHeader(name) + "\n\n"
-	outputCode += getPackage(val.Settings.Package) + "\n\n"
-	outputCode += getCheckSum(GenerateCheckSum(file)) + "\n\n"
+	outputCode := formatHeader(name) + "\n\n"
+	outputCode += formatPackage(val.Settings.Package) + "\n\n"
+	outputCode += formatCheckSum(GenerateCheckSum(file)) + "\n\n"
 	outputCode += defaultMetaDataCode + "\n\n"
 
 	// constants struct
@@ -101,73 +101,73 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	for _, td := range typeDefs {
 		pascalName := toPascalCase(td.Name)
 		// comment
-		outputCode += getConstantComment(pascalName, td.Comment)
+		outputCode += formatConstantComment(pascalName, td.Comment)
 		// type
-		outputCode += getConstantType(pascalName, td.BaseType)
+		outputCode += formatConstantType(pascalName, td.BaseType)
 
 		// method
-		outputCode += getConstantMethodString(pascalName)
-		outputCode += getConstantMethodMeta(pascalName)
-		outputCode += getConstantMethodName(pascalName)
+		outputCode += formatConstantMethodString(pascalName)
+		outputCode += formatConstantMethodMeta(pascalName)
+		outputCode += formatConstantMethodName(pascalName)
 
 		// const
 		constValues := []string{}
 		for _, def := range td.Defs {
-			constValues = append(constValues, getConstantValue(pascalName, toPascalCase(def.VariableName), td.BaseType == typeString, def.VariableValue))
+			constValues = append(constValues, formatConstantValue(pascalName, toPascalCase(def.VariableName), td.BaseType == typeString, def.VariableValue))
 		}
-		outputCode += getConstantValues(strings.Join(constValues, "\n"))
+		outputCode += formatConstantValues(strings.Join(constValues, "\n"))
 
 		// meta data type
 		if td.HasExtends {
 			params := []string{}
-			params = append(params, getConstantMetaDataTypeID(pascalName))
-			params = append(params, getConstantMetaDataTypeParam("name", "string"))
+			params = append(params, formatConstantMetaDataTypeID(pascalName))
+			params = append(params, formatConstantMetaDataTypeParam("name", "string"))
 			for _, def := range td.Extends {
-				params = append(params, getConstantMetaDataTypeParam(def.Name, def.Type))
+				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
 			}
-			outputCode += getConstantMetaDataType(pascalName, strings.Join(params, "\n"))
+			outputCode += formatConstantMetaDataType(pascalName, strings.Join(params, "\n"))
 		} else {
-			outputCode += getConstantMetaDataByGenerics(pascalName)
+			outputCode += formatConstantMetaDataByGenerics(pascalName)
 		}
 
 		// meta data list
 		metaDataListElements := []string{}
 		for _, def := range td.Defs {
 			params := []string{}
-			params = append(params, getConstantMetaDataParam("ID", pascalName+toPascalCase(def.VariableName), false))
-			params = append(params, getConstantMetaDataParam("Name", def.Name, true))
+			params = append(params, formatConstantMetaDataParam("ID", pascalName+toPascalCase(def.VariableName), false))
+			params = append(params, formatConstantMetaDataParam("Name", def.Name, true))
 			for _, extend := range def.ExtendValues {
-				params = append(params, getConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote))
+				params = append(params, formatConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote))
 			}
-			metaDataListElements = append(metaDataListElements, getConstantMetaDataListElement(strings.Join(params, "\n")))
+			metaDataListElements = append(metaDataListElements, formatConstantMetaDataListElement(strings.Join(params, "\n")))
 		}
-		outputCode += getConstantMetaDataList(pascalName, strings.Join(metaDataListElements, "\n"))
+		outputCode += formatConstantMetaDataList(pascalName, strings.Join(metaDataListElements, "\n"))
 
 		// meta data map (var)
-		outputCode += getConstantMetaDataMap(toPascalCase(td.Name))
+		outputCode += formatConstantMetaDataMap(toPascalCase(td.Name))
 
 		if !td.OnlyBackend {
 			// constant struct params
-			constantsStructParams = append(constantsStructParams, getConstantsStructParam(toPluralForm(td.Name), "[]*"+getConstantMetaDataTypeName(pascalName)))
-			constantsStructParams = append(constantsStructParams, getConstantsStructParam(td.Name, getConstantMetaDataMapTypeName(pascalName)))
+			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(toPluralForm(td.Name), "[]*"+formatConstantMetaDataTypeName(pascalName)))
+			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(td.Name, formatConstantMetaDataMapTypeName(pascalName)))
 
 			// init map generate codes
-			generateMapCodes = append(generateMapCodes, getGenerateMapCode(pascalName))
+			generateMapCodes = append(generateMapCodes, formatGenerateMapCode(pascalName))
 
 			// generate any slice for GetConstIDs
 			anySliceVarName := strings.ToLower(pascalName[0:1]) + pascalName[1:]
-			generateAnySliceCodes = append(generateAnySliceCodes, getGenerateAnySliceCode(anySliceVarName, pascalName))
+			generateAnySliceCodes = append(generateAnySliceCodes, formatGenerateAnySliceCode(anySliceVarName, pascalName))
 			anySliceVars = append(anySliceVars, anySliceVarName+",")
 
 			// init constants params
-			constantsInitParams = append(constantsInitParams, getConstantsInitParam(toPluralForm(pascalName), toPluralForm(pascalName)))
-			constantsInitParams = append(constantsInitParams, getConstantsInitParam(pascalName, getConstantMetaDataMapVariableName(pascalName)))
+			constantsInitParams = append(constantsInitParams, formatConstantsInitParam(toPluralForm(pascalName), toPluralForm(pascalName)))
+			constantsInitParams = append(constantsInitParams, formatConstantsInitParam(pascalName, formatConstantMetaDataMapVariableName(pascalName)))
 		}
 	}
 
-	outputCode += getConstantsStruct(strings.Join(constantsStructParams, "\n"))
-	outputCode += getConstantsMethodGetConstIDs(strings.Join(generateAnySliceCodes, "\n"), strings.Join(anySliceVars, "\n"))
-	outputCode += getInitCode(strings.Join(generateMapCodes, "\n"), strings.Join(constantsInitParams, "\n"))
+	outputCode += formatConstantsStruct(strings.Join(constantsStructParams, "\n"))
+	outputCode += formatConstantsMethodGetConstIDs(strings.Join(generateAnySliceCodes, "\n"), strings.Join(anySliceVars, "\n"))
+	outputCode += formatInitCode(strings.Join(generateMapCodes, "\n"), strings.Join(constantsInitParams, "\n"))
 
 	// コードのフォーマット
 	formattedCode, err := format.Source([]byte(outputCode))
@@ -206,7 +206,7 @@ func newTypeDef(ts *typeInput) *typeDef {
 	if ts.Type != "" {
 		switch ts.Type {
 		case typeString, typeInt, typeFloat, typeInt64:
-			td.BaseType = getActualType(ts.Type)
+			td.BaseType = actualType(ts.Type)
 		default:
 			types := strings.Join([]string{typeString, typeInt, typeFloat, typeInt64}, ", ")
 			panic(fmt.Sprintf("%s invalid type: %s.\nAvailable types: %s", typeName, ts.Type, types))
@@ -219,7 +219,7 @@ func newTypeDef(ts *typeInput) *typeDef {
 		for _, v := range ts.Extends {
 			td.Extends = append(td.Extends, &extendDef{
 				Name: v.Name,
-				Type: getActualType(v.Type),
+				Type: actualType(v.Type),
 			})
 		}
 	}
@@ -445,19 +445,19 @@ func toPluralForm(word string) string {
 
 const header = "// Code generated by %s DO NOT EDIT."
 
-func getHeader(name string) string {
+func formatHeader(name string) string {
 	return fmt.Sprintf(header, name)
 }
 
 const packageCode = "package %s"
 
-func getPackage(name string) string {
+func formatPackage(name string) string {
 	return fmt.Sprintf(packageCode, name)
 }
 
 const checkSumCode = `const CheckSum = "%s"`
 
-func getCheckSum(checkSum string) string {
+func formatCheckSum(checkSum string) string {
 	return fmt.Sprintf(checkSumCode, checkSum)
 }
 
@@ -471,7 +471,7 @@ type ConstantMetaData[T comparable] struct {
 
 const constantCommentCode = "// %s ... %s"
 
-func getConstantComment(name, comment string) string {
+func formatConstantComment(name, comment string) string {
 	return fmt.Sprintf(constantCommentCode, name, comment)
 }
 
@@ -480,7 +480,7 @@ type %s %s
 
 `
 
-func getConstantType(name, base string) string {
+func formatConstantType(name, base string) string {
 	return fmt.Sprintf(constantTypeCode, name, base)
 }
 
@@ -498,7 +498,7 @@ func (c %s) String() string {
 
 `
 
-func getConstantMethodString(name string) string {
+func formatConstantMethodString(name string) string {
 	return fmt.Sprintf(constantMethodStringCode, name)
 }
 
@@ -510,9 +510,9 @@ func (c %s) Meta() (*%s, bool) {
 
 `
 
-func getConstantMethodMeta(name string) string {
-	tName := getConstantMetaDataTypeName(name)
-	mapName := getConstantMetaDataMapVariableName(name)
+func formatConstantMethodMeta(name string) string {
+	tName := formatConstantMetaDataTypeName(name)
+	mapName := formatConstantMetaDataMapVariableName(name)
 	return fmt.Sprintf(constantMethodMetaCode, name, tName, mapName)
 }
 
@@ -526,17 +526,17 @@ func (c %s) Name() string {
 
 `
 
-func getConstantMethodName(name string) string {
+func formatConstantMethodName(name string) string {
 	return fmt.Sprintf(constantMethodNameCode, name)
 }
 
-func getConstantValues(values string) string {
+func formatConstantValues(values string) string {
 	return fmt.Sprintf(constantValuesCode, values)
 }
 
 const constantValueCode = `%s%s %s = %s`
 
-func getConstantValue(tName, vName string, hasDoubleQuote bool, value string) string {
+func formatConstantValue(tName, vName string, hasDoubleQuote bool, value string) string {
 	outputValue := value
 	if hasDoubleQuote {
 		outputValue = fmt.Sprintf(`"%s"`, value)
@@ -546,7 +546,7 @@ func getConstantValue(tName, vName string, hasDoubleQuote bool, value string) st
 
 const constantMetaDataTypeNameCode = `%sMetaData`
 
-func getConstantMetaDataTypeName(tName string) string {
+func formatConstantMetaDataTypeName(tName string) string {
 	return fmt.Sprintf(constantMetaDataTypeNameCode, tName)
 }
 
@@ -555,8 +555,8 @@ type %s ConstantMetaData[%s]
 
 `
 
-func getConstantMetaDataByGenerics(tName string) string {
-	return fmt.Sprintf(constantMetaDataTypeByGenericsCode, getConstantMetaDataTypeName(tName), tName)
+func formatConstantMetaDataByGenerics(tName string) string {
+	return fmt.Sprintf(constantMetaDataTypeByGenericsCode, formatConstantMetaDataTypeName(tName), tName)
 }
 
 const constantMetaDataTypeCode = `
@@ -566,30 +566,30 @@ type %s struct {
 
 `
 
-func getConstantMetaDataType(tName, params string) string {
-	return fmt.Sprintf(constantMetaDataTypeCode, getConstantMetaDataTypeName(tName), params)
+func formatConstantMetaDataType(tName, params string) string {
+	return fmt.Sprintf(constantMetaDataTypeCode, formatConstantMetaDataTypeName(tName), params)
 }
 
 const constantMetaDataTypeCodeParam = `%s   %s ` + "`json:\"%s\"`"
 
-func getConstantMetaDataTypeParam(name, tName string) string {
+func formatConstantMetaDataTypeParam(name, tName string) string {
 	return fmt.Sprintf(constantMetaDataTypeCodeParam, toPascalCase(name), tName, name)
 }
 
-func getConstantMetaDataTypeID(tName string) string {
+func formatConstantMetaDataTypeID(tName string) string {
 	return fmt.Sprintf(constantMetaDataTypeCodeParam, "ID", tName, "id")
 }
 
 const constantMetaDataMapVariableNameCode = `%sMap`
 
-func getConstantMetaDataMapVariableName(tName string) string {
+func formatConstantMetaDataMapVariableName(tName string) string {
 	return fmt.Sprintf(constantMetaDataMapVariableNameCode, tName)
 }
 
 const constantMetaDataMapTypeCode = `map[%s]*%s`
 
-func getConstantMetaDataMapTypeName(tName string) string {
-	return fmt.Sprintf(constantMetaDataMapTypeCode, tName, getConstantMetaDataTypeName(tName))
+func formatConstantMetaDataMapTypeName(tName string) string {
+	return fmt.Sprintf(constantMetaDataMapTypeCode, tName, formatConstantMetaDataTypeName(tName))
 }
 
 const constantMetaDataMapCode = `
@@ -597,8 +597,8 @@ var %s %s
 
 `
 
-func getConstantMetaDataMap(tName string) string {
-	return fmt.Sprintf(constantMetaDataMapCode, getConstantMetaDataMapVariableName(tName), getConstantMetaDataMapTypeName(tName))
+func formatConstantMetaDataMap(tName string) string {
+	return fmt.Sprintf(constantMetaDataMapCode, formatConstantMetaDataMapVariableName(tName), formatConstantMetaDataMapTypeName(tName))
 }
 
 const constantMetaDataListCode = `
@@ -608,21 +608,21 @@ var %s = []*%s{
 
 `
 
-func getConstantMetaDataList(tName, elements string) string {
-	return fmt.Sprintf(constantMetaDataListCode, toPluralForm(tName), getConstantMetaDataTypeName(tName), elements)
+func formatConstantMetaDataList(tName, elements string) string {
+	return fmt.Sprintf(constantMetaDataListCode, toPluralForm(tName), formatConstantMetaDataTypeName(tName), elements)
 }
 
 const constantMetaDataListElementCode = `{
 %s
 },`
 
-func getConstantMetaDataListElement(params string) string {
+func formatConstantMetaDataListElement(params string) string {
 	return fmt.Sprintf(constantMetaDataListElementCode, params)
 }
 
 const constantMetaDataParamCode = `%s: %s,`
 
-func getConstantMetaDataParam(name, value string, hasDoubleQuote bool) string {
+func formatConstantMetaDataParam(name, value string, hasDoubleQuote bool) string {
 	if hasDoubleQuote {
 		value = fmt.Sprintf(`"%s"`, value)
 	}
@@ -641,17 +641,18 @@ var ` + constantsVariableNameCode + ` *` + constantsTypeNameCode + `
 
 `
 
-func getConstantsStruct(params string) string {
+func formatConstantsStruct(params string) string {
 	return fmt.Sprintf(constantsStructCode, params)
 }
 
 const constantsStructParamCode = `%s %s ` + "`json:\"%s\"`"
 
-func getConstantsStructParam(name, tName string) string {
+func formatConstantsStructParam(name, tName string) string {
 	return fmt.Sprintf(constantsStructParamCode, toPascalCase(name), tName, name)
 }
 
 const constantsMethodGetConstIDsCode = `
+// deprecated use ConstIDs
 func (c *` + constantsTypeNameCode + `) GetConstIDs() [][]any {
 	%s
 	return [][]any{
@@ -659,9 +660,13 @@ func (c *` + constantsTypeNameCode + `) GetConstIDs() [][]any {
 	}
 }
 
+func (c *` + constantsTypeNameCode + `) ConstIDs() [][]any {
+	return c.GetConstIDs()
+}
+
 `
 
-func getConstantsMethodGetConstIDs(generateAnySliceCodes, constantsParams string) string {
+func formatConstantsMethodGetConstIDs(generateAnySliceCodes, constantsParams string) string {
 	return fmt.Sprintf(constantsMethodGetConstIDsCode, generateAnySliceCodes, constantsParams)
 }
 
@@ -672,7 +677,7 @@ for _, v := range c.%s {
 }
 `
 
-func getGenerateAnySliceCode(name, tName string) string {
+func formatGenerateAnySliceCode(name, tName string) string {
 	return fmt.Sprintf(generateAnySliceCode, name, toPluralForm(tName), name, name)
 }
 
@@ -685,7 +690,7 @@ func init() {
 }
 `
 
-func getInitCode(generateMapCodes, constantsParams string) string {
+func formatInitCode(generateMapCodes, constantsParams string) string {
 	return fmt.Sprintf(initCode, generateMapCodes, constantsParams)
 }
 
@@ -696,17 +701,17 @@ const generateMapCode = `
 	}
 `
 
-func getGenerateMapCode(tName string) string {
+func formatGenerateMapCode(tName string) string {
 	return fmt.Sprintf(generateMapCode,
-		getConstantMetaDataMapVariableName(tName),
-		getConstantMetaDataMapTypeName(tName),
+		formatConstantMetaDataMapVariableName(tName),
+		formatConstantMetaDataMapTypeName(tName),
 		toPluralForm(tName),
-		getConstantMetaDataMapVariableName(tName),
+		formatConstantMetaDataMapVariableName(tName),
 	)
 }
 
 const constantsInitParamCode = `%s: %s,`
 
-func getConstantsInitParam(name, value string) string {
+func formatConstantsInitParam(name, value string) string {
 	return fmt.Sprintf(constantsInitParamCode, name, value)
 }
