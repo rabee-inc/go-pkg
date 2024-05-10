@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/rabee-inc/go-pkg/sliceutil"
 	"gopkg.in/go-playground/validator.v9"
 	"gopkg.in/yaml.v3"
 )
@@ -437,6 +438,10 @@ func toPluralForm(word string) string {
 	if strings.HasSuffix(word, "s") {
 		return word + "es"
 	} else if strings.HasSuffix(word, "y") {
+		// (a,i,u,e,o)y で終わる場合、sだけつける
+		if sliceutil.Contains([]string{"a", "i", "u", "e", "o"}, string(word[len(word)-2])) {
+			return word + "s"
+		}
 		return word[:len(word)-1] + "ies"
 	} else {
 		return word + "s"
