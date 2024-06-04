@@ -20,8 +20,13 @@ var regexpInvalidDocID2 = regexp.MustCompile(`__.*__`)
 // 正常な DocumentID かチェック
 // https://firebase.google.com/docs/firestore/quotas?hl=ja#collections_documents_and_fields
 func ValidateDocumentID(id string) bool {
+	// 空文字は使用できない
+	if id == "" {
+		return false
+	}
+
 	// 1,500 バイト以下にする必要があります
-	if len(id) == 0 || 1500 < len(id) {
+	if 1500 < len(id) {
 		return false
 	}
 
@@ -61,6 +66,9 @@ func ValidateCollectionRef(colRef *firestore.CollectionRef) bool {
 
 // 正常な Path かチェック
 func ValidateDocumentRef(docRef *firestore.DocumentRef) bool {
+	if docRef == nil {
+		return false
+	}
 	if !ValidateDocumentID(docRef.ID) {
 		return false
 	}
@@ -105,7 +113,8 @@ func CommitBulkWriter(ctx context.Context) (context.Context, error) {
 
 // 単体取得する(tx対応)
 func Get(ctx context.Context, docRef *firestore.DocumentRef, dst any) (bool, error) {
-	if docRef == nil || docRef.ID == "" || !ValidateDocumentID(docRef.ID) {
+	// 不正なIDがないかチェック
+	if !ValidateDocumentRef(docRef) {
 		return false, nil
 	}
 	var dsnp *firestore.DocumentSnapshot
@@ -137,7 +146,8 @@ func Get(ctx context.Context, docRef *firestore.DocumentRef, dst any) (bool, err
 func GetMulti(ctx context.Context, cFirestore *firestore.Client, docRefs []*firestore.DocumentRef, dsts any) error {
 	docRefs = sliceutil.StreamOf(docRefs).
 		Filter(func(docRef *firestore.DocumentRef) bool {
-			return docRef != nil && docRef.ID != "" && ValidateDocumentID(docRef.ID)
+			// 不正なIDがないかチェック
+			return docRef != nil && ValidateDocumentRef(docRef)
 		}).
 		Out().([]*firestore.DocumentRef)
 	if len(docRefs) == 0 {
@@ -322,6 +332,10 @@ func Create(ctx context.Context, colRef *firestore.CollectionRef, src any) error
 
 // 更新する(tx, bw対応)
 func Update(ctx context.Context, docRef *firestore.DocumentRef, kv map[string]any) error {
+	// 不正なIDがないかチェック
+	if !ValidateDocumentRef(docRef) {
+		return errors.New("Invalid Document Path: " + docRef.Path)
+	}
 	srcs := []firestore.Update{}
 	for k, v := range kv {
 		src := firestore.Update{Path: k, Value: v}
@@ -382,6 +396,10 @@ func Set(ctx context.Context, docRef *firestore.DocumentRef, src any) error {
 
 // 削除する(tx, bw対応)
 func Delete(ctx context.Context, docRef *firestore.DocumentRef) error {
+	// 不正なIDがないかチェック
+	if !ValidateDocumentRef(docRef) {
+		return errors.New("Invalid Document Path: " + docRef.Path)
+	}
 	if tx := getContextTransaction(ctx); tx != nil {
 		err := tx.Delete(docRef)
 		if err != nil {
