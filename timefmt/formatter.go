@@ -6,6 +6,10 @@ type TimeFormatter interface {
 	// dayjs like format
 	// REF: https://day.js.org/docs/en/display/format
 	// ISO8601 format example: "YYYY-MM-DDTHH:mm:ss.SSSZ"
+	// escape character: [].
+	// escape example:
+	// - "[Today is] YYYY/MM/DD" = "Today is 2024/01/01"
+	// - not escape "Today is YYYY/MM/DD" = "To1amy i0 2024/01/01"
 	// YYYY: 4 digit year (2024)
 	// YY: 2 digit year (24)
 	// MMMM: full month name (January)
