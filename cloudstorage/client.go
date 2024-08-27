@@ -15,20 +15,22 @@ import (
 )
 
 type Client struct {
-	cli          *storage.Client
+	client       *storage.Client
 	bucketHandle *storage.BucketHandle
 	bucket       string
 }
 
-func NewClient(bucket string) *Client {
+func NewClient(
+	bucket string,
+) *Client {
 	ctx := context.Background()
-	cli, err := storage.NewClient(ctx)
+	client, err := storage.NewClient(ctx)
 	if err != nil {
 		panic(err)
 	}
-	bucketHandle := cli.Bucket(bucket)
+	bucketHandle := client.Bucket(bucket)
 	return &Client{
-		cli,
+		client,
 		bucketHandle,
 		bucket,
 	}
@@ -40,7 +42,8 @@ func (c *Client) UploadForDataURL(
 	path string,
 	name string,
 	cacheMode *CacheMode,
-	dataURL string) (string, error) {
+	dataURL string,
+) (string, error) {
 	// Base64をデコード
 	res, err := dataurl.DecodeString(dataURL)
 	if err != nil {
@@ -60,9 +63,10 @@ func (c *Client) Upload(
 	name string,
 	contentType string,
 	cacheMode *CacheMode,
-	data []byte) (string, error) {
+	data []byte,
+) (string, error) {
 	// Writerを作成
-	w := c.cli.
+	w := c.client.
 		Bucket(c.bucket).
 		Object(strings.Join([]string{path, name}, "/")).
 		NewWriter(ctx)
@@ -100,8 +104,9 @@ func (c *Client) Upload(
 // 指定ファイルのReaderを取得する
 func (c *Client) GetReader(
 	ctx context.Context,
-	path string) (*storage.Reader, error) {
-	reader, err := c.cli.
+	path string,
+) (*storage.Reader, error) {
+	reader, err := c.client.
 		Bucket(c.bucket).
 		Object(path).
 		NewReader(ctx)
@@ -120,7 +125,6 @@ func (c *Client) GetBucket() string {
 func (c *Client) GetDownloadSignedURL(
 	ctx context.Context,
 	path string,
-	contentType string,
 	expire time.Duration,
 ) (string, error) {
 	expires := timeutil.Now().Add(expire)
