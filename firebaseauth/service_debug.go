@@ -3,7 +3,7 @@ package firebaseauth
 import (
 	"context"
 
-	"firebase.google.com/go/auth"
+	"firebase.google.com/go/v4/auth"
 )
 
 type serviceDebug struct {
