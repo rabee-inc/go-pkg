@@ -1,0 +1,29 @@
+settings:
+  package: const2
+  output: ./const2/const2.go
+types:
+  color:
+    comment: 色
+    only_backend: true
+    type: int
+    defs:
+      red:
+        id: "1"
+        name: 赤
+      blue:
+        id: "2"
+        name: 青
+  baby:
+    comment: "-y to -ies"
+    defs:
+      v1: v1
+
+  toy:
+    comment: "-y to -ys"
+    defs:
+      v1: v1
+
+  os:
+    comment: "-s to -es"
+    defs:
+      v1: v1
