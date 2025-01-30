@@ -45,7 +45,9 @@ func TestGenerate(t *testing.T) {
 	for _, file := range files {
 		if !file.IsDir() {
 			path := filepath.Join(defsDir, file.Name())
-			codegen.ExportByYaml(path)
+			outputPath := codegen.ExportByYaml(path)
+			// delete file
+			os.Remove(outputPath)
 		}
 	}
 }

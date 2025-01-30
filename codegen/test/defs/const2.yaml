@@ -14,16 +14,16 @@ types:
         id: "2"
         name: 青
   baby:
-    comment: "-y to -ies"
+    comment: "test: -y to -ies"
     defs:
       v1: v1
 
   toy:
-    comment: "-y to -ys"
+    comment: "test: -y to -ys"
     defs:
       v1: v1
 
   os:
-    comment: "-s to -es"
+    comment: "test: -s to -es"
     defs:
       v1: v1

@@ -2,7 +2,7 @@
 
 package const2
 
-const CheckSum = "91631e39abc704437d0e176e3c11833341c585ead337de8bd8f0247ad2711d41"
+const CheckSum = "c0d98bba9f653be43f33b64b3541d77897b7cb227f1bf1d5172f3775b79c5176"
 
 type ConstantMetaData[T comparable] struct {
 	ID   T      `json:"id"`
@@ -44,7 +44,7 @@ var Colors = []*ColorMetaData{
 
 var ColorMap map[Color]*ColorMetaData
 
-// Baby ... -y to -ies
+// Baby ... test: -y to -ies
 type Baby string
 
 func (c Baby) String() string {
@@ -78,7 +78,7 @@ var Babies = []*BabyMetaData{
 
 var BabyMap map[Baby]*BabyMetaData
 
-// Toy ... -y to -ys
+// Toy ... test: -y to -ys
 type Toy string
 
 func (c Toy) String() string {
@@ -112,7 +112,7 @@ var Toys = []*ToyMetaData{
 
 var ToyMap map[Toy]*ToyMetaData
 
-// Os ... -s to -es
+// Os ... test: -s to -es
 type Os string
 
 func (c Os) String() string {
