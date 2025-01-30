@@ -39,7 +39,7 @@ func actualType(t string) string {
 var vl = validator.New()
 
 // ExportByYaml ... yaml ファイルからコードを生成し、ファイルに出力する
-func ExportByYaml(path string) {
+func ExportByYaml(path string) string {
 	// yaml 読み込み
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -68,6 +68,7 @@ func ExportByYaml(path string) {
 	}
 
 	fmt.Println("generated: " + absOutput)
+	return absOutput
 }
 
 // GenerateByYamlFile ... yaml ファイルからコードを生成する
