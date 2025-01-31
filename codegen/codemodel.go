@@ -54,70 +54,61 @@ func newTypeDef(ts *typeInput) *typeDef {
 		}
 		td.Defs = append(td.Defs, it)
 
-		if n, ok := def.OtherProps.(string); ok {
-			it.Name = n
-		} else if m, ok := def.OtherProps.(map[string]any); ok {
-			// id
-			if mid, ok := m["id"]; ok {
-				if _, ok := mid.(string); !ok {
-					panic(fmt.Sprintf("%s (%s) invalid def: id must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName))
-				}
-				it.VariableValue = mid.(string)
+		// id が指定されている場合上書きする
+		if id, ok := def.PropMap["id"]; ok {
+			if id.IsSlice {
+				panic(fmt.Sprintf("%s (%s) invalid def: id must be string.", typeName, variableName))
 			}
+			it.VariableValue = id.Value
+		}
 
-			// name
-			if mName, ok := m["name"]; ok {
-				if _, ok := mName.(string); !ok {
-					panic(fmt.Sprintf("%s (%s) invalid def: name must be string.", typeName, variableName))
-				}
-				it.Name = mName.(string)
-			} else {
-				panic(fmt.Sprintf("%s (%s) invalid def: name is required.", typeName, variableName))
+		// name の設定
+		if name, ok := def.PropMap["name"]; ok {
+			if name.IsSlice {
+				panic(fmt.Sprintf("%s (%s) invalid def: name must be string.", typeName, variableName))
 			}
-
-			// extends
-			for _, ex := range td.Extends {
-				if value, ok := m[ex.Name]; ok {
-					hasDQ := ex.Type == typeString || ex.Type == typeStringSlice
-					isSlice := strings.HasPrefix(ex.Type, "[]")
-
-					// slice の場合
-					if vSlice, ok := value.([]any); ok {
-						sliceValue := []string{}
-						for _, v := range vSlice {
-							if _, ok := v.(string); !ok {
-								panic(fmt.Sprintf("%s (%s) invalid def: %s must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName, ex.Name))
-							}
-							sliceValue = append(sliceValue, v.(string))
-						}
-
-						it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
-							Name:           ex.Name,
-							Type:           ex.Type,
-							SliceValue:     sliceValue,
-							HasDoubleQuote: hasDQ,
-							IsSlice:        isSlice,
-						})
-					} else {
-						// slice 以外
-						if _, ok := value.(string); !ok {
-							panic(fmt.Sprintf("%s (%s) invalid def: %s must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName, ex.Name))
-						}
-
-						it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
-							Name:           ex.Name,
-							Type:           ex.Type,
-							Value:          value.(string),
-							HasDoubleQuote: hasDQ,
-							IsSlice:        isSlice,
-						})
-					}
-				} else {
-					panic(fmt.Sprintf("%s (%s) invalid def: %s (by extends) is required.", typeName, variableName, ex.Name))
-				}
-			}
+			it.Name = name.Value
 		} else {
-			panic(fmt.Sprintf("%s (%s) invalid def:\n=== def format ===\n\nid_value_and_variable_name: name_text\n\nor\n\nid_value_and_variable_name:\n  name: name_text\n  prop1: value1\n\nor\n\nvariable_name:\n  id: id_value\n  name: name_text\n", typeName, variableName))
+			// name は必須
+			panic(fmt.Sprintf("%s (%s) invalid def: name is required.", typeName, variableName))
+		}
+
+		// extends
+		for _, ex := range td.Extends {
+			if value, ok := def.PropMap[ex.Name]; ok {
+				hasDQ := ex.Type == typeString || ex.Type == typeStringSlice
+				isSlice := strings.HasPrefix(ex.Type, "[]")
+
+				// slice の場合
+				if isSlice {
+					if !value.IsSlice {
+						panic(fmt.Sprintf("%s (%s) invalid def: %s must be slice.", typeName, variableName, ex.Name))
+					}
+
+					it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
+						Name:           ex.Name,
+						Type:           ex.Type,
+						SliceValue:     value.Values,
+						HasDoubleQuote: hasDQ,
+						IsSlice:        true,
+					})
+				} else {
+					// slice 以外
+					if value.IsSlice {
+						panic(fmt.Sprintf("%s (%s) invalid def: %s must not be slice.", typeName, variableName, ex.Name))
+					}
+
+					it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
+						Name:           ex.Name,
+						Type:           ex.Type,
+						Value:          value.Value,
+						HasDoubleQuote: hasDQ,
+						IsSlice:        false,
+					})
+				}
+			} else {
+				panic(fmt.Sprintf("%s (%s) invalid def: %s (by extends) is required.", typeName, variableName, ex.Name))
+			}
 		}
 	}
 

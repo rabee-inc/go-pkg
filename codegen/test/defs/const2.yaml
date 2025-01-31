@@ -8,10 +8,10 @@ types:
     type: int
     defs:
       red:
-        id: "1"
+        id: 1
         name: 赤
       blue:
-        id: "2"
+        id: 2
         name: 青
   baby:
     comment: "test: -y to -ies"

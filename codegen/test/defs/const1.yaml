@@ -21,14 +21,14 @@ types:
       string_slice_value: "[]string"
     defs:
       v1:
-        name: "value test 1"
-        int_value: "1"
+        name: value test 1
+        int_value: 1
         int_slice_value:
-          - "1"
-          - "-2"
-        int64_value: "9223372036854775807"
-        int64_slice_value: ["9223372036854775807", "1"]
-        float_value: "1.5"
-        float_slice_value: ["1", "2.5", "-2"]
+          - 1
+          - -2
+        int64_value: 9223372036854775807
+        int64_slice_value: [9223372036854775807, 1]
+        float_value: 1.5
+        float_slice_value: [1, 2.5, -2]
         string_value: string
-        string_slice_value: ["a", "b", "c"]
+        string_slice_value: [a, b, c]
