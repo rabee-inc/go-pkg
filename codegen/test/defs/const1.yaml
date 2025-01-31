@@ -1,0 +1,34 @@
+settings:
+  package: const1
+  output: ./const1/const1.go
+types:
+  animal:
+    comment: 動物
+    defs:
+      dog: 犬
+      cat: 猫
+
+  extends_test:
+    comment: extends のテスト
+    extends:
+      int_value: int
+      int_slice_value: "[]int"
+      int64_value: int64
+      int64_slice_value: "[]int64"
+      float_value: float
+      float_slice_value: "[]float"
+      string_value: string
+      string_slice_value: "[]string"
+    defs:
+      v1:
+        name: "value test 1"
+        int_value: "1"
+        int_slice_value:
+          - "1"
+          - "-2"
+        int64_value: "9223372036854775807"
+        int64_slice_value: ["9223372036854775807", "1"]
+        float_value: "1.5"
+        float_slice_value: ["1", "2.5", "-2"]
+        string_value: string
+        string_slice_value: ["a", "b", "c"]

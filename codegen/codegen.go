@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/rabee-inc/go-pkg/sliceutil"
@@ -15,15 +16,22 @@ import (
 )
 
 const (
-	typeString = "string"
-	typeInt    = "int"
-	typeFloat  = "float"
-	typeInt64  = "int64"
+	typeString      = "string"
+	typeStringSlice = "[]string"
+	typeInt         = "int"
+	typeIntSlice    = "[]int"
+	typeFloat       = "float"
+	typeFloatSlice  = "[]float"
+	typeInt64       = "int64"
+	typeInt64Slice  = "[]int64"
 )
 
+var reFloat = regexp.MustCompile(`float$`)
+
 func actualType(t string) string {
-	if t == typeFloat {
-		return "float64"
+	// 末尾が float のものは float64 に変換
+	if reFloat.MatchString(t) {
+		return reFloat.ReplaceAllString(t, "float64")
 	}
 	return t
 }
@@ -31,7 +39,7 @@ func actualType(t string) string {
 var vl = validator.New()
 
 // ExportByYaml ... yaml ファイルからコードを生成し、ファイルに出力する
-func ExportByYaml(path string) {
+func ExportByYaml(path string) string {
 	// yaml 読み込み
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -60,6 +68,7 @@ func ExportByYaml(path string) {
 	}
 
 	fmt.Println("generated: " + absOutput)
+	return absOutput
 }
 
 // GenerateByYamlFile ... yaml ファイルからコードを生成する
@@ -107,7 +116,9 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		outputCode += formatConstantType(pascalName, td.BaseType)
 
 		// method
-		outputCode += formatConstantMethodString(pascalName)
+		if td.BaseType == typeString {
+			outputCode += formatConstantMethodString(pascalName)
+		}
 		outputCode += formatConstantMethodMeta(pascalName)
 		outputCode += formatConstantMethodName(pascalName)
 
@@ -138,7 +149,13 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 			params = append(params, formatConstantMetaDataParam("ID", pascalName+toPascalCase(def.VariableName), false))
 			params = append(params, formatConstantMetaDataParam("Name", def.Name, true))
 			for _, extend := range def.ExtendValues {
-				params = append(params, formatConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote))
+				var param string
+				if extend.IsSlice {
+					param = formatConstantMetaDataSliceParam(extend.Name, extend.Type, extend.SliceValue, extend.HasDoubleQuote)
+				} else {
+					param = formatConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote)
+				}
+				params = append(params, param)
 			}
 			metaDataListElements = append(metaDataListElements, formatConstantMetaDataListElement(strings.Join(params, "\n")))
 		}
@@ -257,18 +274,44 @@ func newTypeDef(ts *typeInput) *typeDef {
 			}
 
 			// extends
-			for _, v := range td.Extends {
-				if value, ok := m[v.Name]; ok {
-					if _, ok := value.(string); !ok {
-						panic(fmt.Sprintf("%s (%s) invalid def: %s must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName, v.Name))
+			for _, ex := range td.Extends {
+				if value, ok := m[ex.Name]; ok {
+					hasDQ := ex.Type == typeString || ex.Type == typeStringSlice
+					isSlice := strings.HasPrefix(ex.Type, "[]")
+
+					// slice の場合
+					if vSlice, ok := value.([]any); ok {
+						sliceValue := []string{}
+						for _, v := range vSlice {
+							if _, ok := v.(string); !ok {
+								panic(fmt.Sprintf("%s (%s) invalid def: %s must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName, ex.Name))
+							}
+							sliceValue = append(sliceValue, v.(string))
+						}
+
+						it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
+							Name:           ex.Name,
+							Type:           ex.Type,
+							SliceValue:     sliceValue,
+							HasDoubleQuote: hasDQ,
+							IsSlice:        isSlice,
+						})
+					} else {
+						// slice 以外
+						if _, ok := value.(string); !ok {
+							panic(fmt.Sprintf("%s (%s) invalid def: %s must be string. (Even if the type is numeric, it must be specified as a string.)", typeName, variableName, ex.Name))
+						}
+
+						it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
+							Name:           ex.Name,
+							Type:           ex.Type,
+							Value:          value.(string),
+							HasDoubleQuote: hasDQ,
+							IsSlice:        isSlice,
+						})
 					}
-					it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
-						Name:           v.Name,
-						Value:          value.(string),
-						HasDoubleQuote: v.Type == typeString,
-					})
 				} else {
-					panic(fmt.Sprintf("%s (%s) invalid def: %s (by extends) is required.", typeName, variableName, v.Name))
+					panic(fmt.Sprintf("%s (%s) invalid def: %s (by extends) is required.", typeName, variableName, ex.Name))
 				}
 			}
 		} else {
@@ -403,8 +446,11 @@ type typeDefsItem struct {
 
 type metaDataValueDef struct {
 	Name           string
+	Type           string
 	Value          string
+	SliceValue     []string
 	HasDoubleQuote bool
+	IsSlice        bool
 }
 
 type typeDef struct {
@@ -631,6 +677,19 @@ func formatConstantMetaDataParam(name, value string, hasDoubleQuote bool) string
 	if hasDoubleQuote {
 		value = fmt.Sprintf(`"%s"`, value)
 	}
+	return fmt.Sprintf(constantMetaDataParamCode, toPascalCase(name), value)
+}
+
+const constantMetaDataSliceValueCode = `%s{%s}`
+
+func formatConstantMetaDataSliceParam(name, typ string, values []string, hasDoubleQuote bool) string {
+	if hasDoubleQuote {
+		for i, v := range values {
+			values[i] = fmt.Sprintf(`"%s"`, v)
+		}
+	}
+
+	value := fmt.Sprintf(constantMetaDataSliceValueCode, typ, strings.Join(values, ","))
 	return fmt.Sprintf(constantMetaDataParamCode, toPascalCase(name), value)
 }
 

@@ -70,7 +70,7 @@ types:
     only_backend: true # 任意: バックエンドでしか使用しない値かどうか。true の場合はフロントに返す値に含めません
     type: int # 任意 (int | int64 | string | float) (デフォルト = string)
     extends: # 任意: meta data に追加するプロパティ。 (ID と Name 以外に追加でプロパティを含める場合に使用してください)
-      プロパティ名: 型名 # 必須: 型名 (int | int64 | string | float)
+      プロパティ名: 型名 # 必須: 型名 (int | int64 | string | float | またそれぞれのslice)
     defs: # 別途記載
 
 ```
