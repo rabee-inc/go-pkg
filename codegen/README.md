@@ -181,6 +181,8 @@ var ItemMap map[Item]*ItemMetaData
 
 `extends` を定義してその値をプロパティに追加します。
 
+`extends` が他の `types` で定義した型の場合は、その型のkey名を値として指定してください。
+
 **入力例**
 
 ```yaml
