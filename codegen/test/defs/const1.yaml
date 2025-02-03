@@ -32,3 +32,14 @@ types:
         float_slice_value: [1, 2.5, -2]
         string_value: string
         string_slice_value: [a, b, c]
+
+  type_test:
+    comment: set other type test
+    extends:
+      animals: "[]animal"
+      extends_test: extends_test
+    defs:
+      v1:
+        name: test
+        animals: [dog, cat]
+        extends_test: v1
