@@ -2,7 +2,7 @@
 
 package const1
 
-const CheckSum = "21ab781a061d380f8583d606f2d63f0355b29b3134738d506b37b4d26da19cc9"
+const CheckSum = "442aa83527c507d144caff8e94f38469127900f0fcb7039d053f30075198115d"
 
 type ConstantMetaData[T comparable] struct {
 	ID   T      `json:"id"`

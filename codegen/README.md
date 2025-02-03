@@ -142,10 +142,10 @@ types:
   item:
     defs:
       private:
-        id: "1" # (数値を入力する場合は "" で囲んでください)
+        id: 1
         name: 非公開
       public:
-        id: "2"
+        id: 2
         name: 公開 
 ```
 
