@@ -35,6 +35,50 @@ type ConstantMetaData[T comparable] struct {
 
 `
 
+// extends_defs 定義時の props の型定義出力
+const extendsDefMetaDataPropsTypeCode = `
+type %sMetaDataProps struct {
+	Name   string ` + "`json:\"name\"`" + `
+	%s
+}
+`
+
+func formatExtendsDefMetaDataPropsType(tName string, params string) string {
+	return fmt.Sprintf(extendsDefMetaDataPropsTypeCode, tName, params)
+}
+
+// extends_defs 定義時の MetaData の型定義出力
+const extendsDefMetaDataTypeCode = `
+type %sMetaData[T %s] struct {
+	ID T
+	*%sMetaDataProps
+}
+`
+
+func formatExtendsDefMetaDataType(name string) string {
+	return fmt.Sprintf(extendsDefMetaDataTypeCode, name, name, name)
+}
+
+// extends_defs 定義時の interface の型定義出力
+const extendsDefInterfaceTypeCode = `
+type %s interface {
+	Props() (*%sMetaDataProps, bool)
+}
+`
+
+func formatExtendsDefInterfaceType(name string) string {
+	return fmt.Sprintf(extendsDefInterfaceTypeCode, name, name)
+}
+
+// extends が extends_defs を参照しているときの MetaData の型
+const constantMetaDataTypeByExtendsDefCode = `
+type %sMetaData %sMetaData[%s]
+`
+
+func formatConstantMetaDataTypeByExtendsDef(name string, templateName string) string {
+	return fmt.Sprintf(constantMetaDataTypeByExtendsDefCode, name, templateName, name)
+}
+
 // コメントの出力
 const constantCommentCode = "// %s ... %s"
 

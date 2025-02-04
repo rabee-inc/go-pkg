@@ -1,6 +1,15 @@
 settings:
   package: const2
   output: ./const2/const2.go
+templates:
+  extends_defs:
+    with_category:
+      category: category
+    character_status:
+      power: int
+      speed: int
+      detail: string
+      skills: "[]skill"
 types:
   color:
     comment: 色
@@ -27,3 +36,17 @@ types:
     comment: "test: -s to -es"
     defs:
       v1: v1
+
+  skill:
+    comment: スキル
+    defs:
+      no_skill: スキルなし
+      black_magic: 黒魔法
+      white_magic: 白魔法
+
+  category:
+    comment: カテゴリ
+    defs:
+      food: フード
+      shoes: 靴
+      bag: バッグ

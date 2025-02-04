@@ -74,7 +74,9 @@ func ExportByYaml(path string) string {
 
 // GenerateByYamlFile ... yaml ファイルからコードを生成する
 func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
-	val := &yamlInput{}
+	val := &yamlInput{
+		Templates: &templatesInput{},
+	}
 	err := yaml.Unmarshal(file, &val)
 	if err != nil {
 		panic(err)
@@ -85,8 +87,20 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		panic(err)
 	}
 
-	typeDefs := []*typeDef{}
+	// extendsDefs の入力値を code model に変換する
+	extendsDefs := make([]*extendsDef, len(val.Templates.ExtendsDefs))
+	for i, v := range val.Templates.ExtendsDefs {
+		extendsDefs[i] = newExtendsDef(v)
+	}
 
+	// 上記を map 化
+	extendsDefsMap := make(map[string]*extendsDef, len(extendsDefs))
+	for _, v := range extendsDefs {
+		extendsDefsMap[v.Name] = v
+	}
+
+	// types の入力値を code model に変換する
+	typeDefs := []*typeDef{}
 	for _, v := range val.Types {
 		typeDefs = append(typeDefs, newTypeDef(v))
 	}
@@ -95,6 +109,9 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	outputCode += formatPackage(val.Settings.Package) + "\n\n"
 	outputCode += formatCheckSum(GenerateCheckSum(file)) + "\n\n"
 	outputCode += defaultMetaDataCode + "\n\n"
+
+	// extends_defs
+	outputCode += generateExtendsDefsCode(extendsDefs)
 
 	// constants struct
 	constantsStructParams := []string{}
@@ -132,13 +149,7 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 
 		// meta data type
 		if td.HasExtends {
-			params := []string{}
-			params = append(params, formatConstantMetaDataTypeID(pascalName))
-			params = append(params, formatConstantMetaDataTypeParam("name", "string"))
-			for _, def := range td.Extends {
-				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
-			}
-			outputCode += formatConstantMetaDataType(pascalName, strings.Join(params, "\n"))
+			outputCode += generateMetaDataType(pascalName, td.Extends)
 		} else {
 			outputCode += formatConstantMetaDataByGenerics(pascalName)
 		}
@@ -195,6 +206,41 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	}
 
 	return formattedCode, val
+}
+
+// extends のプロパティ部分のコードを生成する
+func generateMetaDataType(name string, extends []*extendPropDef) string {
+	params := []string{}
+	params = append(params, formatConstantMetaDataTypeID(name))
+	params = append(params, formatConstantMetaDataTypeParam("name", "string"))
+	for _, def := range extends {
+		params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
+	}
+	return formatConstantMetaDataType(name, strings.Join(params, "\n"))
+
+}
+
+// extendsDefs を使う際に必要になるコードを生成する
+func generateExtendsDefsCode(extendsDefs []*extendsDef) string {
+	code := ""
+	for _, extendsDef := range extendsDefs {
+		pascalName := toPascalCase(extendsDef.Name)
+		// props type
+		{
+			params := []string{}
+			for _, def := range extendsDef.Extends {
+				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
+			}
+			code += formatExtendsDefMetaDataPropsType(pascalName, strings.Join(params, "\n"))
+		}
+
+		// meta data type
+		code += formatExtendsDefMetaDataType(pascalName)
+
+		// interface type
+		code += formatExtendsDefInterfaceType(pascalName)
+	}
+	return code
 }
 
 // GenerateCheckSum ... チェックサムを生成する

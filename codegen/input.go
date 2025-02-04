@@ -23,7 +23,7 @@ type settingsInput struct {
 
 // templatesInput ... templates を構造化したもの
 type templatesInput struct {
-	ExtendsDefs map[string]extendsInput `yaml:"extends_defs"`
+	ExtendsDefs extendsDefInputList `yaml:"extends_defs"`
 }
 
 // typeInput ... types のそれぞれを構造化したもの
@@ -206,6 +206,44 @@ func (p *extendsInput) UnmarshalYAML(value *yaml.Node) error {
 			Name: exName,
 			Type: typeName,
 		}
+	}
+	return nil
+}
+
+// extendsDefInput ... extends_defs を構造化したもの
+type extendsDefInput struct {
+	Name    string
+	Extends extendsInput
+}
+
+// extendsDefInputList ... extendsDefInput のリスト
+type extendsDefInputList []*extendsDefInput
+
+// extends_defs: の部分
+func (p *extendsDefInputList) UnmarshalYAML(value *yaml.Node) error {
+	// MappingNode のみ許可
+	if value.Kind != yaml.MappingNode {
+		return fmt.Errorf("`extends_defs` must contain YAML mapping, has %v", value.Kind)
+	}
+
+	*p = make([]*extendsDefInput, len(value.Content)/2)
+
+	for i := 0; i < len(value.Content); i += 2 {
+		ei := &extendsDefInput{}
+		var keyName string
+
+		// key
+		if err := value.Content[i].Decode(&keyName); err != nil {
+			return err
+		}
+
+		// value
+		if err := value.Content[i+1].Decode(&ei.Extends); err != nil {
+			return err
+		}
+
+		ei.Name = keyName
+		(*p)[i/2] = ei
 	}
 	return nil
 }
