@@ -2,7 +2,7 @@
 
 package const2
 
-const CheckSum = "845e642b0f38c1f7d116ca848a6c1be30fb814f321aa20008ef946108c092880"
+const CheckSum = "27a51e9211da89fdc2a4717efc93bb5d94ade4d638815b77facf51bcda100f5f"
 
 type ConstantMetaData[T comparable] struct {
 	ID   T      `json:"id"`
@@ -197,7 +197,7 @@ func (c Skill) Name() string {
 }
 
 const (
-	SkillNoSkill    Skill = "no_skill"
+	SkillMagicGuard Skill = "magic_guard"
 	SkillBlackMagic Skill = "black_magic"
 	SkillWhiteMagic Skill = "white_magic"
 )
@@ -206,8 +206,8 @@ type SkillMetaData ConstantMetaData[Skill]
 
 var Skills = []*SkillMetaData{
 	{
-		ID:   SkillNoSkill,
-		Name: "スキルなし",
+		ID:   SkillMagicGuard,
+		Name: "魔法無効",
 	},
 	{
 		ID:   SkillBlackMagic,
@@ -265,17 +265,218 @@ var Categories = []*CategoryMetaData{
 
 var CategoryMap map[Category]*CategoryMetaData
 
+// ExtendsDefsTestA ... test extends defs
+type ExtendsDefsTestA string
+
+func (c ExtendsDefsTestA) String() string {
+	return string(c)
+}
+
+func (c ExtendsDefsTestA) Props() (*WithCategoryMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.WithCategoryMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c ExtendsDefsTestA) Meta() (*ExtendsDefsTestAMetaData, bool) {
+	m, ok := ExtendsDefsTestAMap[c]
+	return m, ok
+}
+
+func (c ExtendsDefsTestA) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ExtendsDefsTestAV1 ExtendsDefsTestA = "v1"
+)
+
+type ExtendsDefsTestAMetaData WithCategoryMetaData[ExtendsDefsTestA]
+
+var ExtendsDefsTestAs = []*ExtendsDefsTestAMetaData{
+	{
+		ID: ExtendsDefsTestAV1,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "v1",
+			Category: CategoryFood,
+		},
+	},
+}
+
+var ExtendsDefsTestAMap map[ExtendsDefsTestA]*ExtendsDefsTestAMetaData
+
+// ExtendsDefsTestB ... test extends defs
+type ExtendsDefsTestB string
+
+func (c ExtendsDefsTestB) String() string {
+	return string(c)
+}
+
+func (c ExtendsDefsTestB) Props() (*WithCategoryMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.WithCategoryMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c ExtendsDefsTestB) Meta() (*ExtendsDefsTestBMetaData, bool) {
+	m, ok := ExtendsDefsTestBMap[c]
+	return m, ok
+}
+
+func (c ExtendsDefsTestB) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ExtendsDefsTestBV1 ExtendsDefsTestB = "v1"
+)
+
+type ExtendsDefsTestBMetaData WithCategoryMetaData[ExtendsDefsTestB]
+
+var ExtendsDefsTestBs = []*ExtendsDefsTestBMetaData{
+	{
+		ID: ExtendsDefsTestBV1,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "v1",
+			Category: CategoryBag,
+		},
+	},
+}
+
+var ExtendsDefsTestBMap map[ExtendsDefsTestB]*ExtendsDefsTestBMetaData
+
+// Player ... プレイヤー
+type Player string
+
+func (c Player) String() string {
+	return string(c)
+}
+
+func (c Player) Props() (*CharacterStatusMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.CharacterStatusMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c Player) Meta() (*PlayerMetaData, bool) {
+	m, ok := PlayerMap[c]
+	return m, ok
+}
+
+func (c Player) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	PlayerMagician Player = "magician"
+)
+
+type PlayerMetaData CharacterStatusMetaData[Player]
+
+var Players = []*PlayerMetaData{
+	{
+		ID: PlayerMagician,
+		CharacterStatusMetaDataProps: &CharacterStatusMetaDataProps{
+			Name:   "黒魔法使い",
+			Power:  1,
+			Speed:  4,
+			Detail: "魔法が使える",
+			Skills: []Skill{SkillBlackMagic, SkillWhiteMagic},
+		},
+	},
+}
+
+var PlayerMap map[Player]*PlayerMetaData
+
+// Enemy ... 敵
+type Enemy string
+
+func (c Enemy) String() string {
+	return string(c)
+}
+
+func (c Enemy) Props() (*CharacterStatusMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.CharacterStatusMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c Enemy) Meta() (*EnemyMetaData, bool) {
+	m, ok := EnemyMap[c]
+	return m, ok
+}
+
+func (c Enemy) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	EnemyWolf   Enemy = "wolf"
+	EnemyDragon Enemy = "dragon"
+)
+
+type EnemyMetaData CharacterStatusMetaData[Enemy]
+
+var Enemies = []*EnemyMetaData{
+	{
+		ID: EnemyWolf,
+		CharacterStatusMetaDataProps: &CharacterStatusMetaDataProps{
+			Name:   "狼",
+			Power:  10,
+			Speed:  10,
+			Detail: "凶暴",
+			Skills: []Skill{},
+		},
+	},
+	{
+		ID: EnemyDragon,
+		CharacterStatusMetaDataProps: &CharacterStatusMetaDataProps{
+			Name:   "ドラゴン",
+			Power:  10,
+			Speed:  10,
+			Detail: "凶暴",
+			Skills: []Skill{SkillMagicGuard},
+		},
+	},
+}
+
+var EnemyMap map[Enemy]*EnemyMetaData
+
 type Constants struct {
-	Babies     []*BabyMetaData                `json:"babies"`
-	Baby       map[Baby]*BabyMetaData         `json:"baby"`
-	Toys       []*ToyMetaData                 `json:"toys"`
-	Toy        map[Toy]*ToyMetaData           `json:"toy"`
-	Oses       []*OsMetaData                  `json:"oses"`
-	Os         map[Os]*OsMetaData             `json:"os"`
-	Skills     []*SkillMetaData               `json:"skills"`
-	Skill      map[Skill]*SkillMetaData       `json:"skill"`
-	Categories []*CategoryMetaData            `json:"categories"`
-	Category   map[Category]*CategoryMetaData `json:"category"`
+	Babies            []*BabyMetaData                                `json:"babies"`
+	Baby              map[Baby]*BabyMetaData                         `json:"baby"`
+	Toys              []*ToyMetaData                                 `json:"toys"`
+	Toy               map[Toy]*ToyMetaData                           `json:"toy"`
+	Oses              []*OsMetaData                                  `json:"oses"`
+	Os                map[Os]*OsMetaData                             `json:"os"`
+	Skills            []*SkillMetaData                               `json:"skills"`
+	Skill             map[Skill]*SkillMetaData                       `json:"skill"`
+	Categories        []*CategoryMetaData                            `json:"categories"`
+	Category          map[Category]*CategoryMetaData                 `json:"category"`
+	ExtendsDefsTestAs []*ExtendsDefsTestAMetaData                    `json:"extends_defs_test_as"`
+	ExtendsDefsTestA  map[ExtendsDefsTestA]*ExtendsDefsTestAMetaData `json:"extends_defs_test_a"`
+	ExtendsDefsTestBs []*ExtendsDefsTestBMetaData                    `json:"extends_defs_test_bs"`
+	ExtendsDefsTestB  map[ExtendsDefsTestB]*ExtendsDefsTestBMetaData `json:"extends_defs_test_b"`
+	Players           []*PlayerMetaData                              `json:"players"`
+	Player            map[Player]*PlayerMetaData                     `json:"player"`
+	Enemies           []*EnemyMetaData                               `json:"enemies"`
+	Enemy             map[Enemy]*EnemyMetaData                       `json:"enemy"`
 }
 
 var ConstantsData *Constants
@@ -308,12 +509,36 @@ func (c *Constants) GetConstIDs() [][]any {
 		category = append(category, v.ID)
 	}
 
+	extendsDefsTestA := []any{}
+	for _, v := range c.ExtendsDefsTestAs {
+		extendsDefsTestA = append(extendsDefsTestA, v.ID)
+	}
+
+	extendsDefsTestB := []any{}
+	for _, v := range c.ExtendsDefsTestBs {
+		extendsDefsTestB = append(extendsDefsTestB, v.ID)
+	}
+
+	player := []any{}
+	for _, v := range c.Players {
+		player = append(player, v.ID)
+	}
+
+	enemy := []any{}
+	for _, v := range c.Enemies {
+		enemy = append(enemy, v.ID)
+	}
+
 	return [][]any{
 		baby,
 		toy,
 		os,
 		skill,
 		category,
+		extendsDefsTestA,
+		extendsDefsTestB,
+		player,
+		enemy,
 	}
 }
 
@@ -348,16 +573,44 @@ func init() {
 		CategoryMap[v.ID] = v
 	}
 
+	ExtendsDefsTestAMap = map[ExtendsDefsTestA]*ExtendsDefsTestAMetaData{}
+	for _, v := range ExtendsDefsTestAs {
+		ExtendsDefsTestAMap[v.ID] = v
+	}
+
+	ExtendsDefsTestBMap = map[ExtendsDefsTestB]*ExtendsDefsTestBMetaData{}
+	for _, v := range ExtendsDefsTestBs {
+		ExtendsDefsTestBMap[v.ID] = v
+	}
+
+	PlayerMap = map[Player]*PlayerMetaData{}
+	for _, v := range Players {
+		PlayerMap[v.ID] = v
+	}
+
+	EnemyMap = map[Enemy]*EnemyMetaData{}
+	for _, v := range Enemies {
+		EnemyMap[v.ID] = v
+	}
+
 	ConstantsData = &Constants{
-		Babies:     Babies,
-		Baby:       BabyMap,
-		Toys:       Toys,
-		Toy:        ToyMap,
-		Oses:       Oses,
-		Os:         OsMap,
-		Skills:     Skills,
-		Skill:      SkillMap,
-		Categories: Categories,
-		Category:   CategoryMap,
+		Babies:            Babies,
+		Baby:              BabyMap,
+		Toys:              Toys,
+		Toy:               ToyMap,
+		Oses:              Oses,
+		Os:                OsMap,
+		Skills:            Skills,
+		Skill:             SkillMap,
+		Categories:        Categories,
+		Category:          CategoryMap,
+		ExtendsDefsTestAs: ExtendsDefsTestAs,
+		ExtendsDefsTestA:  ExtendsDefsTestAMap,
+		ExtendsDefsTestBs: ExtendsDefsTestBs,
+		ExtendsDefsTestB:  ExtendsDefsTestBMap,
+		Players:           Players,
+		Player:            PlayerMap,
+		Enemies:           Enemies,
+		Enemy:             EnemyMap,
 	}
 }

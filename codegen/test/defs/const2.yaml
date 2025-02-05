@@ -40,7 +40,7 @@ types:
   skill:
     comment: スキル
     defs:
-      no_skill: スキルなし
+      magic_guard: 魔法無効
       black_magic: 黒魔法
       white_magic: 白魔法
 
@@ -50,3 +50,47 @@ types:
       food: フード
       shoes: 靴
       bag: バッグ
+
+  extends_defs_test_a:
+    comment: test extends defs
+    extends: with_category
+    defs:
+      v1:
+        name: v1
+        category: food
+
+  extends_defs_test_b:
+    comment: test extends defs
+    extends: with_category
+    defs:
+      v1:
+        name: v1
+        category: bag
+
+  player:
+    comment: プレイヤー
+    extends: character_status
+    defs:
+      magician:
+        name: 黒魔法使い
+        power: 1
+        speed: 4
+        detail: 魔法が使える
+        skills: [black_magic, white_magic]
+
+  enemy:
+    comment: 敵
+    extends: character_status
+    defs:
+      wolf:
+        name: 狼
+        power: 10
+        speed: 10
+        detail: 凶暴
+        skills: []
+      dragon:
+        name: ドラゴン
+        power: 10
+        speed: 10
+        detail: 凶暴
+        skills: [magic_guard]
