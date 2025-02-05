@@ -314,3 +314,110 @@ var Items = []*ItemMetaData{
 var ItemMap map[Item]*ItemMetaData
 
 ```
+
+
+## templates > extends_defs
+
+extends に指定する内容をあらかじめ定義しておくことができます。
+同じinterfaceでMetaDataのプロパティを扱うことができるため、メンテナンス性が向上します。
+
+- extends_defs で指定した定義をextendsで指定するには `extends: extends_defs のkey名` とします。
+- この指定を行った場合は、通常のextendsの指定と以下の違いがあります。
+  - 他のtypesで同じextendsの定義を指定している場合は、同じinterfaceを実装します。
+  - Propsメソッドが使用できます。このメソッドは、IDを除くMetaDataのプロパティを取得します。
+    - 他のtypesで同じextendsの定義を指定している場合は、MetaDataのプロパティの型は同じ型になります。
+
+**入力例**
+
+```yaml
+
+templates:
+  extends_defs:
+    with_category:
+      category: string
+
+types:
+  item:
+    comment: アイテム
+    extends: with_category
+    defs:
+      water:
+        name: 水
+        category: drink
+      potato:
+        name: ポテト
+        category: food
+
+```
+
+**出力**
+
+```go
+
+
+type WithCategoryMetaDataProps struct {
+	Name     string `json:"name"`
+	Category string `json:"category"`
+}
+
+type WithCategoryMetaData[T WithCategory] struct {
+	ID T
+	*WithCategoryMetaDataProps
+}
+
+type WithCategory interface {
+	Props() (*WithCategoryMetaDataProps, bool)
+}
+
+// Item ... アイテム
+type Item string
+
+func (c Item) String() string {
+	return string(c)
+}
+
+func (c Item) Props() (*WithCategoryMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.WithCategoryMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c Item) Meta() (*ItemMetaData, bool) {
+	m, ok := ItemMap[c]
+	return m, ok
+}
+
+func (c Item) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ItemWater  Item = "water"
+	ItemPotato Item = "potato"
+)
+
+type ItemMetaData WithCategoryMetaData[Item]
+
+var Items = []*ItemMetaData{
+	{
+		ID: ItemWater,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "水",
+			Category: "drink",
+		},
+	},
+	{
+		ID: ItemPotato,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "ポテト",
+			Category: "food",
+		},
+	},
+}
+
+var ItemMap map[Item]*ItemMetaData
+```
