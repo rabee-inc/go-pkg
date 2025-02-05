@@ -44,22 +44,25 @@ func newExtendDef(ex *extendPropInput) *extendPropDef {
 // extendsDef を生成する
 func newExtendsDef(exDef *extendsDefInput) *extendsDef {
 	extends := []*extendPropDef{}
-	for _, ex := range exDef.Extends {
+	for _, ex := range exDef.Props {
 		extends = append(extends, newExtendDef(ex))
 	}
 	return &extendsDef{
-		Name:    exDef.Name,
-		Extends: extends,
+		Name:       exDef.Name,
+		IsTemplate: true,
+		Props:      extends,
 	}
 }
 
 // typeDef を生成する
-func newTypeDef(ts *typeInput) *typeDef {
+func newTypeDef(ts *typeInput, extendsDefMap map[string]*extendsDef) *typeDef {
 	typeName := ts.Name
 
 	td := &typeDef{
-		Name:        typeName,
-		Extends:     []*extendPropDef{},
+		Name: typeName,
+		Extends: &extendsDef{
+			Props: []*extendPropDef{},
+		},
 		Defs:        []*typeDefsItem{},
 		BaseType:    typeString,
 		OnlyBackend: ts.OnlyBackend,
@@ -83,11 +86,17 @@ func newTypeDef(ts *typeInput) *typeDef {
 	}
 
 	// Extends
-	if len(ts.Extends) > 0 {
-		td.HasExtends = true
-		for _, ex := range ts.Extends {
-			td.Extends = append(td.Extends, newExtendDef(ex))
+	td.HasExtends = len(ts.Extends.Props) > 0 || ts.Extends.IsTemplate
+	for _, ex := range ts.Extends.Props {
+		td.Extends.Props = append(td.Extends.Props, newExtendDef(ex))
+	}
+
+	if ts.Extends.IsTemplate {
+		extendsDef, ok := extendsDefMap[ts.Extends.Name]
+		if !ok {
+			panic(fmt.Sprintf("%s extends_defs > %s is not defined.", typeName, ts.Extends.Name))
 		}
+		td.Extends = extendsDef
 	}
 
 	// Defs
@@ -120,7 +129,7 @@ func newTypeDef(ts *typeInput) *typeDef {
 		}
 
 		// extends
-		for _, ex := range td.Extends {
+		for _, ex := range td.Extends.Props {
 			if value, ok := def.PropMap[ex.Name]; ok {
 				hasDQ := ex.Type == typeString || ex.Type == typeStringSlice
 				isSlice := strings.HasPrefix(ex.Type, "[]")
@@ -181,8 +190,9 @@ type extendPropDef struct {
 }
 
 type extendsDef struct {
-	Name    string
-	Extends []*extendPropDef
+	Name       string
+	IsTemplate bool
+	Props      []*extendPropDef
 }
 
 type typeDefsItem struct {
@@ -207,6 +217,6 @@ type typeDef struct {
 	BaseType    string
 	OnlyBackend bool
 	HasExtends  bool
-	Extends     []*extendPropDef
+	Extends     *extendsDef
 	Defs        []*typeDefsItem
 }

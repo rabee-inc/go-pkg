@@ -70,6 +70,20 @@ func formatExtendsDefInterfaceType(name string) string {
 	return fmt.Sprintf(extendsDefInterfaceTypeCode, name, name)
 }
 
+// extends が extends_defs を参照しているときのみ出力する Props メソッド
+const extendsDefPropsMethodCode = `
+func (c %s) Props() (*%sMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.%sMetaDataProps, ok
+	}
+	return nil, false
+}
+`
+
+func formatExtendsDefMethodProps(tName string, exName string) string {
+	return fmt.Sprintf(extendsDefPropsMethodCode, tName, exName, exName)
+}
+
 // extends が extends_defs を参照しているときの MetaData の型
 const constantMetaDataTypeByExtendsDefCode = `
 type %sMetaData %sMetaData[%s]
@@ -77,6 +91,16 @@ type %sMetaData %sMetaData[%s]
 
 func formatConstantMetaDataTypeByExtendsDef(name string, templateName string) string {
 	return fmt.Sprintf(constantMetaDataTypeByExtendsDefCode, name, templateName, name)
+}
+
+// extends が extends_defs を参照しているときの MetaData 内の Props
+const constantMetaDataPropsInParamCode = `%sMetaDataProps: &%sMetaDataProps{
+%s
+},
+`
+
+func formatConstantMetaDataPropsInParam(name, params string) string {
+	return fmt.Sprintf(constantMetaDataPropsInParamCode, name, name, params)
 }
 
 // コメントの出力
@@ -191,15 +215,15 @@ func formatConstantMetaDataType(tName, params string) string {
 }
 
 // MetaData のパラメータ部分の型定義
-const constantMetaDataTypeCodeParam = `%s   %s ` + "`json:\"%s\"`"
+const constantMetaDataTypeParamCode = `%s   %s ` + "`json:\"%s\"`"
 
 func formatConstantMetaDataTypeParam(name, tName string) string {
-	return fmt.Sprintf(constantMetaDataTypeCodeParam, toPascalCase(name), tName, name)
+	return fmt.Sprintf(constantMetaDataTypeParamCode, toPascalCase(name), tName, name)
 }
 
 // MetaData の ID 部分の型定義
 func formatConstantMetaDataTypeID(tName string) string {
-	return fmt.Sprintf(constantMetaDataTypeCodeParam, "ID", tName, "id")
+	return fmt.Sprintf(constantMetaDataTypeParamCode, "ID", tName, "id")
 }
 
 // MetaData のマップ変数名
