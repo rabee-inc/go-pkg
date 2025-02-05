@@ -48,7 +48,40 @@ func TestConst(t *testing.T) {
 			animalMeta, _ := animal.Meta()
 			fmt.Println(animalMeta.Name)
 		}
+	}
 
+	// extends_defs Props
+	{
+		props, _ := const2.ExtendsDefsTestAV1.Props()
+		fmt.Println("Props", props)
+
+		withCategories := []const2.WithCategory{
+			const2.ExtendsDefsTestAV1,
+			const2.ExtendsDefsTestBV1,
+		}
+
+		for _, v := range withCategories {
+			props, _ := v.Props()
+			fmt.Println("Props", props)
+		}
+
+		meta, _ := const2.PlayerMagician.Meta()
+		fmt.Println("Meta", meta, meta.CharacterStatusMetaDataProps)
+
+		characters := []const2.CharacterStatus{
+			const2.PlayerMagician,
+			const2.EnemyDragon,
+			const2.EnemyWolf,
+		}
+		for _, v := range characters {
+			props, _ := v.Props()
+			fmt.Println("Props", props)
+			skillNames := []string{}
+			for _, skill := range props.Skills {
+				skillNames = append(skillNames, skill.Name())
+			}
+			fmt.Println("SkillNames", skillNames)
+		}
 	}
 }
 
