@@ -322,6 +322,7 @@ extends に指定する内容をあらかじめ定義しておくことができ
 同じinterfaceでMetaDataのプロパティを扱うことができるため、メンテナンス性が向上します。
 
 - extends_defs で指定した定義をextendsで指定するには `extends: extends_defs のkey名` とします。
+- 通常のextendsと同様に、他のtypeを指定することもできます。
 - この指定を行った場合は、通常のextendsの指定と以下の違いがあります。
   - 他のtypesで同じextendsの定義を指定している場合は、同じinterfaceを実装します。
   - Propsメソッドが使用できます。このメソッドは、IDを除くMetaDataのプロパティを取得します。
