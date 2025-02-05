@@ -49,11 +49,8 @@ func main() {
 
 基本的にスネークケースで記載を推奨。キャメルケースには対応していません。
 
-## 注意事項
 
-同じディレクトリに同じpackage名で出力することはできません
-
-### settings
+## settings
 
 ```yaml
 settings:
@@ -61,7 +58,11 @@ settings:
   output: 出力先 (go generate を実行するディレクトリからの相対パス)
 ```
 
-### types
+### 注意事項
+
+同じディレクトリに同じpackage名で出力することはできません
+
+## types
 
 ```yaml
 types:
@@ -75,11 +76,11 @@ types:
 
 ```
 
-### defs
+## defs
 
 以下の3種類の書き方があります。
 
-#### ショートハンド
+### ショートハンド
 
 ```yaml
 変数名: Name の値
@@ -124,7 +125,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### ID を変更する場合
+### ID を変更する場合
 
 ```yaml
 変数名:
@@ -177,7 +178,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### ID と Name 以外にプロパティを追加する場合
+### ID と Name 以外にプロパティを追加する場合
 
 `extends` を定義してその値をプロパティに追加します。
 
@@ -228,7 +229,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### extends に他の types で定義した型を指定する場合
+### extends に他の types で定義した型を指定する場合
 
 `extends` には他の types で定義した型を指定する事ができます。(sliceを指定することもできます。)
 その型のdefsのkey名を値として指定してください。
