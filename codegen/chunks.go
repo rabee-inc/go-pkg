@@ -50,7 +50,7 @@ func formatExtendsDefMetaDataPropsType(tName string, params string) string {
 // extends_defs 定義時の MetaData の型定義出力
 const extendsDefMetaDataTypeCode = `
 type %sMetaData[T %s] struct {
-	ID T
+	ID T ` + "`json:\"id\"`" + `
 	*%sMetaDataProps
 }
 `
