@@ -315,6 +315,95 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
+## groups
+
+`groups` を使うと、`extends` で追加したプロパティをまとめて指定することができます。
+
+**入力例**
+
+```yaml
+types:
+  item:
+    comment: アイテム
+    extends:
+      category: string
+    groups:
+      - props:
+          category: animal
+        defs:
+          dog: 犬
+          cat: 猫
+
+      - props:
+          category: plant
+        defs:
+          tomato: トマト
+          potato: ポテト
+
+```
+
+**出力**
+
+```go
+
+// Item ... アイテム
+type Item string
+
+func (c Item) String() string {
+	return string(c)
+}
+
+func (c Item) Meta() (*ItemMetaData, bool) {
+	m, ok := ItemMap[c]
+	return m, ok
+}
+
+func (c Item) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ItemDog    Item = "dog"
+	ItemCat    Item = "cat"
+	ItemTomato Item = "tomato"
+	ItemPotato Item = "potato"
+)
+
+type ItemMetaData struct {
+	ID       Item   `json:"id"`
+	Name     string `json:"name"`
+	Category string `json:"category"`
+}
+
+var Items = []*ItemMetaData{
+	{
+		ID:       ItemDog,
+		Name:     "犬",
+		Category: "animal",
+	},
+	{
+		ID:       ItemCat,
+		Name:     "猫",
+		Category: "animal",
+	},
+	{
+		ID:       ItemTomato,
+		Name:     "トマト",
+		Category: "plant",
+	},
+	{
+		ID:       ItemPotato,
+		Name:     "ポテト",
+		Category: "plant",
+	},
+}
+
+var ItemMap map[Item]*ItemMetaData
+
+```
 
 ## templates > extends_defs
 
