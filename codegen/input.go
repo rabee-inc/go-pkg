@@ -26,14 +26,20 @@ type templatesInput struct {
 	ExtendsDefs extendsDefInputList `yaml:"extends_defs"`
 }
 
+type groupInput struct {
+	PropMap defPropInputMap `yaml:"props" validate:"required"`
+	Defs    defInputList    `yaml:"defs" validate:"required"`
+}
+
 // typeInput ... types のそれぞれを構造化したもの
 type typeInput struct {
 	Name        string
-	Comment     string       `yaml:"comment" validate:"required"`
-	Type        string       `yaml:"type"`
-	OnlyBackend bool         `yaml:"only_backend"`
-	Extends     extendsInput `yaml:"extends"`
-	Defs        defInputList `yaml:"defs" validate:"required"`
+	Comment     string        `yaml:"comment" validate:"required"`
+	Type        string        `yaml:"type"`
+	OnlyBackend bool          `yaml:"only_backend"`
+	Extends     extendsInput  `yaml:"extends"`
+	Defs        defInputList  `yaml:"defs"`
+	Groups      []*groupInput `yaml:"groups"`
 }
 
 // typeInputList ... types を構造化したもの

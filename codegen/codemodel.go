@@ -99,8 +99,34 @@ func newTypeDef(ts *typeInput, extendsDefMap map[string]*extendsDef) *typeDef {
 		td.Extends = extendsDef
 	}
 
+	// Groups
+	inputDefs := ts.Defs
+	for _, group := range ts.Groups {
+		for _, def := range group.Defs {
+			// 新しい defInput を作る
+			inputDef := &defInput{
+				Name:    def.Name,
+				PropMap: defPropInputMap{},
+			}
+
+			for k, v := range group.PropMap {
+				inputDef.PropMap[k] = v
+			}
+
+			for k, v := range def.PropMap {
+				// check duplicate
+				if _, ok := group.PropMap[k]; ok {
+					panic(fmt.Sprintf("%s > groups (%s) invalid def: %s is duplicate.", typeName, def.Name, k))
+				}
+				inputDef.PropMap[k] = v
+			}
+
+			inputDefs = append(inputDefs, inputDef)
+		}
+	}
+
 	// Defs
-	for _, def := range ts.Defs {
+	for _, def := range inputDefs {
 		variableName := def.Name
 		it := &typeDefsItem{
 			VariableName:  variableName,

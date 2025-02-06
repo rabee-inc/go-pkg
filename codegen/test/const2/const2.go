@@ -2,7 +2,7 @@
 
 package const2
 
-const CheckSum = "27a51e9211da89fdc2a4717efc93bb5d94ade4d638815b77facf51bcda100f5f"
+const CheckSum = "a4667c33fb7c7def44dc07ba38ee20306cbe549785b4ee79bc820061059b3730"
 
 type ConstantMetaData[T comparable] struct {
 	ID   T      `json:"id"`
@@ -293,6 +293,7 @@ func (c ExtendsDefsTestA) Name() string {
 
 const (
 	ExtendsDefsTestAV1 ExtendsDefsTestA = "v1"
+	ExtendsDefsTestAV2 ExtendsDefsTestA = "v2"
 )
 
 type ExtendsDefsTestAMetaData WithCategoryMetaData[ExtendsDefsTestA]
@@ -302,6 +303,13 @@ var ExtendsDefsTestAs = []*ExtendsDefsTestAMetaData{
 		ID: ExtendsDefsTestAV1,
 		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
 			Name:     "v1",
+			Category: CategoryFood,
+		},
+	},
+	{
+		ID: ExtendsDefsTestAV2,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "v2",
 			Category: CategoryFood,
 		},
 	},
