@@ -15,7 +15,7 @@ type WithCategoryMetaDataProps struct {
 }
 
 type WithCategoryMetaData[T WithCategory] struct {
-	ID T
+	ID T `json:"id"`
 	*WithCategoryMetaDataProps
 }
 
@@ -32,7 +32,7 @@ type CharacterStatusMetaDataProps struct {
 }
 
 type CharacterStatusMetaData[T CharacterStatus] struct {
-	ID T
+	ID T `json:"id"`
 	*CharacterStatusMetaDataProps
 }
 
