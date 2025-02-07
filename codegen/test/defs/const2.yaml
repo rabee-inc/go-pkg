@@ -22,6 +22,7 @@ types:
       blue:
         id: 2
         name: 青
+
   baby:
     comment: "test: -y to -ies"
     defs:
@@ -58,14 +59,20 @@ types:
       v1:
         name: v1
         category: food
+    groups:
+      - props:
+          category: food
+        defs:
+          v2: v2
 
   extends_defs_test_b:
     comment: test extends defs
     extends: with_category
-    defs:
-      v1:
-        name: v1
-        category: bag
+    groups:
+      - props:
+          category: bag
+        defs:
+          v1: v1
 
   player:
     comment: プレイヤー
