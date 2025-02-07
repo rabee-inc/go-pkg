@@ -49,11 +49,8 @@ func main() {
 
 基本的にスネークケースで記載を推奨。キャメルケースには対応していません。
 
-## 注意事項
 
-同じディレクトリに同じpackage名で出力することはできません
-
-### settings
+## settings
 
 ```yaml
 settings:
@@ -61,7 +58,11 @@ settings:
   output: 出力先 (go generate を実行するディレクトリからの相対パス)
 ```
 
-### types
+### 注意事項
+
+同じディレクトリに同じpackage名で出力することはできません
+
+## types
 
 ```yaml
 types:
@@ -75,11 +76,11 @@ types:
 
 ```
 
-### defs
+## defs
 
 以下の3種類の書き方があります。
 
-#### ショートハンド
+### ショートハンド
 
 ```yaml
 変数名: Name の値
@@ -124,7 +125,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### ID を変更する場合
+### ID を変更する場合
 
 ```yaml
 変数名:
@@ -177,7 +178,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### ID と Name 以外にプロパティを追加する場合
+### ID と Name 以外にプロパティを追加する場合
 
 `extends` を定義してその値をプロパティに追加します。
 
@@ -228,7 +229,7 @@ var ItemMap map[Item]*ItemMetaData
 
 ```
 
-#### extends に他の types で定義した型を指定する場合
+### extends に他の types で定義した型を指定する場合
 
 `extends` には他の types で定義した型を指定する事ができます。(sliceを指定することもできます。)
 その型のdefsのkey名を値として指定してください。
@@ -312,4 +313,112 @@ var Items = []*ItemMetaData{
 
 var ItemMap map[Item]*ItemMetaData
 
+```
+
+
+## templates > extends_defs
+
+extends に指定する内容をあらかじめ定義しておくことができます。
+同じinterfaceでMetaDataのプロパティを扱うことができるため、メンテナンス性が向上します。
+
+- extends_defs で指定した定義をextendsで指定するには `extends: extends_defs のkey名` とします。
+- 通常のextendsと同様に、他のtypeを指定することもできます。
+- この指定を行った場合は、通常のextendsの指定と以下の違いがあります。
+  - 他のtypesで同じextendsの定義を指定している場合は、同じinterfaceを実装します。
+  - Propsメソッドが使用できます。このメソッドは、IDを除くMetaDataのプロパティを取得します。
+    - 他のtypesで同じextendsの定義を指定している場合は、MetaDataのプロパティの型は同じ型になります。
+
+**入力例**
+
+```yaml
+
+templates:
+  extends_defs:
+    with_category:
+      category: string
+
+types:
+  item:
+    comment: アイテム
+    extends: with_category
+    defs:
+      water:
+        name: 水
+        category: drink
+      potato:
+        name: ポテト
+        category: food
+
+```
+
+**出力**
+
+```go
+
+
+type WithCategoryMetaDataProps struct {
+	Name     string `json:"name"`
+	Category string `json:"category"`
+}
+
+type WithCategoryMetaData[T WithCategory] struct {
+	ID T
+	*WithCategoryMetaDataProps
+}
+
+type WithCategory interface {
+	Props() (*WithCategoryMetaDataProps, bool)
+}
+
+// Item ... アイテム
+type Item string
+
+func (c Item) String() string {
+	return string(c)
+}
+
+func (c Item) Props() (*WithCategoryMetaDataProps, bool) {
+	if m, ok := c.Meta(); ok {
+		return m.WithCategoryMetaDataProps, ok
+	}
+	return nil, false
+}
+
+func (c Item) Meta() (*ItemMetaData, bool) {
+	m, ok := ItemMap[c]
+	return m, ok
+}
+
+func (c Item) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ItemWater  Item = "water"
+	ItemPotato Item = "potato"
+)
+
+type ItemMetaData WithCategoryMetaData[Item]
+
+var Items = []*ItemMetaData{
+	{
+		ID: ItemWater,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "水",
+			Category: "drink",
+		},
+	},
+	{
+		ID: ItemPotato,
+		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
+			Name:     "ポテト",
+			Category: "food",
+		},
+	},
+}
+
+var ItemMap map[Item]*ItemMetaData
 ```

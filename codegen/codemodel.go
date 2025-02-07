@@ -24,12 +24,45 @@ func toPascalCaseType(t string) string {
 	return toPascalCase(t)
 }
 
-func newTypeDef(ts *typeInput) *typeDef {
+// extendDef(extends 内の 1プロパティ) を生成する
+func newExtendDef(ex *extendPropInput) *extendPropDef {
+	isPrimitive := primitiveTypeSet.Has(ex.Type)
+	var t string
+	if isPrimitive {
+		t = actualType(ex.Type)
+	} else {
+		// ユーザーが定義した型を参照した場合は pascal case に変換
+		t = toPascalCaseType(ex.Type)
+	}
+	return &extendPropDef{
+		Name:        ex.Name,
+		IsPrimitive: isPrimitive,
+		Type:        t,
+	}
+}
+
+// extendsDef を生成する
+func newExtendsDef(exDef *extendsDefInput) *extendsDef {
+	extends := []*extendPropDef{}
+	for _, ex := range exDef.Props {
+		extends = append(extends, newExtendDef(ex))
+	}
+	return &extendsDef{
+		Name:       exDef.Name,
+		IsTemplate: true,
+		Props:      extends,
+	}
+}
+
+// typeDef を生成する
+func newTypeDef(ts *typeInput, extendsDefMap map[string]*extendsDef) *typeDef {
 	typeName := ts.Name
 
 	td := &typeDef{
-		Name:        typeName,
-		Extends:     []*extendDef{},
+		Name: typeName,
+		Extends: &extendsDef{
+			Props: []*extendPropDef{},
+		},
 		Defs:        []*typeDefsItem{},
 		BaseType:    typeString,
 		OnlyBackend: ts.OnlyBackend,
@@ -53,23 +86,17 @@ func newTypeDef(ts *typeInput) *typeDef {
 	}
 
 	// Extends
-	if len(ts.Extends) > 0 {
-		td.HasExtends = true
-		for _, v := range ts.Extends {
-			isPrimitive := primitiveTypeSet.Has(v.Type)
-			var t string
-			if isPrimitive {
-				t = actualType(v.Type)
-			} else {
-				// ユーザーが定義した型を参照した場合は pascal case に変換
-				t = toPascalCaseType(v.Type)
-			}
-			td.Extends = append(td.Extends, &extendDef{
-				Name:        v.Name,
-				IsPrimitive: isPrimitive,
-				Type:        t,
-			})
+	td.HasExtends = len(ts.Extends.Props) > 0 || ts.Extends.IsTemplate
+	for _, ex := range ts.Extends.Props {
+		td.Extends.Props = append(td.Extends.Props, newExtendDef(ex))
+	}
+
+	if ts.Extends.IsTemplate {
+		extendsDef, ok := extendsDefMap[ts.Extends.Name]
+		if !ok {
+			panic(fmt.Sprintf("%s extends_defs > %s is not defined.", typeName, ts.Extends.Name))
 		}
+		td.Extends = extendsDef
 	}
 
 	// Defs
@@ -102,7 +129,7 @@ func newTypeDef(ts *typeInput) *typeDef {
 		}
 
 		// extends
-		for _, ex := range td.Extends {
+		for _, ex := range td.Extends.Props {
 			if value, ok := def.PropMap[ex.Name]; ok {
 				hasDQ := ex.Type == typeString || ex.Type == typeStringSlice
 				isSlice := strings.HasPrefix(ex.Type, "[]")
@@ -156,10 +183,16 @@ func newTypeDef(ts *typeInput) *typeDef {
 	return td
 }
 
-type extendDef struct {
+type extendPropDef struct {
 	Name        string
 	IsPrimitive bool
 	Type        string
+}
+
+type extendsDef struct {
+	Name       string
+	IsTemplate bool
+	Props      []*extendPropDef
 }
 
 type typeDefsItem struct {
@@ -184,6 +217,6 @@ type typeDef struct {
 	BaseType    string
 	OnlyBackend bool
 	HasExtends  bool
-	Extends     []*extendDef
+	Extends     *extendsDef
 	Defs        []*typeDefsItem
 }

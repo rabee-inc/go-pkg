@@ -1,6 +1,15 @@
 settings:
   package: const2
   output: ./const2/const2.go
+templates:
+  extends_defs:
+    with_category:
+      category: category
+    character_status:
+      power: int
+      speed: int
+      detail: string
+      skills: "[]skill"
 types:
   color:
     comment: 色
@@ -27,3 +36,61 @@ types:
     comment: "test: -s to -es"
     defs:
       v1: v1
+
+  skill:
+    comment: スキル
+    defs:
+      magic_guard: 魔法無効
+      black_magic: 黒魔法
+      white_magic: 白魔法
+
+  category:
+    comment: カテゴリ
+    defs:
+      food: フード
+      shoes: 靴
+      bag: バッグ
+
+  extends_defs_test_a:
+    comment: test extends defs
+    extends: with_category
+    defs:
+      v1:
+        name: v1
+        category: food
+
+  extends_defs_test_b:
+    comment: test extends defs
+    extends: with_category
+    defs:
+      v1:
+        name: v1
+        category: bag
+
+  player:
+    comment: プレイヤー
+    extends: character_status
+    defs:
+      magician:
+        name: 黒魔法使い
+        power: 1
+        speed: 4
+        detail: 魔法が使える
+        skills: [black_magic, white_magic]
+
+  enemy:
+    comment: 敵
+    extends: character_status
+    defs:
+      wolf:
+        name: 狼
+        power: 10
+        speed: 10
+        detail: 凶暴
+        skills: []
+      dragon:
+        name: ドラゴン
+        power: 10
+        speed: 10
+        detail: 凶暴
+        skills: [magic_guard]

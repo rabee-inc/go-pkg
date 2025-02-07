@@ -74,7 +74,9 @@ func ExportByYaml(path string) string {
 
 // GenerateByYamlFile ... yaml ファイルからコードを生成する
 func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
-	val := &yamlInput{}
+	val := &yamlInput{
+		Templates: &templatesInput{},
+	}
 	err := yaml.Unmarshal(file, &val)
 	if err != nil {
 		panic(err)
@@ -85,16 +87,31 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		panic(err)
 	}
 
-	typeDefs := []*typeDef{}
+	// extendsDefs の入力値を code model に変換する
+	extendsDefs := make([]*extendsDef, len(val.Templates.ExtendsDefs))
+	for i, v := range val.Templates.ExtendsDefs {
+		extendsDefs[i] = newExtendsDef(v)
+	}
 
+	// 上記を map 化
+	extendsDefMap := make(map[string]*extendsDef, len(extendsDefs))
+	for _, v := range extendsDefs {
+		extendsDefMap[v.Name] = v
+	}
+
+	// types の入力値を code model に変換する
+	typeDefs := []*typeDef{}
 	for _, v := range val.Types {
-		typeDefs = append(typeDefs, newTypeDef(v))
+		typeDefs = append(typeDefs, newTypeDef(v, extendsDefMap))
 	}
 
 	outputCode := formatHeader(name) + "\n\n"
 	outputCode += formatPackage(val.Settings.Package) + "\n\n"
 	outputCode += formatCheckSum(GenerateCheckSum(file)) + "\n\n"
 	outputCode += defaultMetaDataCode + "\n\n"
+
+	// extends_defs
+	outputCode += generateExtendsDefsCode(extendsDefs)
 
 	// constants struct
 	constantsStructParams := []string{}
@@ -118,9 +135,16 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 
 		// method
 		if td.BaseType == typeString {
+			// String method
 			outputCode += formatConstantMethodString(pascalName)
 		}
+		// Props method
+		if td.HasExtends && td.Extends.IsTemplate {
+			outputCode += formatExtendsDefMethodProps(pascalName, toPascalCase(td.Extends.Name))
+		}
+		// Meta method
 		outputCode += formatConstantMethodMeta(pascalName)
+		// Name method
 		outputCode += formatConstantMethodName(pascalName)
 
 		// const
@@ -132,13 +156,11 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 
 		// meta data type
 		if td.HasExtends {
-			params := []string{}
-			params = append(params, formatConstantMetaDataTypeID(pascalName))
-			params = append(params, formatConstantMetaDataTypeParam("name", "string"))
-			for _, def := range td.Extends {
-				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
+			if td.Extends.IsTemplate {
+				outputCode += formatConstantMetaDataTypeByExtendsDef(pascalName, toPascalCase(td.Extends.Name))
+			} else {
+				outputCode += generateMetaDataType(pascalName, td.Extends.Props)
 			}
-			outputCode += formatConstantMetaDataType(pascalName, strings.Join(params, "\n"))
 		} else {
 			outputCode += formatConstantMetaDataByGenerics(pascalName)
 		}
@@ -148,15 +170,13 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		for _, def := range td.Defs {
 			params := []string{}
 			params = append(params, formatConstantMetaDataParam("ID", pascalName+toPascalCase(def.VariableName), false))
-			params = append(params, formatConstantMetaDataParam("Name", def.Name, true))
-			for _, extend := range def.ExtendValues {
-				var param string
-				if extend.IsSlice {
-					param = formatConstantMetaDataSliceParam(extend.Name, extend.Type, extend.SliceValue, extend.HasDoubleQuote)
-				} else {
-					param = formatConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote)
-				}
-				params = append(params, param)
+			exParams := []string{}
+			exParams = append(exParams, formatConstantMetaDataParam("Name", def.Name, true))
+			exParams = append(exParams, generateMetaDataParams(def.ExtendValues)...)
+			if td.Extends.IsTemplate {
+				params = append(params, formatConstantMetaDataPropsInParam(toPascalCase(td.Extends.Name), strings.Join(exParams, "\n")))
+			} else {
+				params = append(params, exParams...)
 			}
 			metaDataListElements = append(metaDataListElements, formatConstantMetaDataListElement(strings.Join(params, "\n")))
 		}
@@ -195,6 +215,55 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	}
 
 	return formattedCode, val
+}
+
+// extends のプロパティ部分のコードを生成する
+func generateMetaDataType(name string, extends []*extendPropDef) string {
+	params := []string{}
+	params = append(params, formatConstantMetaDataTypeID(name))
+	params = append(params, formatConstantMetaDataTypeParam("name", "string"))
+	for _, def := range extends {
+		params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
+	}
+	return formatConstantMetaDataType(name, strings.Join(params, "\n"))
+
+}
+
+// extendsDefs を使う際に必要になるコードを生成する
+func generateExtendsDefsCode(extendsDefs []*extendsDef) string {
+	code := ""
+	for _, extendsDef := range extendsDefs {
+		pascalName := toPascalCase(extendsDef.Name)
+		// props type
+		{
+			params := []string{}
+			for _, def := range extendsDef.Props {
+				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
+			}
+			code += formatExtendsDefMetaDataPropsType(pascalName, strings.Join(params, "\n"))
+		}
+
+		// meta data type
+		code += formatExtendsDefMetaDataType(pascalName)
+
+		// interface type
+		code += formatExtendsDefInterfaceType(pascalName)
+	}
+	return code
+}
+
+func generateMetaDataParams(extendValues []*metaDataValueDef) []string {
+	params := []string{}
+	for _, extend := range extendValues {
+		var param string
+		if extend.IsSlice {
+			param = formatConstantMetaDataSliceParam(extend.Name, extend.Type, extend.SliceValue, extend.HasDoubleQuote)
+		} else {
+			param = formatConstantMetaDataParam(extend.Name, extend.Value, extend.HasDoubleQuote)
+		}
+		params = append(params, param)
+	}
+	return params
 }
 
 // GenerateCheckSum ... チェックサムを生成する

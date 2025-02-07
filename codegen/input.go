@@ -23,18 +23,17 @@ type settingsInput struct {
 
 // templatesInput ... templates を構造化したもの
 type templatesInput struct {
-	ExtendsDefs map[string]extendsInput `yaml:"extends_defs"`
+	ExtendsDefs extendsDefInputList `yaml:"extends_defs"`
 }
 
 // typeInput ... types のそれぞれを構造化したもの
 type typeInput struct {
-	Name                string
-	Comment             string       `yaml:"comment" validate:"required"`
-	Type                string       `yaml:"type"`
-	OnlyBackend         bool         `yaml:"only_backend"`
-	Extends             extendsInput `yaml:"extends"`
-	ExtendsTemplateName string
-	Defs                defInputList `yaml:"defs" validate:"required"`
+	Name        string
+	Comment     string       `yaml:"comment" validate:"required"`
+	Type        string       `yaml:"type"`
+	OnlyBackend bool         `yaml:"only_backend"`
+	Extends     extendsInput `yaml:"extends"`
+	Defs        defInputList `yaml:"defs" validate:"required"`
 }
 
 // typeInputList ... types を構造化したもの
@@ -44,7 +43,7 @@ type typeInputList []*typeInput
 func (p *typeInputList) UnmarshalYAML(value *yaml.Node) error {
 	// MappingNode のみ許可
 	if value.Kind != yaml.MappingNode {
-		return fmt.Errorf("`types` must contain YAML mapping, has %v", value.Kind)
+		return fmt.Errorf("`types` must contain YAML mapping.")
 	}
 
 	*p = make([]*typeInput, len(value.Content)/2)
@@ -179,15 +178,32 @@ type extendPropInput struct {
 }
 
 // extendsInput ... extends を構造化したもの
-type extendsInput []*extendPropInput
+type extendsInput struct {
+	Name       string
+	IsTemplate bool
+	Props      []*extendPropInput
+}
 
 func (p *extendsInput) UnmarshalYAML(value *yaml.Node) error {
-	// MappingNode のみ許可
-	if value.Kind != yaml.MappingNode {
-		return fmt.Errorf("`extends` must contain YAML mapping, has %v", value.Kind)
+	// ScalarNode か MappingNode のみ許可
+	if value.Kind == yaml.ScalarNode {
+		*p = extendsInput{
+			Name:       value.Value,
+			IsTemplate: true,
+			Props:      nil,
+		}
+		return nil
 	}
 
-	*p = make([]*extendPropInput, len(value.Content)/2)
+	if value.Kind != yaml.MappingNode {
+		return fmt.Errorf("`extends` must contain YAML mapping.")
+	}
+
+	*p = extendsInput{
+		Name:       "",
+		IsTemplate: false,
+		Props:      make([]*extendPropInput, len(value.Content)/2),
+	}
 
 	for i := 0; i < len(value.Content); i += 2 {
 		var exName string
@@ -202,10 +218,50 @@ func (p *extendsInput) UnmarshalYAML(value *yaml.Node) error {
 			return err
 		}
 
-		(*p)[i/2] = &extendPropInput{
+		p.Props[i/2] = &extendPropInput{
 			Name: exName,
 			Type: typeName,
 		}
+	}
+	return nil
+}
+
+// extendsDefInput ... extends_defs を構造化したもの
+type extendsDefInput = extendsInput
+
+// extendsDefInputList ... extendsDefInput のリスト
+type extendsDefInputList []*extendsDefInput
+
+// extends_defs: の部分
+func (p *extendsDefInputList) UnmarshalYAML(value *yaml.Node) error {
+	// MappingNode のみ許可
+	if value.Kind != yaml.MappingNode {
+		return fmt.Errorf("`extends_defs` must contain YAML mapping.")
+	}
+
+	*p = make([]*extendsDefInput, len(value.Content)/2)
+
+	for i := 0; i < len(value.Content); i += 2 {
+		ei := &extendsDefInput{}
+		var keyName string
+
+		// key
+		if err := value.Content[i].Decode(&keyName); err != nil {
+			return err
+		}
+
+		// value
+		if err := value.Content[i+1].Decode(&ei); err != nil {
+			return err
+		}
+
+		// extends_defs の中で key: scalar 指定があった場合エラー
+		if ei.IsTemplate {
+			return fmt.Errorf("`extends_defs` > `%v` must contain YAML mapping.", keyName)
+		}
+
+		ei.Name = keyName
+		(*p)[i/2] = ei
 	}
 	return nil
 }
