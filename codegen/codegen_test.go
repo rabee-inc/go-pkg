@@ -12,6 +12,7 @@ import (
 )
 
 func TestConst(t *testing.T) {
+	// コンパイルが通るかというテスト
 	meta, ok := const1.AnimalCat.Meta()
 	fmt.Println(const1.AnimalCat.String())
 	if ok {
@@ -31,6 +32,23 @@ func TestConst(t *testing.T) {
 		fmt.Println(v.FloatSliceValue)
 		fmt.Println(v.StringValue)
 		fmt.Println(v.StringSliceValue)
+	}
+
+	// other type
+	{
+		meta, _ := const1.TypeTestV1.Meta()
+		meta2, _ := meta.ExtendsTest.Meta()
+		fmt.Println(meta2.IntValue)
+	}
+
+	// other type slice
+	{
+		meta, _ := const1.TypeTestV1.Meta()
+		for _, animal := range meta.Animals {
+			animalMeta, _ := animal.Meta()
+			fmt.Println(animalMeta.Name)
+		}
+
 	}
 }
 

@@ -2,7 +2,7 @@
 
 package const1
 
-const CheckSum = "442aa83527c507d144caff8e94f38469127900f0fcb7039d053f30075198115d"
+const CheckSum = "2846f8c864938c44581190cba8e2968c960fd37cd26e511beba22fb1859eca31"
 
 type ConstantMetaData[T comparable] struct {
 	ID   T      `json:"id"`
@@ -101,11 +101,54 @@ var ExtendsTests = []*ExtendsTestMetaData{
 
 var ExtendsTestMap map[ExtendsTest]*ExtendsTestMetaData
 
+// TypeTest ... set other type test
+type TypeTest string
+
+func (c TypeTest) String() string {
+	return string(c)
+}
+
+func (c TypeTest) Meta() (*TypeTestMetaData, bool) {
+	m, ok := TypeTestMap[c]
+	return m, ok
+}
+
+func (c TypeTest) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	TypeTestV1 TypeTest = "v1"
+)
+
+type TypeTestMetaData struct {
+	ID          TypeTest    `json:"id"`
+	Name        string      `json:"name"`
+	Animals     []Animal    `json:"animals"`
+	ExtendsTest ExtendsTest `json:"extends_test"`
+}
+
+var TypeTests = []*TypeTestMetaData{
+	{
+		ID:          TypeTestV1,
+		Name:        "test",
+		Animals:     []Animal{AnimalDog, AnimalCat},
+		ExtendsTest: ExtendsTestV1,
+	},
+}
+
+var TypeTestMap map[TypeTest]*TypeTestMetaData
+
 type Constants struct {
 	Animals      []*AnimalMetaData                    `json:"animals"`
 	Animal       map[Animal]*AnimalMetaData           `json:"animal"`
 	ExtendsTests []*ExtendsTestMetaData               `json:"extends_tests"`
 	ExtendsTest  map[ExtendsTest]*ExtendsTestMetaData `json:"extends_test"`
+	TypeTests    []*TypeTestMetaData                  `json:"type_tests"`
+	TypeTest     map[TypeTest]*TypeTestMetaData       `json:"type_test"`
 }
 
 var ConstantsData *Constants
@@ -123,9 +166,15 @@ func (c *Constants) GetConstIDs() [][]any {
 		extendsTest = append(extendsTest, v.ID)
 	}
 
+	typeTest := []any{}
+	for _, v := range c.TypeTests {
+		typeTest = append(typeTest, v.ID)
+	}
+
 	return [][]any{
 		animal,
 		extendsTest,
+		typeTest,
 	}
 }
 
@@ -145,10 +194,17 @@ func init() {
 		ExtendsTestMap[v.ID] = v
 	}
 
+	TypeTestMap = map[TypeTest]*TypeTestMetaData{}
+	for _, v := range TypeTests {
+		TypeTestMap[v.ID] = v
+	}
+
 	ConstantsData = &Constants{
 		Animals:      Animals,
 		Animal:       AnimalMap,
 		ExtendsTests: ExtendsTests,
 		ExtendsTest:  ExtendsTestMap,
+		TypeTests:    TypeTests,
+		TypeTest:     TypeTestMap,
 	}
 }

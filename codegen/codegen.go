@@ -7,9 +7,9 @@ import (
 	"go/format"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
+	"github.com/rabee-inc/go-pkg/maputil"
 	"github.com/rabee-inc/go-pkg/sliceutil"
 	"gopkg.in/go-playground/validator.v9"
 	"gopkg.in/yaml.v3"
@@ -26,15 +26,16 @@ const (
 	typeInt64Slice  = "[]int64"
 )
 
-var reFloat = regexp.MustCompile(`float$`)
-
-func actualType(t string) string {
-	// 末尾が float のものは float64 に変換
-	if reFloat.MatchString(t) {
-		return reFloat.ReplaceAllString(t, "float64")
-	}
-	return t
-}
+var primitiveTypeSet = maputil.NewSet([]string{
+	typeString,
+	typeStringSlice,
+	typeInt,
+	typeIntSlice,
+	typeFloat,
+	typeFloatSlice,
+	typeInt64,
+	typeInt64Slice,
+})
 
 var vl = validator.New()
 

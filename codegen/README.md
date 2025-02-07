@@ -70,7 +70,7 @@ types:
     only_backend: true # 任意: バックエンドでしか使用しない値かどうか。true の場合はフロントに返す値に含めません
     type: int # 任意 (int | int64 | string | float) (デフォルト = string)
     extends: # 任意: meta data に追加するプロパティ。 (ID と Name 以外に追加でプロパティを含める場合に使用してください)
-      プロパティ名: 型名 # 必須: 型名 (int | int64 | string | float | またそれぞれのslice)
+      プロパティ名: 型名 # 必須: 型名 (int | int64 | string | float | 他の types で定義した型 | またそれぞれのslice)
     defs: # 別途記載
 
 ```
@@ -185,10 +185,10 @@ var ItemMap map[Item]*ItemMetaData
 
 ```yaml
 types:
-  comment: アイテム
-  extends: 
-    color: string
   item:
+    comment: アイテム
+    extends: 
+      color: string
     defs:
       private:
         name: 非公開
@@ -221,6 +221,92 @@ var Items = []*ItemMetaData{
 		ID:   ItemPublic,
 		Name: "公開",
 		Color: "green"
+	},
+}
+
+var ItemMap map[Item]*ItemMetaData
+
+```
+
+#### extends に他の types で定義した型を指定する場合
+
+`extends` には他の types で定義した型を指定する事ができます。(sliceを指定することもできます。)
+その型のdefsのkey名を値として指定してください。
+
+
+**入力例**
+
+```yaml
+types:
+  color:
+    comment: 色
+    defs:
+      red: 赤
+      green: 緑
+      blue: 青
+
+  item:
+    comment: アイテム
+    extends: 
+      color: color
+      colors: "[]color"
+    defs:
+      private:
+        name: 非公開
+        color: red
+        colors: [red, blue]
+      public:
+        name: 公開 
+        color: green
+        colors: [green, red]
+```
+
+**出力(item部分のみ)**
+
+```go
+// Item ... アイテム
+type Item string
+
+func (c Item) String() string {
+	return string(c)
+}
+
+func (c Item) Meta() (*ItemMetaData, bool) {
+	m, ok := ItemMap[c]
+	return m, ok
+}
+
+func (c Item) Name() string {
+	if m, ok := c.Meta(); ok {
+		return m.Name
+	}
+	return ""
+}
+
+const (
+	ItemPrivate Item = "private"
+	ItemPublic  Item = "public"
+)
+
+type ItemMetaData struct {
+	ID     Item    `json:"id"`
+	Name   string  `json:"name"`
+	Color  Color   `json:"color"`
+	Colors []Color `json:"colors"`
+}
+
+var Items = []*ItemMetaData{
+	{
+		ID:     ItemPrivate,
+		Name:   "非公開",
+		Color:  ColorRed,
+		Colors: []Color{ColorRed, ColorBlue},
+	},
+	{
+		ID:     ItemPublic,
+		Name:   "公開",
+		Color:  ColorGreen,
+		Colors: []Color{ColorGreen, ColorRed},
 	},
 }
 

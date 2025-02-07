@@ -5,6 +5,25 @@ import (
 	"strings"
 )
 
+// yamlの入力値から実際のgo型に変換
+func actualType(t string) string {
+	switch t {
+	case typeFloat, typeFloatSlice:
+		// float64 に変換
+		return strings.Replace(t, "float", "float64", 1)
+	default:
+		return t
+	}
+}
+
+// slice の場合でも正しく pascal case に変換する
+func toPascalCaseType(t string) string {
+	if strings.HasPrefix(t, "[]") {
+		return "[]" + toPascalCase(strings.TrimPrefix(t, "[]"))
+	}
+	return toPascalCase(t)
+}
+
 func newTypeDef(ts *typeInput) *typeDef {
 	typeName := ts.Name
 
@@ -37,9 +56,18 @@ func newTypeDef(ts *typeInput) *typeDef {
 	if len(ts.Extends) > 0 {
 		td.HasExtends = true
 		for _, v := range ts.Extends {
+			isPrimitive := primitiveTypeSet.Has(v.Type)
+			var t string
+			if isPrimitive {
+				t = actualType(v.Type)
+			} else {
+				// ユーザーが定義した型を参照した場合は pascal case に変換
+				t = toPascalCaseType(v.Type)
+			}
 			td.Extends = append(td.Extends, &extendDef{
-				Name: v.Name,
-				Type: actualType(v.Type),
+				Name:        v.Name,
+				IsPrimitive: isPrimitive,
+				Type:        t,
 			})
 		}
 	}
@@ -85,10 +113,19 @@ func newTypeDef(ts *typeInput) *typeDef {
 						panic(fmt.Sprintf("%s (%s) invalid def: %s must be slice.", typeName, variableName, ex.Name))
 					}
 
+					sliceValue := value.Values
+					if !ex.IsPrimitive {
+						tmp := make([]string, len(sliceValue))
+						// ユーザー定義の型の場合は 型名と値を pascal case に変換したsliceにする
+						for i, v := range sliceValue {
+							tmp[i] = strings.TrimPrefix(ex.Type, "[]") + toPascalCase(v)
+						}
+						sliceValue = tmp
+					}
 					it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
 						Name:           ex.Name,
 						Type:           ex.Type,
-						SliceValue:     value.Values,
+						SliceValue:     sliceValue,
 						HasDoubleQuote: hasDQ,
 						IsSlice:        true,
 					})
@@ -97,11 +134,15 @@ func newTypeDef(ts *typeInput) *typeDef {
 					if value.IsSlice {
 						panic(fmt.Sprintf("%s (%s) invalid def: %s must not be slice.", typeName, variableName, ex.Name))
 					}
-
+					v := value.Value
+					if !ex.IsPrimitive {
+						// ユーザー定義の型の場合は 型名と値を pascal case に変換した値にする
+						v = ex.Type + toPascalCase(v)
+					}
 					it.ExtendValues = append(it.ExtendValues, &metaDataValueDef{
 						Name:           ex.Name,
 						Type:           ex.Type,
-						Value:          value.Value,
+						Value:          v,
 						HasDoubleQuote: hasDQ,
 						IsSlice:        false,
 					})
@@ -116,8 +157,9 @@ func newTypeDef(ts *typeInput) *typeDef {
 }
 
 type extendDef struct {
-	Name string
-	Type string
+	Name        string
+	IsPrimitive bool
+	Type        string
 }
 
 type typeDefsItem struct {
