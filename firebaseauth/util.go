@@ -1,6 +1,7 @@
 package firebaseauth
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -17,9 +18,11 @@ func getTokenByAuthHeader(ah string) string {
 	return ""
 }
 
-func getUserByAuthHeader(ah string) string {
-	if strings.HasPrefix(ah, debugHeaderPrefix) {
-		return ah[len(debugHeaderPrefix):]
+func getDebugByAuthHeader(ah string) string {
+	token := getTokenByAuthHeader(ah)
+	fmt.Printf("token: %s\n", token)
+	if strings.HasPrefix(token, debugHeaderPrefix) {
+		return token[len(debugHeaderPrefix):]
 	}
 	return ""
 }

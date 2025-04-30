@@ -22,7 +22,7 @@ func NewServiceDebug(cFirebaseAuth *auth.Client, dummyClaims map[string]any) Ser
 // 認証を行う
 func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, map[string]any, error) {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
-	if user := getUserByAuthHeader(ah); user != "" {
+	if user := getDebugByAuthHeader(ah); user != "" {
 		return user, s.dummyClaims, nil
 	}
 	return s.sFirebaseAuth.Authentication(ctx, ah)
@@ -32,7 +32,7 @@ func (s *serviceDebug) Authentication(ctx context.Context, ah string) (string, m
 func (s *serviceDebug) SetCustomClaims(ctx context.Context, userID string, claims map[string]any) error {
 	// AuthorizationHeaderからUserが取得できたらデバッグリクエストと判定する
 	ah := getAuthHeader(ctx)
-	if getUserByAuthHeader(ah) != "" {
+	if getDebugByAuthHeader(ah) != "" {
 		return nil
 	}
 	return s.sFirebaseAuth.SetCustomClaims(ctx, userID, claims)
