@@ -36,6 +36,18 @@ func NewClient(
 	}
 }
 
+func (c *Client) GetClient() *storage.Client {
+	return c.client
+}
+
+func (c *Client) GetBucketHandle() *storage.BucketHandle {
+	return c.bucketHandle
+}
+
+func (c *Client) GetBucket() string {
+	return c.bucket
+}
+
 // DataURLのファイルをアップロードする
 func (c *Client) UploadForDataURL(
 	ctx context.Context,
@@ -74,7 +86,7 @@ func (c *Client) Upload(
 	// ContentTypeを設定
 	w.ContentType = contentType
 
-	// Cache-Controllを設定
+	// Cache-Controlを設定
 	if cacheMode != nil {
 		var cc string
 		if cacheMode.Disabled {
@@ -106,10 +118,7 @@ func (c *Client) GetReader(
 	ctx context.Context,
 	path string,
 ) (*storage.Reader, error) {
-	reader, err := c.client.
-		Bucket(c.bucket).
-		Object(path).
-		NewReader(ctx)
+	reader, err := c.client.Bucket(c.bucket).Object(path).NewReader(ctx)
 	if err != nil {
 		log.Error(ctx, err)
 		return nil, err
@@ -117,21 +126,15 @@ func (c *Client) GetReader(
 	return reader, nil
 }
 
-// バケット名
-func (c *Client) GetBucket() string {
-	return c.bucket
-}
-
-func (c *Client) GetDownloadSignedURL(
+// ダウンロード用のSignedURLを生成する
+func (c *Client) GenerateDownloadSignedURL(
 	ctx context.Context,
 	path string,
 	expire time.Duration,
 ) (string, error) {
-	expires := timeutil.Now().Add(expire)
-	opts := &storage.SignedURLOptions{
-		Expires: expires,
-	}
+	opts := &storage.SignedURLOptions{}
 	opts.Method = http.MethodGet
+	opts.Expires = timeutil.Now().Add(expire)
 	singedURL, err := c.bucketHandle.SignedURL(path, opts)
 	if err != nil {
 		log.Error(ctx, err)
@@ -140,18 +143,23 @@ func (c *Client) GetDownloadSignedURL(
 	return singedURL, nil
 }
 
-func (c *Client) GetUploadSignedURL(
+// アップロード用のSignedURLを生成する
+func (c *Client) GenerateUploadSignedURL(
 	ctx context.Context,
 	path string,
 	contentType string,
+	maxSize int64,
 	expire time.Duration,
 ) (string, error) {
-	expires := timeutil.Now().Add(expire)
-	opts := &storage.SignedURLOptions{
-		Expires: expires,
-	}
+	opts := &storage.SignedURLOptions{}
 	opts.Method = http.MethodPut
 	opts.ContentType = contentType
+	if maxSize > 0 {
+		opts.Headers = []string{
+			fmt.Sprintf("x-goog-content-length-range:%d,%d", 0, maxSize),
+		}
+	}
+	opts.Expires = timeutil.Now().Add(expire)
 	singedURL, err := c.bucketHandle.SignedURL(path, opts)
 	if err != nil {
 		log.Error(ctx, err)
