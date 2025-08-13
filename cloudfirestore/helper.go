@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/firestore/apiv1/firestorepb"
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/sliceutil"
 	"github.com/rabee-inc/go-pkg/stringutil"
@@ -427,4 +428,52 @@ func AddStartWith(q firestore.Query, key string, word string) firestore.Query {
 	return q.OrderBy(key, firestore.Asc).
 		StartAt(word).
 		EndAt(fmt.Sprintf("%s\uf8ff", word))
+}
+
+func Count(ctx context.Context, q firestore.Query) (int64, error) {
+	alias := "cnt"
+	aq := q.NewAggregationQuery().WithCount(alias)
+	results, err := aq.Get(ctx)
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+	if cnt, ok := results[alias]; ok {
+		return cnt.(*firestorepb.Value).GetIntegerValue(), nil
+	} else {
+		err = log.Warninge(ctx, "firestore: couldn't get alias for COUNT from results")
+		return 0, err
+	}
+}
+
+func Sum(ctx context.Context, q firestore.Query, field string) (int64, error) {
+	alias := "sum"
+	aq := q.NewAggregationQuery().WithSum(field, alias)
+	results, err := aq.Get(ctx)
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+	if cnt, ok := results[alias]; ok {
+		return cnt.(*firestorepb.Value).GetIntegerValue(), nil
+	} else {
+		err = log.Warninge(ctx, "firestore: couldn't get alias for SUM from results")
+		return 0, err
+	}
+}
+
+func Avg(ctx context.Context, q firestore.Query, field string) (int64, error) {
+	alias := "avg"
+	aq := q.NewAggregationQuery().WithAvg(field, alias)
+	results, err := aq.Get(ctx)
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+	if cnt, ok := results[alias]; ok {
+		return cnt.(*firestorepb.Value).GetIntegerValue(), nil
+	} else {
+		err = log.Warninge(ctx, "firestore: couldn't get alias for AVG from results")
+		return 0, err
+	}
 }
