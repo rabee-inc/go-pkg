@@ -126,6 +126,20 @@ func (c *Client) GetReader(
 	return reader, nil
 }
 
+// 指定ファイルのWriterを取得する
+func (c *Client) GetWriter(
+	ctx context.Context,
+	path string,
+	contentType string,
+) *storage.Writer {
+	w := c.client.
+		Bucket(c.bucket).
+		Object(path).
+		NewWriter(ctx)
+	w.ContentType = contentType
+	return w
+}
+
 // ダウンロード用のSignedURLを生成する
 func (c *Client) GenerateDownloadSignedURL(
 	ctx context.Context,
