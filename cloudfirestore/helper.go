@@ -430,6 +430,7 @@ func AddStartWith(q firestore.Query, key string, word string) firestore.Query {
 		EndAt(fmt.Sprintf("%s\uf8ff", word))
 }
 
+// 対象クエリで取得できる数を取得する
 func Count(ctx context.Context, q firestore.Query) (int64, error) {
 	alias := "cnt"
 	aq := q.NewAggregationQuery().WithCount(alias)
@@ -446,6 +447,8 @@ func Count(ctx context.Context, q firestore.Query) (int64, error) {
 	}
 }
 
+// 対象フィールドの合計を取得する。
+// float64 が必要な場合は SumFloat を使用してください。
 func Sum(ctx context.Context, q firestore.Query, field string) (int64, error) {
 	alias := "sum"
 	aq := q.NewAggregationQuery().WithSum(field, alias)
@@ -462,7 +465,25 @@ func Sum(ctx context.Context, q firestore.Query, field string) (int64, error) {
 	}
 }
 
-func Avg(ctx context.Context, q firestore.Query, field string) (int64, error) {
+// 対象フィールドの合計をfloat64で取得する
+func SumFloat(ctx context.Context, q firestore.Query, field string) (float64, error) {
+	alias := "sum"
+	aq := q.NewAggregationQuery().WithSum(field, alias)
+	results, err := aq.Get(ctx)
+	if err != nil {
+		log.Warning(ctx, err)
+		return 0, err
+	}
+	if cnt, ok := results[alias]; ok {
+		return cnt.(*firestorepb.Value).GetDoubleValue(), nil
+	} else {
+		err = log.Warninge(ctx, "firestore: couldn't get alias for SUM from results")
+		return 0, err
+	}
+}
+
+// 対象フィールドの平均を取得する。
+func Avg(ctx context.Context, q firestore.Query, field string) (float64, error) {
 	alias := "avg"
 	aq := q.NewAggregationQuery().WithAvg(field, alias)
 	results, err := aq.Get(ctx)
@@ -471,7 +492,7 @@ func Avg(ctx context.Context, q firestore.Query, field string) (int64, error) {
 		return 0, err
 	}
 	if cnt, ok := results[alias]; ok {
-		return cnt.(*firestorepb.Value).GetIntegerValue(), nil
+		return cnt.(*firestorepb.Value).GetDoubleValue(), nil
 	} else {
 		err = log.Warninge(ctx, "firestore: couldn't get alias for AVG from results")
 		return 0, err
