@@ -130,32 +130,40 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 			keyName := ""
 			field := rt.Field(i)
 
-			// embedded field の場合は、自身のフィールドとして処理する
-			if field.Anonymous {
-				fieldTs := t.scan(field.Type, false)
-				if fieldTs != nil {
-					for k, v := range fieldTs.Fields {
-						ts.Fields[k] = v
-					}
-				}
-				continue
-			}
-
+			hasSkip := false
 			omitEmpty := false
 			for _, tagName := range t.structTagNames {
 				tagValue := field.Tag.Get(tagName)
 				values := strings.Split(tagValue, ",")
 				tagValue = values[0]
-				if tagValue != "-" {
-					keyName = tagValue
+
+				if tagValue == "-" {
+					hasSkip = true
+					break
 				}
+				keyName = tagValue
 				if keyName != "" {
 					omitEmpty = slices.Contains(values[1:], "omitempty")
 					break
 				}
 			}
 
+			if hasSkip {
+				continue
+			}
+
 			if keyName == "" {
+				// embedded field の場合は、自身のフィールドとして処理する
+				if field.Anonymous {
+					fieldTs := t.scan(field.Type, false)
+					if fieldTs != nil {
+						for k, v := range fieldTs.Fields {
+							ts.Fields[k] = v
+						}
+					}
+					continue
+				}
+
 				// struct tag による命名がなく、 structFieldEnabled が false の場合は、そのフィールドは存在しないものとして扱う
 				if !t.structFieldEnabled {
 					continue
