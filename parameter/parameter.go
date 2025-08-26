@@ -221,15 +221,20 @@ func GetForms(ctx context.Context, r *http.Request, dst any) error {
 			}
 			fieldValue.SetBool(val)
 		case reflect.Slice:
-			switch {
-			case field.Type == reflect.TypeOf([]string{}):
+			elem := field.Type.Elem()
+			switch elem.Kind() {
+			case reflect.String:
 				val := GetFormBySlice(ctx, r, formTag)
-				rv := reflect.ValueOf(val)
-				fieldValue.Set(rv)
-			case field.Type == reflect.TypeOf([]int{}):
+				for _, v := range val {
+					rv := reflect.ValueOf(v).Convert(elem)
+					fieldValue.Set(reflect.Append(fieldValue, rv))
+				}
+			case reflect.Int:
 				val := GetFormByIntSlice(ctx, r, formTag)
-				rv := reflect.ValueOf(val)
-				fieldValue.Set(rv)
+				for _, v := range val {
+					rv := reflect.ValueOf(v).Convert(elem)
+					fieldValue.Set(reflect.Append(fieldValue, rv))
+				}
 			}
 		}
 	}
