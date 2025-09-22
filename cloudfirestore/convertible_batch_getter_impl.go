@@ -114,7 +114,11 @@ func (cbg *convertibleBatchGetter[S, D]) convertAll() {
 		}
 		item.RemoveAfter()
 		item.RemoveOnEmpty()
-		cbg.DstMap[item.Path] = item.Dst
+		if src == nil {
+			cbg.DstMap[item.Path] = nil
+		} else {
+			cbg.DstMap[item.Path] = item.Dst
+		}
 		item.Converted = true
 	}
 }
