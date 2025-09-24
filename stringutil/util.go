@@ -80,3 +80,19 @@ func ToCommaf(v float64) string {
 	}
 	return buf.String()
 }
+
+// 最後に一致した文字列を置換する
+func ReplaceLast(s, old, new string) string {
+	index := strings.LastIndex(s, old)
+	if index == -1 {
+		return s
+	}
+	return s[:index] + new + s[index+len(old):]
+}
+
+// BOMを除去する
+func TrimBOM(str string) string {
+	b := []byte(str)
+	b = bytes.TrimPrefix(b, []byte{0xef, 0xbb, 0xbf})
+	return string(b)
+}
