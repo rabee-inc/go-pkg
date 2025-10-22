@@ -157,9 +157,11 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 				if field.Anonymous {
 					fieldTs := t.scan(field.Type, false)
 					if fieldTs != nil {
-						for k, v := range fieldTs.Fields {
-							ts.Fields[k] = v
+						if ts.InlineEmbeddedFields == nil {
+							ts.InlineEmbeddedFields = map[string]*TypeStructure{}
 						}
+						// scan 完了後にインライン展開させるために登録しておく
+						ts.InlineEmbeddedFields[fieldTs.Name] = fieldTs
 					}
 					continue
 				}
@@ -194,10 +196,23 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 	return ts
 }
 
+func (t *typeScanner) formatScannedTypeStructure(ts *TypeStructure) {
+	for _, embeddedTs := range ts.InlineEmbeddedFields {
+		for k, v := range embeddedTs.Fields {
+			ts.Fields[k] = v
+		}
+	}
+
+	for _, field := range ts.Fields {
+		t.formatScannedTypeStructure(field)
+	}
+}
+
 func (t *typeScanner) Export() map[string]*TypeStructure {
 	// types をコピーして返す
 	types := map[string]*TypeStructure{}
 	for k, v := range t.types {
+		t.formatScannedTypeStructure(v)
 		types[k] = v
 	}
 	return types
