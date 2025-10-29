@@ -24,6 +24,8 @@ const (
 	typeFloatSlice  = "[]float"
 	typeInt64       = "int64"
 	typeInt64Slice  = "[]int64"
+	typeBool        = "bool"
+	typeBoolSlice   = "[]bool"
 )
 
 var primitiveTypeSet = maputil.NewSet([]string{
@@ -35,6 +37,8 @@ var primitiveTypeSet = maputil.NewSet([]string{
 	typeFloatSlice,
 	typeInt64,
 	typeInt64Slice,
+	typeBool,
+	typeBoolSlice,
 })
 
 var vl = validator.New()
@@ -157,12 +161,19 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		// meta data type
 		if td.HasExtends {
 			if td.Extends.IsTemplate {
-				outputCode += formatConstantMetaDataTypeByExtendsDef(pascalName, toPascalCase(td.Extends.Name))
+				templateName := toPascalCase(td.Extends.Name)
+				outputCode += formatConstantMetaDataTypeByExtendsDef(pascalName, templateName) +
+					formatConstantMetaDataListType(pascalName) +
+					formatConstantMetaDataListPrimitiveListMethod(pascalName, templateName, td.BaseType) +
+					formatConstantMetaDataListPrimitiveMapMethod(pascalName, templateName, td.BaseType)
+
 			} else {
-				outputCode += generateMetaDataType(pascalName, td.Extends.Props)
+				outputCode += generateMetaDataType(pascalName, td.Extends.Props) +
+					formatConstantMetaDataListType(pascalName)
 			}
 		} else {
-			outputCode += formatConstantMetaDataByGenerics(pascalName)
+			outputCode += formatConstantMetaDataByGenerics(pascalName) +
+				formatConstantMetaDataListType(pascalName)
 		}
 
 		// meta data list
@@ -187,7 +198,7 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 
 		if !td.OnlyBackend {
 			// constant struct params
-			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(toPluralForm(td.Name), "[]*"+formatConstantMetaDataTypeName(pascalName)))
+			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(toPluralForm(td.Name), formatConstantMetaDataListTypeName(pascalName)))
 			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(td.Name, formatConstantMetaDataMapTypeName(pascalName)))
 
 			// init map generate codes
