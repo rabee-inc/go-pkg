@@ -35,72 +35,131 @@ type ConstantMetaData[T comparable] struct {
 
 `
 
+const extendsDefMetaDataPropsTypeNameCode = `%sProps`
+
+func formatExtendsDefMetaDataPropsTypeName(name string) string {
+	return fmt.Sprintf(extendsDefMetaDataPropsTypeNameCode, formatConstantMetaDataTypeName(name))
+}
+
 // extends_defs 定義時の props の型定義出力
 const extendsDefMetaDataPropsTypeCode = `
-type %sMetaDataProps struct {
+type %s struct {
 	Name   string ` + "`json:\"name\"`" + `
 	%s
 }
 `
 
 func formatExtendsDefMetaDataPropsType(tName string, params string) string {
-	return fmt.Sprintf(extendsDefMetaDataPropsTypeCode, tName, params)
+	return fmt.Sprintf(extendsDefMetaDataPropsTypeCode, formatExtendsDefMetaDataPropsTypeName(tName), params)
 }
 
 // extends_defs 定義時の MetaData の型定義出力
 const extendsDefMetaDataTypeCode = `
-type %sMetaData[T %s] struct {
+type %s[T comparable] struct {
 	ID T ` + "`json:\"id\"`" + `
-	*%sMetaDataProps
+	*%s
 }
 `
 
 func formatExtendsDefMetaDataType(name string) string {
-	return fmt.Sprintf(extendsDefMetaDataTypeCode, name, name, name)
+	return fmt.Sprintf(extendsDefMetaDataTypeCode, formatConstantMetaDataTypeName(name), formatExtendsDefMetaDataPropsTypeName(name))
 }
 
 // extends_defs 定義時の interface の型定義出力
 const extendsDefInterfaceTypeCode = `
 type %s interface {
-	Props() (*%sMetaDataProps, bool)
+	Props() (*%s, bool)
 }
 `
 
 func formatExtendsDefInterfaceType(name string) string {
-	return fmt.Sprintf(extendsDefInterfaceTypeCode, name, name)
+	return fmt.Sprintf(extendsDefInterfaceTypeCode, name, formatExtendsDefMetaDataPropsTypeName(name))
 }
 
 // extends が extends_defs を参照しているときのみ出力する Props メソッド
 const extendsDefPropsMethodCode = `
-func (c %s) Props() (*%sMetaDataProps, bool) {
+func (c %s) Props() (*%s, bool) {
 	if m, ok := c.Meta(); ok {
-		return m.%sMetaDataProps, ok
+		return m.%s, ok
 	}
 	return nil, false
 }
 `
 
 func formatExtendsDefMethodProps(tName string, exName string) string {
-	return fmt.Sprintf(extendsDefPropsMethodCode, tName, exName, exName)
+	return fmt.Sprintf(extendsDefPropsMethodCode, tName, formatExtendsDefMetaDataPropsTypeName(exName), formatExtendsDefMetaDataPropsTypeName(exName))
 }
 
 // extends が extends_defs を参照しているときの MetaData の型
 const constantMetaDataTypeByExtendsDefCode = `
-type %sMetaData %sMetaData[%s]
+type %s %s[%s]
 `
 
 func formatConstantMetaDataTypeByExtendsDef(name string, templateName string) string {
-	return fmt.Sprintf(constantMetaDataTypeByExtendsDefCode, name, templateName, name)
+	return fmt.Sprintf(constantMetaDataTypeByExtendsDefCode, formatConstantMetaDataTypeName(name), formatConstantMetaDataTypeName(templateName), name)
+}
+
+// extends が extends_defs を参照しているときの MetaDataList の PrimitiveList メソッド
+const constantMetaDataListPrimitiveListMethodCode = `
+func (l %s) PrimitiveList() []*%s[%s] {
+	r := []*%s[%s]{}
+	for _, v := range l {
+		r = append(r, &%s[%s]{
+			ID: %s(v.ID),
+			%s: v.%s,
+		})
+	}
+	return r
+}
+`
+
+func formatConstantMetaDataListPrimitiveListMethod(name string, templateName string, baseType string) string {
+	templateMetaDataTypeName := formatConstantMetaDataTypeName(templateName)
+	return fmt.Sprintf(constantMetaDataListPrimitiveListMethodCode,
+		formatConstantMetaDataListTypeName(name),
+		templateMetaDataTypeName,
+		baseType,
+		templateMetaDataTypeName,
+		baseType,
+		templateMetaDataTypeName,
+		baseType,
+		baseType,
+		formatExtendsDefMetaDataPropsTypeName(templateName),
+		formatExtendsDefMetaDataPropsTypeName(templateName),
+	)
+}
+
+// extends が extends_defs を参照しているときの MetaDataList の PrimitiveMap メソッド
+const constantMetaDataListPrimitiveMapMethodCode = `
+func (l %s) PrimitiveMap() map[%s]*%s[%s] {
+	res := map[%s]*%s[%s]{}
+	for _, v := range l.PrimitiveList() {
+		res[v.ID] = v
+	}
+	return res
+}
+`
+
+func formatConstantMetaDataListPrimitiveMapMethod(name string, templateName string, baseType string) string {
+	return fmt.Sprintf(constantMetaDataListPrimitiveMapMethodCode,
+		formatConstantMetaDataListTypeName(name),
+		baseType,
+		formatConstantMetaDataTypeName(templateName),
+		baseType,
+		baseType,
+		formatConstantMetaDataTypeName(templateName),
+		baseType,
+	)
 }
 
 // extends が extends_defs を参照しているときの MetaData 内の Props
-const constantMetaDataPropsInParamCode = `%sMetaDataProps: &%sMetaDataProps{
+const constantMetaDataPropsInParamCode = `%s: &%s{
 %s
 },
 `
 
 func formatConstantMetaDataPropsInParam(name, params string) string {
-	return fmt.Sprintf(constantMetaDataPropsInParamCode, name, name, params)
+	return fmt.Sprintf(constantMetaDataPropsInParamCode, formatExtendsDefMetaDataPropsTypeName(name), formatExtendsDefMetaDataPropsTypeName(name), params)
 }
 
 // コメントの出力
@@ -250,16 +309,32 @@ func formatConstantMetaDataMap(tName string) string {
 	return fmt.Sprintf(constantMetaDataMapCode, formatConstantMetaDataMapVariableName(tName), formatConstantMetaDataMapTypeName(tName))
 }
 
+// MetaDataList の型
+const constantMetaDataListTypeNameCode = `%sList`
+
+func formatConstantMetaDataListTypeName(name string) string {
+	return fmt.Sprintf(constantMetaDataListTypeNameCode, formatConstantMetaDataTypeName(name))
+}
+
+// MetaDataList の型の定義
+const constantMetaDataListTypeCode = `
+type %s []*%s
+`
+
+func formatConstantMetaDataListType(name string) string {
+	return fmt.Sprintf(constantMetaDataListTypeCode, formatConstantMetaDataListTypeName(name), formatConstantMetaDataTypeName(name))
+}
+
 // MetaData の slice の定義
 const constantMetaDataListCode = `
-var %s = []*%s{
+var %s = %s{
 %s
 }
 
 `
 
 func formatConstantMetaDataList(tName, elements string) string {
-	return fmt.Sprintf(constantMetaDataListCode, toPluralForm(tName), formatConstantMetaDataTypeName(tName), elements)
+	return fmt.Sprintf(constantMetaDataListCode, toPluralForm(tName), formatConstantMetaDataListTypeName(tName), elements)
 }
 
 // MetaData の slice の1要素の出力
