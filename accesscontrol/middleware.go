@@ -1,18 +1,25 @@
 package accesscontrol
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 type Middleware struct {
-	origins []string
-	header  string
+	originRegexps []*regexp.Regexp
+	header        string
 }
 
 func NewMiddleware(origins []string, headers []string) *Middleware {
-	if len(origins) == 0 {
-		origins = []string{}
+	originRegexps := []*regexp.Regexp{}
+	for _, origin := range origins {
+		origin = strings.ReplaceAll(origin, ".", "\\.")
+		origin = strings.ReplaceAll(origin, "*", ".*")
+		pattern := fmt.Sprintf("^%s$", origin)
+		originRegexp := regexp.MustCompile(pattern)
+		originRegexps = append(originRegexps, originRegexp)
 	}
 	if headers == nil {
 		headers = []string{}
@@ -21,29 +28,12 @@ func NewMiddleware(origins []string, headers []string) *Middleware {
 	headers = append(headers, "Content-Type")
 	headers = append(headers, "Authorization")
 	header := strings.Join(headers, ", ")
-	return &Middleware{origins, header}
+	return &Middleware{originRegexps, header}
 }
 
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var origin string
-		if len(m.origins) == 0 {
-			origin = "*"
-		} else {
-			var host string
-			if headers, ok := r.Header["Origin"]; ok {
-				if len(headers) > 0 {
-					host = headers[0]
-				}
-			}
-			for _, o := range m.origins {
-				if strings.Contains(o, host) {
-					origin = o
-					break
-				}
-			}
-		}
-
+		origin := m.GetOriginValue(r.Host)
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", m.header)
@@ -64,4 +54,20 @@ func (m *Middleware) HandleWildcard(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (m *Middleware) GetOriginValue(requestOrigin string) string {
+	var origin string
+	if len(m.originRegexps) == 0 {
+		// 何も指定されていなかったらワイルドカードを返す
+		origin = "*"
+	} else {
+		for _, originRegexp := range m.originRegexps {
+			if originRegexp.MatchString(requestOrigin) {
+				origin = requestOrigin
+				break
+			}
+		}
+	}
+	return origin
 }
