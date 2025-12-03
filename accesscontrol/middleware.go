@@ -33,7 +33,7 @@ func NewMiddleware(origins []string, headers []string) *Middleware {
 
 func (m *Middleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := m.GetOriginValue(r.Host)
+		origin := m.GetOriginValue(r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", m.header)
