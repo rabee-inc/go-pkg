@@ -35,7 +35,9 @@ const (
 
 type AnimalMetaData ConstantMetaData[Animal]
 
-var Animals = []*AnimalMetaData{
+type AnimalMetaDataList []*AnimalMetaData
+
+var Animals = AnimalMetaDataList{
 	{
 		ID:   AnimalDog,
 		Name: "犬",
@@ -84,7 +86,9 @@ type ExtendsTestMetaData struct {
 	StringSliceValue []string    `json:"string_slice_value"`
 }
 
-var ExtendsTests = []*ExtendsTestMetaData{
+type ExtendsTestMetaDataList []*ExtendsTestMetaData
+
+var ExtendsTests = ExtendsTestMetaDataList{
 	{
 		ID:               ExtendsTestV1,
 		Name:             "value test 1",
@@ -131,7 +135,9 @@ type TypeTestMetaData struct {
 	ExtendsTest ExtendsTest `json:"extends_test"`
 }
 
-var TypeTests = []*TypeTestMetaData{
+type TypeTestMetaDataList []*TypeTestMetaData
+
+var TypeTests = TypeTestMetaDataList{
 	{
 		ID:          TypeTestV1,
 		Name:        "test",
@@ -143,11 +149,11 @@ var TypeTests = []*TypeTestMetaData{
 var TypeTestMap map[TypeTest]*TypeTestMetaData
 
 type Constants struct {
-	Animals      []*AnimalMetaData                    `json:"animals"`
+	Animals      AnimalMetaDataList                   `json:"animals"`
 	Animal       map[Animal]*AnimalMetaData           `json:"animal"`
-	ExtendsTests []*ExtendsTestMetaData               `json:"extends_tests"`
+	ExtendsTests ExtendsTestMetaDataList              `json:"extends_tests"`
 	ExtendsTest  map[ExtendsTest]*ExtendsTestMetaData `json:"extends_test"`
-	TypeTests    []*TypeTestMetaData                  `json:"type_tests"`
+	TypeTests    TypeTestMetaDataList                 `json:"type_tests"`
 	TypeTest     map[TypeTest]*TypeTestMetaData       `json:"type_test"`
 }
 
