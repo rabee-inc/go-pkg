@@ -14,7 +14,7 @@ type WithCategoryMetaDataProps struct {
 	Category Category `json:"category"`
 }
 
-type WithCategoryMetaData[T WithCategory] struct {
+type WithCategoryMetaData[T comparable] struct {
 	ID T `json:"id"`
 	*WithCategoryMetaDataProps
 }
@@ -31,7 +31,7 @@ type CharacterStatusMetaDataProps struct {
 	Skills []Skill `json:"skills"`
 }
 
-type CharacterStatusMetaData[T CharacterStatus] struct {
+type CharacterStatusMetaData[T comparable] struct {
 	ID T `json:"id"`
 	*CharacterStatusMetaDataProps
 }
@@ -62,7 +62,9 @@ const (
 
 type ColorMetaData ConstantMetaData[Color]
 
-var Colors = []*ColorMetaData{
+type ColorMetaDataList []*ColorMetaData
+
+var Colors = ColorMetaDataList{
 	{
 		ID:   ColorRed,
 		Name: "赤",
@@ -100,7 +102,9 @@ const (
 
 type BabyMetaData ConstantMetaData[Baby]
 
-var Babies = []*BabyMetaData{
+type BabyMetaDataList []*BabyMetaData
+
+var Babies = BabyMetaDataList{
 	{
 		ID:   BabyV1,
 		Name: "v1",
@@ -134,7 +138,9 @@ const (
 
 type ToyMetaData ConstantMetaData[Toy]
 
-var Toys = []*ToyMetaData{
+type ToyMetaDataList []*ToyMetaData
+
+var Toys = ToyMetaDataList{
 	{
 		ID:   ToyV1,
 		Name: "v1",
@@ -168,7 +174,9 @@ const (
 
 type OsMetaData ConstantMetaData[Os]
 
-var Oses = []*OsMetaData{
+type OsMetaDataList []*OsMetaData
+
+var Oses = OsMetaDataList{
 	{
 		ID:   OsV1,
 		Name: "v1",
@@ -204,7 +212,9 @@ const (
 
 type SkillMetaData ConstantMetaData[Skill]
 
-var Skills = []*SkillMetaData{
+type SkillMetaDataList []*SkillMetaData
+
+var Skills = SkillMetaDataList{
 	{
 		ID:   SkillMagicGuard,
 		Name: "魔法無効",
@@ -248,7 +258,9 @@ const (
 
 type CategoryMetaData ConstantMetaData[Category]
 
-var Categories = []*CategoryMetaData{
+type CategoryMetaDataList []*CategoryMetaData
+
+var Categories = CategoryMetaDataList{
 	{
 		ID:   CategoryFood,
 		Name: "フード",
@@ -298,7 +310,28 @@ const (
 
 type ExtendsDefsTestAMetaData WithCategoryMetaData[ExtendsDefsTestA]
 
-var ExtendsDefsTestAs = []*ExtendsDefsTestAMetaData{
+type ExtendsDefsTestAMetaDataList []*ExtendsDefsTestAMetaData
+
+func (l ExtendsDefsTestAMetaDataList) PrimitiveList() []*WithCategoryMetaData[string] {
+	r := []*WithCategoryMetaData[string]{}
+	for _, v := range l {
+		r = append(r, &WithCategoryMetaData[string]{
+			ID:                        string(v.ID),
+			WithCategoryMetaDataProps: v.WithCategoryMetaDataProps,
+		})
+	}
+	return r
+}
+
+func (l ExtendsDefsTestAMetaDataList) PrimitiveMap() map[string]*WithCategoryMetaData[string] {
+	res := map[string]*WithCategoryMetaData[string]{}
+	for _, v := range l.PrimitiveList() {
+		res[v.ID] = v
+	}
+	return res
+}
+
+var ExtendsDefsTestAs = ExtendsDefsTestAMetaDataList{
 	{
 		ID: ExtendsDefsTestAV1,
 		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
@@ -349,7 +382,28 @@ const (
 
 type ExtendsDefsTestBMetaData WithCategoryMetaData[ExtendsDefsTestB]
 
-var ExtendsDefsTestBs = []*ExtendsDefsTestBMetaData{
+type ExtendsDefsTestBMetaDataList []*ExtendsDefsTestBMetaData
+
+func (l ExtendsDefsTestBMetaDataList) PrimitiveList() []*WithCategoryMetaData[string] {
+	r := []*WithCategoryMetaData[string]{}
+	for _, v := range l {
+		r = append(r, &WithCategoryMetaData[string]{
+			ID:                        string(v.ID),
+			WithCategoryMetaDataProps: v.WithCategoryMetaDataProps,
+		})
+	}
+	return r
+}
+
+func (l ExtendsDefsTestBMetaDataList) PrimitiveMap() map[string]*WithCategoryMetaData[string] {
+	res := map[string]*WithCategoryMetaData[string]{}
+	for _, v := range l.PrimitiveList() {
+		res[v.ID] = v
+	}
+	return res
+}
+
+var ExtendsDefsTestBs = ExtendsDefsTestBMetaDataList{
 	{
 		ID: ExtendsDefsTestBV1,
 		WithCategoryMetaDataProps: &WithCategoryMetaDataProps{
@@ -393,7 +447,28 @@ const (
 
 type PlayerMetaData CharacterStatusMetaData[Player]
 
-var Players = []*PlayerMetaData{
+type PlayerMetaDataList []*PlayerMetaData
+
+func (l PlayerMetaDataList) PrimitiveList() []*CharacterStatusMetaData[string] {
+	r := []*CharacterStatusMetaData[string]{}
+	for _, v := range l {
+		r = append(r, &CharacterStatusMetaData[string]{
+			ID:                           string(v.ID),
+			CharacterStatusMetaDataProps: v.CharacterStatusMetaDataProps,
+		})
+	}
+	return r
+}
+
+func (l PlayerMetaDataList) PrimitiveMap() map[string]*CharacterStatusMetaData[string] {
+	res := map[string]*CharacterStatusMetaData[string]{}
+	for _, v := range l.PrimitiveList() {
+		res[v.ID] = v
+	}
+	return res
+}
+
+var Players = PlayerMetaDataList{
 	{
 		ID: PlayerMagician,
 		CharacterStatusMetaDataProps: &CharacterStatusMetaDataProps{
@@ -441,7 +516,28 @@ const (
 
 type EnemyMetaData CharacterStatusMetaData[Enemy]
 
-var Enemies = []*EnemyMetaData{
+type EnemyMetaDataList []*EnemyMetaData
+
+func (l EnemyMetaDataList) PrimitiveList() []*CharacterStatusMetaData[string] {
+	r := []*CharacterStatusMetaData[string]{}
+	for _, v := range l {
+		r = append(r, &CharacterStatusMetaData[string]{
+			ID:                           string(v.ID),
+			CharacterStatusMetaDataProps: v.CharacterStatusMetaDataProps,
+		})
+	}
+	return r
+}
+
+func (l EnemyMetaDataList) PrimitiveMap() map[string]*CharacterStatusMetaData[string] {
+	res := map[string]*CharacterStatusMetaData[string]{}
+	for _, v := range l.PrimitiveList() {
+		res[v.ID] = v
+	}
+	return res
+}
+
+var Enemies = EnemyMetaDataList{
 	{
 		ID: EnemyWolf,
 		CharacterStatusMetaDataProps: &CharacterStatusMetaDataProps{
@@ -467,23 +563,23 @@ var Enemies = []*EnemyMetaData{
 var EnemyMap map[Enemy]*EnemyMetaData
 
 type Constants struct {
-	Babies            []*BabyMetaData                                `json:"babies"`
+	Babies            BabyMetaDataList                               `json:"babies"`
 	Baby              map[Baby]*BabyMetaData                         `json:"baby"`
-	Toys              []*ToyMetaData                                 `json:"toys"`
+	Toys              ToyMetaDataList                                `json:"toys"`
 	Toy               map[Toy]*ToyMetaData                           `json:"toy"`
-	Oses              []*OsMetaData                                  `json:"oses"`
+	Oses              OsMetaDataList                                 `json:"oses"`
 	Os                map[Os]*OsMetaData                             `json:"os"`
-	Skills            []*SkillMetaData                               `json:"skills"`
+	Skills            SkillMetaDataList                              `json:"skills"`
 	Skill             map[Skill]*SkillMetaData                       `json:"skill"`
-	Categories        []*CategoryMetaData                            `json:"categories"`
+	Categories        CategoryMetaDataList                           `json:"categories"`
 	Category          map[Category]*CategoryMetaData                 `json:"category"`
-	ExtendsDefsTestAs []*ExtendsDefsTestAMetaData                    `json:"extends_defs_test_as"`
+	ExtendsDefsTestAs ExtendsDefsTestAMetaDataList                   `json:"extends_defs_test_as"`
 	ExtendsDefsTestA  map[ExtendsDefsTestA]*ExtendsDefsTestAMetaData `json:"extends_defs_test_a"`
-	ExtendsDefsTestBs []*ExtendsDefsTestBMetaData                    `json:"extends_defs_test_bs"`
+	ExtendsDefsTestBs ExtendsDefsTestBMetaDataList                   `json:"extends_defs_test_bs"`
 	ExtendsDefsTestB  map[ExtendsDefsTestB]*ExtendsDefsTestBMetaData `json:"extends_defs_test_b"`
-	Players           []*PlayerMetaData                              `json:"players"`
+	Players           PlayerMetaDataList                             `json:"players"`
 	Player            map[Player]*PlayerMetaData                     `json:"player"`
-	Enemies           []*EnemyMetaData                               `json:"enemies"`
+	Enemies           EnemyMetaDataList                              `json:"enemies"`
 	Enemy             map[Enemy]*EnemyMetaData                       `json:"enemy"`
 }
 
@@ -555,6 +651,11 @@ func (c *Constants) ConstIDs() [][]any {
 }
 
 func init() {
+
+	ColorMap = map[Color]*ColorMetaData{}
+	for _, v := range Colors {
+		ColorMap[v.ID] = v
+	}
 
 	BabyMap = map[Baby]*BabyMetaData{}
 	for _, v := range Babies {

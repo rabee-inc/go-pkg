@@ -196,13 +196,13 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		// meta data map (var)
 		outputCode += formatConstantMetaDataMap(toPascalCase(td.Name))
 
+		// init map generate codes (only_backend でも Map は生成する)
+		generateMapCodes = append(generateMapCodes, formatGenerateMapCode(pascalName))
+
 		if !td.OnlyBackend {
 			// constant struct params
 			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(toPluralForm(td.Name), formatConstantMetaDataListTypeName(pascalName)))
 			constantsStructParams = append(constantsStructParams, formatConstantsStructParam(td.Name, formatConstantMetaDataMapTypeName(pascalName)))
-
-			// init map generate codes
-			generateMapCodes = append(generateMapCodes, formatGenerateMapCode(pascalName))
 
 			// generate any slice for GetConstIDs
 			anySliceVarName := strings.ToLower(pascalName[0:1]) + pascalName[1:]
