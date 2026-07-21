@@ -42,6 +42,42 @@ func (c *Client[T]) GetOrSet(key string, fn func() (T, int, error)) (T, error) {
 	return value, nil
 }
 
+func (c *Client[T]) GetMultiOrSetMulti(keys []string, fn func([]string) (map[string]T, int, error)) (map[string]T, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	now := timeutil.NowUnix()
+	dsts := map[string]T{}
+	missKeys := []string{}
+	for _, key := range keys {
+		if item, ok := c.itemMap[key]; ok {
+			if item.ExpiredAt > now {
+				// キャッシュを返す
+				dsts[key] = item.Value
+				continue
+			}
+			delete(c.itemMap, key)
+		}
+		missKeys = append(missKeys, key)
+	}
+	if len(missKeys) == 0 {
+		return dsts, nil
+	}
+	values, expiredSecond, err := fn(missKeys)
+	if err != nil {
+		return dsts, err
+	}
+	expiredAt := now + timeutil.SecondsToMilliseconds(expiredSecond)
+	for key, value := range values {
+		c.itemMap[key] = &Item[T]{
+			Value:     value,
+			ExpiredAt: expiredAt,
+		}
+		dsts[key] = value
+	}
+	return dsts, nil
+}
+
 func (c *Client[T]) Delete(key string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
