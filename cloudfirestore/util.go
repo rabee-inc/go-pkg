@@ -25,6 +25,10 @@ func SetDocByDst(dst any, ref *firestore.DocumentRef) {
 				rv.Field(i).Set(reflect.ValueOf(ref.Parent.Parent.ID))
 				continue
 			}
+			if tag == "parent_parent_id" && f.Type.Kind() == reflect.Ptr {
+				rv.Field(i).Set(reflect.ValueOf(ref.Parent.Parent.Parent.Parent.ID))
+				continue
+			}
 		}
 	}
 }
@@ -44,6 +48,10 @@ func SetDocByDsts(rv reflect.Value, rt reflect.Type, ref *firestore.DocumentRef)
 			}
 			if tag == "parent_id" && f.Type.Kind() == reflect.Ptr {
 				rv.Elem().Field(i).Set(reflect.ValueOf(ref.Parent.Parent.ID))
+				continue
+			}
+			if tag == "parent_parent_id" && f.Type.Kind() == reflect.Ptr {
+				rv.Elem().Field(i).Set(reflect.ValueOf(ref.Parent.Parent.Parent.Parent.ID))
 				continue
 			}
 		}
