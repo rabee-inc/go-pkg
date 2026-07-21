@@ -122,7 +122,7 @@ func Test_GetOrSet(t *testing.T) {
 	}
 }
 
-func Test_GetMultiOrSetMulti(t *testing.T) {
+func Test_GetMultiOrSet(t *testing.T) {
 	type Item struct {
 		Value string
 	}
@@ -132,7 +132,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 
 		// 初回: 全てキャッシュミスなので全キーがfnに渡される
 		var calledKeys []string
-		got, err := cache.GetMultiOrSetMulti([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
+		got, err := cache.GetMultiOrSet([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
 			calledKeys = keys
 			res := map[string]*Item{}
 			for _, k := range keys {
@@ -152,7 +152,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 
 		// 2回目: "a" はキャッシュ済み、"c" のみミスなので "c" だけfnに渡される
 		calledKeys = nil
-		got, err = cache.GetMultiOrSetMulti([]string{"a", "c"}, func(keys []string) (map[string]*Item, int, error) {
+		got, err = cache.GetMultiOrSet([]string{"a", "c"}, func(keys []string) (map[string]*Item, int, error) {
 			calledKeys = keys
 			res := map[string]*Item{}
 			for _, k := range keys {
@@ -178,7 +178,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 	t.Run("全てキャッシュヒットの場合fnは呼ばれない", func(t *testing.T) {
 		cache := inmemcache.NewClient[*Item]()
 
-		_, err := cache.GetMultiOrSetMulti([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
+		_, err := cache.GetMultiOrSet([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
 			res := map[string]*Item{}
 			for _, k := range keys {
 				res[k] = &Item{Value: "v_" + k}
@@ -190,7 +190,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 		}
 
 		called := false
-		got, err := cache.GetMultiOrSetMulti([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
+		got, err := cache.GetMultiOrSet([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
 			called = true
 			return map[string]*Item{}, 10, nil
 		})
@@ -208,7 +208,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 	t.Run("有効期限切れ後は再度fnで取得する", func(t *testing.T) {
 		cache := inmemcache.NewClient[*Item]()
 
-		_, err := cache.GetMultiOrSetMulti([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
+		_, err := cache.GetMultiOrSet([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
 			return map[string]*Item{"a": {Value: "before"}}, 1, nil
 		})
 		if err != nil {
@@ -218,7 +218,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 		time.Sleep(2 * time.Second)
 
 		called := false
-		got, err := cache.GetMultiOrSetMulti([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
+		got, err := cache.GetMultiOrSet([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
 			called = true
 			return map[string]*Item{"a": {Value: "after"}}, 10, nil
 		})
@@ -236,7 +236,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 	t.Run("fnがエラーを返す場合はキャッシュ済みの値とエラーを返す", func(t *testing.T) {
 		cache := inmemcache.NewClient[*Item]()
 
-		_, err := cache.GetMultiOrSetMulti([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
+		_, err := cache.GetMultiOrSet([]string{"a"}, func(keys []string) (map[string]*Item, int, error) {
 			return map[string]*Item{"a": {Value: "v_a"}}, 10, nil
 		})
 		if err != nil {
@@ -244,7 +244,7 @@ func Test_GetMultiOrSetMulti(t *testing.T) {
 		}
 
 		wantErr := errors.New("fetch error")
-		got, err := cache.GetMultiOrSetMulti([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
+		got, err := cache.GetMultiOrSet([]string{"a", "b"}, func(keys []string) (map[string]*Item, int, error) {
 			return nil, 0, wantErr
 		})
 		if !errors.Is(err, wantErr) {

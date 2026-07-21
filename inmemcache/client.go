@@ -42,7 +42,7 @@ func (c *Client[T]) GetOrSet(key string, fn func() (T, int, error)) (T, error) {
 	return value, nil
 }
 
-func (c *Client[T]) GetMultiOrSetMulti(keys []string, fn func([]string) (map[string]T, int, error)) (map[string]T, error) {
+func (c *Client[T]) GetMultiOrSet(keys []string, fn func([]string) (map[string]T, int, error)) (map[string]T, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -78,7 +78,7 @@ func (c *Client[T]) GetMultiOrSetMulti(keys []string, fn func([]string) (map[str
 	return dsts, nil
 }
 
-func (c *Client[T]) Delete(key string) {
+func (c *Client[T]) ClearItem(key string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
