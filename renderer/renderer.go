@@ -38,19 +38,19 @@ func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 	case http.StatusOK:
 		Error(ctx, w, code, err.Error())
 	case http.StatusBadRequest:
-		log.Warningf(ctx, text)
+		log.Warningf(ctx, "%s", text)
 		Error(ctx, w, code, err.Error())
 	case http.StatusUnauthorized:
-		log.Warningf(ctx, text)
+		log.Warningf(ctx, "%s", text)
 		Error(ctx, w, code, err.Error())
 	case http.StatusForbidden:
-		log.Warningf(ctx, text)
+		log.Warningf(ctx, "%s", text)
 		Error(ctx, w, code, err.Error())
 	case http.StatusNotFound:
-		log.Warningf(ctx, text)
+		log.Warningf(ctx, "%s", text)
 		Error(ctx, w, code, err.Error())
 	default:
-		log.Errorf(ctx, text)
+		log.Errorf(ctx, "%s", text)
 		Error(ctx, w, code, err.Error())
 	}
 }

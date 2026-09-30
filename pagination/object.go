@@ -35,7 +35,6 @@ func (m *Object) Set(totalCount int) {
 	if m.CurrentPage == 1 {
 		m.IsFirstPage = true
 	}
-	return
 }
 
 // New ... ページネーションを作成する

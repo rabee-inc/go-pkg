@@ -27,7 +27,7 @@ func TestEventApplyStrategyEveryone(t *testing.T) {
 			"'FmgMQpB:+E;6MBr?%8Z!?T*Recy,_ME#S;dnka>g4d]Mr|4hlO(u(^7K~M,cqFN#-0E<KXR>bBQ^*~T)DR~E&J*w;m?j`L*TQ7G",
 			"東京都◯◯区✗✗ １−２−３ ほげほげハイツ２００号室",
 		}
-		for i := 0; i < 1000; i++ {
+		for range 1000 {
 			text, err := randutil.String(randutil.Int(1, 200))
 			if err != nil {
 				t.Error(err)

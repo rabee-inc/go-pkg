@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/rabee-inc/go-pkg/errcode"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 func ConvertErrorMessage(err error, prefix string, fn func(tag, field, value string) string) error {
@@ -80,7 +80,7 @@ func ConvertErrorMessageByDefault(err error, fn func(field string) string) error
 			msg = fmt.Sprintf("・%s は %s で終わる", field, value)
 		default:
 			// 他に追加したい場合は下記を参照
-			// https://godoc.org/gopkg.in/go-playground/validator.v9
+			// https://pkg.go.dev/github.com/go-playground/validator/v10
 		}
 		msgs = append(msgs, msg)
 	}

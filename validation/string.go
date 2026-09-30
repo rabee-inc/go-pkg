@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/go-playground/validator/v10"
 )
 
 // MinimumString ... 必要文字数を指定(ゼロ値許容)

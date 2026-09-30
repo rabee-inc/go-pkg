@@ -62,7 +62,7 @@ func (w *writerStackdriver) Request(
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(os.Stderr, string(b)+"\n")
+	fmt.Fprintln(os.Stderr, string(b))
 }
 
 func (w *writerStackdriver) Job(
@@ -83,7 +83,7 @@ func (w *writerStackdriver) Job(
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(os.Stderr, string(b)+"\n")
+	fmt.Fprintln(os.Stderr, string(b))
 }
 
 func (w *writerStackdriver) Application(
@@ -105,5 +105,5 @@ func (w *writerStackdriver) Application(
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(os.Stdout, string(b)+"\n")
+	fmt.Fprintln(os.Stdout, string(b))
 }

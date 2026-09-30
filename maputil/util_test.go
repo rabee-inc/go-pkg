@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-playground/assert/v2"
 	"github.com/rabee-inc/go-pkg/maputil"
-	"gopkg.in/go-playground/assert.v1"
 )
 
 func Test(t *testing.T) {

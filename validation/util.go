@@ -2,38 +2,20 @@ package validation
 
 // 値がゼロ値かどうかを判断する(true: ゼロ値, false: ゼロ値以外)
 func IsZero(val any) bool {
-	switch val.(type) {
+	switch v := val.(type) {
 	case nil:
 		return true
 	case int:
-		if val.(int) == 0 {
-			return true
-		}
-		return false
+		return v == 0
 	case int64:
-		if val.(int64) == 0 {
-			return true
-		}
-		return false
+		return v == 0
 	case float64:
-		if val.(float64) == 0 {
-			return true
-		}
-		return false
+		return v == 0
 	case string:
-		if val.(string) == "" {
-			return true
-		}
-		return false
+		return v == ""
 	case bool:
-		if !val.(bool) {
-			return true
-		}
-		return false
+		return !v
 	default:
-		if val == nil {
-			return true
-		}
-		return false
+		return val == nil
 	}
 }

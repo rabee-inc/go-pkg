@@ -6,13 +6,9 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/go-playground/assert/v2"
 	"github.com/rabee-inc/go-pkg/sliceutil"
-	"gopkg.in/go-playground/assert.v1"
 )
-
-func main() {
-
-}
 
 func Test(t *testing.T) {
 
@@ -161,7 +157,7 @@ func Test(t *testing.T) {
 			}
 		}
 
-		for i := 0; i < N; i++ {
+		for range N {
 			// input をコピー
 			ip := append([]int{}, input...)
 			shuffled := sliceutil.Shuffle(ip)
@@ -192,7 +188,7 @@ func Test(t *testing.T) {
 			}
 		}
 
-		for i := 0; i < N; i++ {
+		for range N {
 			// input をコピー
 			ip := append([]int{}, input...)
 			shuffled := sliceutil.NewSlice(ip).Shuffle()

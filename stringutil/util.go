@@ -11,8 +11,9 @@ import (
 )
 
 // 文字列をバイト列に変換する
+// NOTE: 返り値のバイト列は書き換えてはいけない(元の文字列とメモリを共有している)
 func ToBytes(str string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&str))
+	return unsafe.Slice(unsafe.StringData(str), len(str))
 }
 
 // ユニークでソータブルなIDを作成する

@@ -2,10 +2,10 @@ package rapi
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type typeScanner struct {
@@ -126,7 +126,7 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 		ts.Fields = map[string]*TypeStructure{}
 
 		t.types[name] = ts
-		for i := 0; i < rt.NumField(); i++ {
+		for i := range rt.NumField() {
 			keyName := ""
 			field := rt.Field(i)
 
@@ -198,9 +198,7 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 
 func (t *typeScanner) formatScannedTypeStructure(ts *TypeStructure) {
 	for _, embeddedTs := range ts.InlineEmbeddedFields {
-		for k, v := range embeddedTs.Fields {
-			ts.Fields[k] = v
-		}
+		maps.Copy(ts.Fields, embeddedTs.Fields)
 	}
 
 	for _, field := range ts.Fields {
@@ -254,8 +252,6 @@ func (t *typeScanner) ScanUnion(values []any) *UnionStructure {
 func (t *typeScanner) ExportUnion() map[string]*UnionStructure {
 	// unions をコピーして返す
 	unions := map[string]*UnionStructure{}
-	for k, v := range t.unions {
-		unions[k] = v
-	}
+	maps.Copy(unions, t.unions)
 	return unions
 }

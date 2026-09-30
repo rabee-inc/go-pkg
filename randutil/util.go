@@ -1,8 +1,8 @@
 package randutil
 
 import (
-	"math/rand"
-	"time"
+	crand "crypto/rand"
+	"math/rand/v2"
 )
 
 const (
@@ -10,48 +10,25 @@ const (
 	letterIdxMask = 0x3F
 )
 
-func seed() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 // 指定確率でbool値を生成する
 func Bool(rate float32) bool {
-	seed()
 	return rand.Float32()*100 < rate
 }
 
 // 指定範囲の乱数を生成する
 func Int(min int, max int) int {
-	seed()
-	return rand.Intn((max+1)-min) + min
+	return rand.IntN((max+1)-min) + min
 }
 
 // nビットのランダムな文字列を生成する
 func String(n int) (string, error) {
-	seed()
-	buf := make([]byte, n)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	for i := 0; i < n; {
-		idx := int(buf[i] & letterIdxMask)
-		if idx < len(letters) {
-			buf[i] = letters[idx]
-			i++
-		} else {
-			if _, err := rand.Read(buf[i : i+1]); err != nil {
-				return "", err
-			}
-		}
-	}
-	return string(buf), nil
+	return StringByChar(n, letters)
 }
 
 // nビットのランダムな文字列を生成する
 func StringByChar(n int, cr string) (string, error) {
-	seed()
 	buf := make([]byte, n)
-	if _, err := rand.Read(buf); err != nil {
+	if _, err := crand.Read(buf); err != nil {
 		return "", err
 	}
 	for i := 0; i < n; {
@@ -60,7 +37,7 @@ func StringByChar(n int, cr string) (string, error) {
 			buf[i] = cr[idx]
 			i++
 		} else {
-			if _, err := rand.Read(buf[i : i+1]); err != nil {
+			if _, err := crand.Read(buf[i : i+1]); err != nil {
 				return "", err
 			}
 		}

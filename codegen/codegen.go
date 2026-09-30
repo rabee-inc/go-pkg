@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/rabee-inc/go-pkg/maputil"
 	"github.com/rabee-inc/go-pkg/sliceutil"
-	"gopkg.in/go-playground/validator.v9"
 	"gopkg.in/yaml.v3"
 )
 
@@ -109,13 +109,14 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		typeDefs = append(typeDefs, newTypeDef(v, extendsDefMap))
 	}
 
-	outputCode := formatHeader(name) + "\n\n"
-	outputCode += formatPackage(val.Settings.Package) + "\n\n"
-	outputCode += formatCheckSum(GenerateCheckSum(file)) + "\n\n"
-	outputCode += defaultMetaDataCode + "\n\n"
+	var outputCode strings.Builder
+	outputCode.WriteString(formatHeader(name) + "\n\n")
+	outputCode.WriteString(formatPackage(val.Settings.Package) + "\n\n")
+	outputCode.WriteString(formatCheckSum(GenerateCheckSum(file)) + "\n\n")
+	outputCode.WriteString(defaultMetaDataCode + "\n\n")
 
 	// extends_defs
-	outputCode += generateExtendsDefsCode(extendsDefs)
+	outputCode.WriteString(generateExtendsDefsCode(extendsDefs))
 
 	// constants struct
 	constantsStructParams := []string{}
@@ -133,47 +134,47 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 	for _, td := range typeDefs {
 		pascalName := toPascalCase(td.Name)
 		// comment
-		outputCode += formatConstantComment(pascalName, td.Comment)
+		outputCode.WriteString(formatConstantComment(pascalName, td.Comment))
 		// type
-		outputCode += formatConstantType(pascalName, td.BaseType)
+		outputCode.WriteString(formatConstantType(pascalName, td.BaseType))
 
 		// method
 		if td.BaseType == typeString {
 			// String method
-			outputCode += formatConstantMethodString(pascalName)
+			outputCode.WriteString(formatConstantMethodString(pascalName))
 		}
 		// Props method
 		if td.HasExtends && td.Extends.IsTemplate {
-			outputCode += formatExtendsDefMethodProps(pascalName, toPascalCase(td.Extends.Name))
+			outputCode.WriteString(formatExtendsDefMethodProps(pascalName, toPascalCase(td.Extends.Name)))
 		}
 		// Meta method
-		outputCode += formatConstantMethodMeta(pascalName)
+		outputCode.WriteString(formatConstantMethodMeta(pascalName))
 		// Name method
-		outputCode += formatConstantMethodName(pascalName)
+		outputCode.WriteString(formatConstantMethodName(pascalName))
 
 		// const
 		constValues := []string{}
 		for _, def := range td.Defs {
 			constValues = append(constValues, formatConstantValue(pascalName, toPascalCase(def.VariableName), td.BaseType == typeString, def.VariableValue))
 		}
-		outputCode += formatConstantValues(strings.Join(constValues, "\n"))
+		outputCode.WriteString(formatConstantValues(strings.Join(constValues, "\n")))
 
 		// meta data type
 		if td.HasExtends {
 			if td.Extends.IsTemplate {
 				templateName := toPascalCase(td.Extends.Name)
-				outputCode += formatConstantMetaDataTypeByExtendsDef(pascalName, templateName) +
+				outputCode.WriteString(formatConstantMetaDataTypeByExtendsDef(pascalName, templateName) +
 					formatConstantMetaDataListType(pascalName) +
 					formatConstantMetaDataListPrimitiveListMethod(pascalName, templateName, td.BaseType) +
-					formatConstantMetaDataListPrimitiveMapMethod(pascalName, templateName, td.BaseType)
+					formatConstantMetaDataListPrimitiveMapMethod(pascalName, templateName, td.BaseType))
 
 			} else {
-				outputCode += generateMetaDataType(pascalName, td.Extends.Props) +
-					formatConstantMetaDataListType(pascalName)
+				outputCode.WriteString(generateMetaDataType(pascalName, td.Extends.Props) +
+					formatConstantMetaDataListType(pascalName))
 			}
 		} else {
-			outputCode += formatConstantMetaDataByGenerics(pascalName) +
-				formatConstantMetaDataListType(pascalName)
+			outputCode.WriteString(formatConstantMetaDataByGenerics(pascalName) +
+				formatConstantMetaDataListType(pascalName))
 		}
 
 		// meta data list
@@ -191,10 +192,10 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 			}
 			metaDataListElements = append(metaDataListElements, formatConstantMetaDataListElement(strings.Join(params, "\n")))
 		}
-		outputCode += formatConstantMetaDataList(pascalName, strings.Join(metaDataListElements, "\n"))
+		outputCode.WriteString(formatConstantMetaDataList(pascalName, strings.Join(metaDataListElements, "\n")))
 
 		// meta data map (var)
-		outputCode += formatConstantMetaDataMap(toPascalCase(td.Name))
+		outputCode.WriteString(formatConstantMetaDataMap(toPascalCase(td.Name)))
 
 		// init map generate codes (only_backend でも Map は生成する)
 		generateMapCodes = append(generateMapCodes, formatGenerateMapCode(pascalName))
@@ -215,12 +216,12 @@ func GenerateByYamlFile(name string, file []byte) ([]byte, *yamlInput) {
 		}
 	}
 
-	outputCode += formatConstantsStruct(strings.Join(constantsStructParams, "\n"))
-	outputCode += formatConstantsMethodGetConstIDs(strings.Join(generateAnySliceCodes, "\n"), strings.Join(anySliceVars, "\n"))
-	outputCode += formatInitCode(strings.Join(generateMapCodes, "\n"), strings.Join(constantsInitParams, "\n"))
+	outputCode.WriteString(formatConstantsStruct(strings.Join(constantsStructParams, "\n")))
+	outputCode.WriteString(formatConstantsMethodGetConstIDs(strings.Join(generateAnySliceCodes, "\n"), strings.Join(anySliceVars, "\n")))
+	outputCode.WriteString(formatInitCode(strings.Join(generateMapCodes, "\n"), strings.Join(constantsInitParams, "\n")))
 
 	// コードのフォーマット
-	formattedCode, err := format.Source([]byte(outputCode))
+	formattedCode, err := format.Source([]byte(outputCode.String()))
 	if err != nil {
 		panic(err)
 	}
@@ -242,7 +243,7 @@ func generateMetaDataType(name string, extends []*extendPropDef) string {
 
 // extendsDefs を使う際に必要になるコードを生成する
 func generateExtendsDefsCode(extendsDefs []*extendsDef) string {
-	code := ""
+	var code strings.Builder
 	for _, extendsDef := range extendsDefs {
 		pascalName := toPascalCase(extendsDef.Name)
 		// props type
@@ -251,16 +252,16 @@ func generateExtendsDefsCode(extendsDefs []*extendsDef) string {
 			for _, def := range extendsDef.Props {
 				params = append(params, formatConstantMetaDataTypeParam(def.Name, def.Type))
 			}
-			code += formatExtendsDefMetaDataPropsType(pascalName, strings.Join(params, "\n"))
+			code.WriteString(formatExtendsDefMetaDataPropsType(pascalName, strings.Join(params, "\n")))
 		}
 
 		// meta data type
-		code += formatExtendsDefMetaDataType(pascalName)
+		code.WriteString(formatExtendsDefMetaDataType(pascalName))
 
 		// interface type
-		code += formatExtendsDefInterfaceType(pascalName)
+		code.WriteString(formatExtendsDefInterfaceType(pascalName))
 	}
-	return code
+	return code.String()
 }
 
 func generateMetaDataParams(extendValues []*metaDataValueDef) []string {
@@ -292,13 +293,13 @@ func toPascalCase(s string) string {
 	s = strings.ReplaceAll(s, "_", " ")
 	s = strings.ReplaceAll(s, "-", " ")
 	ss := strings.Split(s, " ")
-	res := ""
+	var res strings.Builder
 	for _, str := range ss {
 		if len(str) > 0 {
-			res += strings.ToUpper(str[0:1]) + str[1:]
+			res.WriteString(strings.ToUpper(str[0:1]) + str[1:])
 		}
 	}
-	return res
+	return res.String()
 }
 
 func toPluralForm(word string) string {

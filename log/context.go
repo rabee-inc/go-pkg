@@ -4,8 +4,6 @@ import (
 	"context"
 )
 
-type contextKey string
-
 type loggerContextKey struct{}
 
 // GetLogger ... HTTPHeaderの値を取得

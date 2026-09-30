@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"maps"
 	"strings"
 )
 
@@ -18,8 +19,8 @@ func actualType(t string) string {
 
 // slice の場合でも正しく pascal case に変換する
 func toPascalCaseType(t string) string {
-	if strings.HasPrefix(t, "[]") {
-		return "[]" + toPascalCase(strings.TrimPrefix(t, "[]"))
+	if after, ok := strings.CutPrefix(t, "[]"); ok {
+		return "[]" + toPascalCase(after)
 	}
 	return toPascalCase(t)
 }
@@ -109,9 +110,7 @@ func newTypeDef(ts *typeInput, extendsDefMap map[string]*extendsDef) *typeDef {
 				PropMap: defPropInputMap{},
 			}
 
-			for k, v := range group.PropMap {
-				inputDef.PropMap[k] = v
-			}
+			maps.Copy(inputDef.PropMap, group.PropMap)
 
 			for k, v := range def.PropMap {
 				// check duplicate

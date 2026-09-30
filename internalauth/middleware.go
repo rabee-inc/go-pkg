@@ -24,7 +24,7 @@ func (m *Middleware) Handle(next http.Handler) http.Handler {
 		ah := r.Header.Get("Authorization")
 		if ah == "" || ah != m.Token {
 			msg := fmt.Sprintf("Internal auth error token: %s", ah)
-			log.Warningf(ctx, msg)
+			log.Warningf(ctx, "%s", msg)
 			renderer.Error(ctx, w, http.StatusForbidden, msg)
 			return
 		}

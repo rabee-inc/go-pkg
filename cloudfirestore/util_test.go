@@ -2,396 +2,427 @@ package cloudfirestore_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"cloud.google.com/go/firestore"
 	"github.com/rabee-inc/go-pkg/cloudfirestore"
 )
 
-// createMockDocumentRef creates a mock DocumentRef with nested parents
-func createMockDocumentRef() *firestore.DocumentRef {
-	// Create a mock client (nil is fine for testing)
-	var client *firestore.Client
+// newColRef ... Client を介さずに CollectionRef を組み立てる
+func newColRef(parent *firestore.DocumentRef, id string) *firestore.CollectionRef {
+	path := "projects/test-project/databases/(default)/documents/" + id
+	if parent != nil {
+		path = parent.Path + "/" + id
+	}
+	return &firestore.CollectionRef{
+		Parent: parent,
+		ID:     id,
+		Path:   path,
+	}
+}
 
-	// Create nested collection/document structure:
-	// collection/parent_parent_doc/collection/parent_doc/collection/doc
-	col := client.Collection("root_collection")
-	parentParentDoc := col.Doc("parent_parent_id")
-	parentCol := parentParentDoc.Collection("parent_collection")
-	parentDoc := parentCol.Doc("parent_id")
-	targetCol := parentDoc.Collection("target_collection")
-	doc := targetCol.Doc("test_id")
+// newDocRef ... Client を介さずに DocumentRef を組み立てる
+func newDocRef(parent *firestore.CollectionRef, id string) *firestore.DocumentRef {
+	return &firestore.DocumentRef{
+		Parent: parent,
+		ID:     id,
+		Path:   parent.Path + "/" + id,
+	}
+}
 
+// docRefFromPath ... Client を介さずに "col/doc/col/doc..." 形式のパスから DocumentRef を組み立てる
+// 不正なパス(要素数が奇数、空の要素を含む)の場合は firestore.Client.Doc と同じく nil を返す
+func docRefFromPath(path string) *firestore.DocumentRef {
+	parts := strings.Split(path, "/")
+	if len(parts)%2 != 0 {
+		return nil
+	}
+	var doc *firestore.DocumentRef
+	for i := 0; i < len(parts); i += 2 {
+		if parts[i] == "" || parts[i+1] == "" {
+			return nil
+		}
+		doc = newDocRef(newColRef(doc, parts[i]), parts[i+1])
+	}
 	return doc
 }
 
-func TestSetDocByDst(t *testing.T) {
-	type testStruct struct {
-		ID             string                     `cloudfirestore:"id"`
-		Ref            *firestore.DocumentRef     `cloudfirestore:"ref"`
-		ParentID       string                     `cloudfirestore:"parent_id"`
-		ParentParentID string                     `cloudfirestore:"parent_parent_id"`
-		Name           string                     // no tag
+// newNestedDocRef ... root_collection/parent_parent_id/parent_collection/parent_id/target_collection/test_id
+func newNestedDocRef() *firestore.DocumentRef {
+	parentParentDoc := newDocRef(newColRef(nil, "root_collection"), "parent_parent_id")
+	parentDoc := newDocRef(newColRef(parentParentDoc, "parent_collection"), "parent_id")
+	return newDocRef(newColRef(parentDoc, "target_collection"), "test_id")
+}
+
+type docTagStruct struct {
+	ID             string                 `cloudfirestore:"id"`
+	Ref            *firestore.DocumentRef `cloudfirestore:"ref"`
+	ParentID       string                 `cloudfirestore:"parent_id"`
+	ParentParentID string                 `cloudfirestore:"parent_parent_id"`
+	Name           string                 // タグなし
+}
+
+func Test_Cloudfirestore_SetDocByDst(t *testing.T) {
+	type args struct {
+		dst any
+		ref *firestore.DocumentRef
+	}
+	type want struct {
+		id             string
+		refID          string
+		parentID       string
+		parentParentID string
+		name           string
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ID != "test_id" {
-					t.Errorf("ID = %v, want %v", dst.ID, "test_id")
-				}
+			name: "正常系: 全ての階層のタグが設定される",
+			args: args{
+				dst: &docTagStruct{Name: "original"},
+				ref: newNestedDocRef(),
+			},
+			want: want{
+				id:             "test_id",
+				refID:          "test_id",
+				parentID:       "parent_id",
+				parentParentID: "parent_parent_id",
+				name:           "original",
 			},
 		},
 		{
-			name: "ref タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Ref == nil {
-					t.Error("Ref is nil")
-				} else if dst.Ref.ID != "test_id" {
-					t.Errorf("Ref.ID = %v, want %v", dst.Ref.ID, "test_id")
-				}
+			name: "正常系: 親が浅い場合は親のIDは設定されない",
+			args: args{
+				dst: &docTagStruct{Name: "original"},
+				ref: newDocRef(newColRef(nil, "root_collection"), "test_id"),
 			},
-		},
-		{
-			name: "parent_id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ParentID != "parent_id" {
-					t.Errorf("ParentID = %v, want %v", dst.ParentID, "parent_id")
-				}
-			},
-		},
-		{
-			name: "parent_parent_id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ParentParentID != "parent_parent_id" {
-					t.Errorf("ParentParentID = %v, want %v", dst.ParentParentID, "parent_parent_id")
-				}
-			},
-		},
-		{
-			name: "タグなしフィールドは変更されない",
-			dst:  &testStruct{Name: "original"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Name != "original" {
-					t.Errorf("Name = %v, want %v", dst.Name, "original")
-				}
+			want: want{
+				id:             "test_id",
+				refID:          "test_id",
+				parentID:       "",
+				parentParentID: "",
+				name:           "original",
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ref := createMockDocumentRef()
-			cloudfirestore.SetDocByDst(tt.dst, ref)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			cloudfirestore.SetDocByDst(tc.args.dst, tc.args.ref)
+
+			dst := tc.args.dst.(*docTagStruct)
+			if dst.ID != tc.want.id {
+				t.Errorf("ID = %v, want %v", dst.ID, tc.want.id)
+			}
+			if dst.Ref == nil {
+				t.Errorf("Ref = nil, want %v", tc.want.refID)
+			} else if dst.Ref.ID != tc.want.refID {
+				t.Errorf("Ref.ID = %v, want %v", dst.Ref.ID, tc.want.refID)
+			}
+			if dst.ParentID != tc.want.parentID {
+				t.Errorf("ParentID = %v, want %v", dst.ParentID, tc.want.parentID)
+			}
+			if dst.ParentParentID != tc.want.parentParentID {
+				t.Errorf("ParentParentID = %v, want %v", dst.ParentParentID, tc.want.parentParentID)
+			}
+			if dst.Name != tc.want.name {
+				t.Errorf("Name = %v, want %v", dst.Name, tc.want.name)
+			}
 		})
 	}
 }
 
-func TestSetDocByDsts(t *testing.T) {
-	type testStruct struct {
-		ID             string                     `cloudfirestore:"id"`
-		Ref            *firestore.DocumentRef     `cloudfirestore:"ref"`
-		ParentID       string                     `cloudfirestore:"parent_id"`
-		ParentParentID string                     `cloudfirestore:"parent_parent_id"`
-		Name           string                     // no tag
+func Test_Cloudfirestore_SetDocByDst_Invalid(t *testing.T) {
+	type args struct {
+		dst any
+	}
+	type testCase struct {
+		name string
+		args args
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ID != "test_id" {
-					t.Errorf("ID = %v, want %v", dst.ID, "test_id")
-				}
-			},
+			name: "異常系: ポインタ以外を渡してもpanicしない",
+			args: args{dst: docTagStruct{}},
 		},
 		{
-			name: "ref タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Ref == nil {
-					t.Error("Ref is nil")
-				} else if dst.Ref.ID != "test_id" {
-					t.Errorf("Ref.ID = %v, want %v", dst.Ref.ID, "test_id")
-				}
-			},
+			name: "異常系: nilポインタを渡してもpanicしない",
+			args: args{dst: (*docTagStruct)(nil)},
 		},
 		{
-			name: "parent_id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ParentID != "parent_id" {
-					t.Errorf("ParentID = %v, want %v", dst.ParentID, "parent_id")
-				}
-			},
+			name: "異常系: 構造体以外のポインタを渡してもpanicしない",
+			args: args{dst: new(string)},
 		},
 		{
-			name: "parent_parent_id タグが正しく設定される",
-			dst:  &testStruct{Name: "test"},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.ParentParentID != "parent_parent_id" {
-					t.Errorf("ParentParentID = %v, want %v", dst.ParentParentID, "parent_parent_id")
-				}
-			},
+			name: "異常系: nilを渡してもpanicしない",
+			args: args{dst: nil},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ref := createMockDocumentRef()
-			rv := reflect.ValueOf(tt.dst)
-			rt := rv.Elem().Type()
-			cloudfirestore.SetDocByDsts(rv, rt, ref)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("panic = %v, want no panic", r)
+				}
+			}()
+			cloudfirestore.SetDocByDst(tc.args.dst, newNestedDocRef())
 		})
 	}
 }
 
-func TestSetEmptyBySlice(t *testing.T) {
-	type testStruct struct {
-		Name       string
-		Slice      []string
-		SliceWithValue []int
+func Test_Cloudfirestore_SetDocByDsts(t *testing.T) {
+	type args struct {
+		dst *docTagStruct
+		ref *firestore.DocumentRef
+	}
+	type want struct {
+		id             string
+		parentID       string
+		parentParentID string
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "nil スライスが空スライスに初期化される",
-			dst: &testStruct{
-				Name:  "test",
-				Slice: nil,
+			name: "正常系: 全ての階層のタグが設定される",
+			args: args{
+				dst: &docTagStruct{},
+				ref: newNestedDocRef(),
 			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Slice == nil {
-					t.Error("Slice should not be nil")
-				}
-				if len(dst.Slice) != 0 {
-					t.Errorf("Slice length = %v, want 0", len(dst.Slice))
-				}
-			},
-		},
-		{
-			name: "空スライスはそのまま",
-			dst: &testStruct{
-				Name:  "test",
-				Slice: []string{},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Slice == nil {
-					t.Error("Slice should not be nil")
-				}
-				if len(dst.Slice) != 0 {
-					t.Errorf("Slice length = %v, want 0", len(dst.Slice))
-				}
-			},
-		},
-		{
-			name: "値があるスライスは変更されない",
-			dst: &testStruct{
-				Name:           "test",
-				SliceWithValue: []int{1, 2, 3},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if len(dst.SliceWithValue) != 3 {
-					t.Errorf("SliceWithValue length = %v, want 3", len(dst.SliceWithValue))
-				}
+			want: want{
+				id:             "test_id",
+				parentID:       "parent_id",
+				parentParentID: "parent_parent_id",
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cloudfirestore.SetEmptyBySlice(tt.dst)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			rv := reflect.ValueOf(tc.args.dst)
+			cloudfirestore.SetDocByDsts(rv, rv.Elem().Type(), tc.args.ref)
+
+			if tc.args.dst.ID != tc.want.id {
+				t.Errorf("ID = %v, want %v", tc.args.dst.ID, tc.want.id)
+			}
+			if tc.args.dst.ParentID != tc.want.parentID {
+				t.Errorf("ParentID = %v, want %v", tc.args.dst.ParentID, tc.want.parentID)
+			}
+			if tc.args.dst.ParentParentID != tc.want.parentParentID {
+				t.Errorf("ParentParentID = %v, want %v", tc.args.dst.ParentParentID, tc.want.parentParentID)
+			}
 		})
 	}
 }
 
-func TestSetEmptyBySlices(t *testing.T) {
-	type testStruct struct {
-		Name  string
-		Slice []string
+type emptyTargetStruct struct {
+	Name   string
+	Slice  []string
+	Ints   []int
+	Map    map[string]string
+	IntMap map[string]int
+}
+
+func Test_Cloudfirestore_SetEmptyBySlice(t *testing.T) {
+	type args struct {
+		dst *emptyTargetStruct
+	}
+	type want struct {
+		sliceIsNil bool
+		sliceLen   int
+		intsIsNil  bool
+		intsLen    int
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "nil スライスが空スライスに初期化される",
-			dst: &testStruct{
-				Name:  "test",
-				Slice: nil,
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Slice == nil {
-					t.Error("Slice should not be nil")
-				}
-				if len(dst.Slice) != 0 {
-					t.Errorf("Slice length = %v, want 0", len(dst.Slice))
-				}
-			},
+			name: "正常系: nilスライスが空スライスに初期化される",
+			args: args{dst: &emptyTargetStruct{Name: "test", Slice: nil}},
+			want: want{sliceIsNil: false, sliceLen: 0, intsIsNil: false, intsLen: 0},
 		},
 		{
-			name: "空スライスはそのまま",
-			dst: &testStruct{
-				Name:  "test",
-				Slice: []string{},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Slice == nil {
-					t.Error("Slice should not be nil")
-				}
-				if len(dst.Slice) != 0 {
-					t.Errorf("Slice length = %v, want 0", len(dst.Slice))
-				}
-			},
+			name: "正常系: 空スライスはそのまま",
+			args: args{dst: &emptyTargetStruct{Name: "test", Slice: []string{}}},
+			want: want{sliceIsNil: false, sliceLen: 0, intsIsNil: false, intsLen: 0},
+		},
+		{
+			name: "正常系: 値があるスライスは変更されない",
+			args: args{dst: &emptyTargetStruct{Name: "test", Ints: []int{1, 2, 3}}},
+			want: want{sliceIsNil: false, sliceLen: 0, intsIsNil: false, intsLen: 3},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			rv := reflect.ValueOf(tt.dst)
-			rt := rv.Elem().Type()
-			cloudfirestore.SetEmptyBySlices(rv, rt)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			cloudfirestore.SetEmptyBySlice(tc.args.dst)
+
+			if (tc.args.dst.Slice == nil) != tc.want.sliceIsNil {
+				t.Errorf("Slice == nil = %v, want %v", tc.args.dst.Slice == nil, tc.want.sliceIsNil)
+			}
+			if len(tc.args.dst.Slice) != tc.want.sliceLen {
+				t.Errorf("len(Slice) = %v, want %v", len(tc.args.dst.Slice), tc.want.sliceLen)
+			}
+			if (tc.args.dst.Ints == nil) != tc.want.intsIsNil {
+				t.Errorf("Ints == nil = %v, want %v", tc.args.dst.Ints == nil, tc.want.intsIsNil)
+			}
+			if len(tc.args.dst.Ints) != tc.want.intsLen {
+				t.Errorf("len(Ints) = %v, want %v", len(tc.args.dst.Ints), tc.want.intsLen)
+			}
 		})
 	}
 }
 
-func TestSetEmptyByMap(t *testing.T) {
-	type testStruct struct {
-		Name          string
-		Map           map[string]string
-		MapWithValue  map[string]int
+func Test_Cloudfirestore_SetEmptyBySlices(t *testing.T) {
+	type args struct {
+		dst *emptyTargetStruct
+	}
+	type want struct {
+		sliceIsNil bool
+		sliceLen   int
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "nil マップが空マップに初期化される",
-			dst: &testStruct{
-				Name: "test",
-				Map:  nil,
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Map == nil {
-					t.Error("Map should not be nil")
-				}
-				if len(dst.Map) != 0 {
-					t.Errorf("Map length = %v, want 0", len(dst.Map))
-				}
-			},
+			name: "正常系: nilスライスが空スライスに初期化される",
+			args: args{dst: &emptyTargetStruct{Name: "test", Slice: nil}},
+			want: want{sliceIsNil: false, sliceLen: 0},
 		},
 		{
-			name: "空マップはそのまま",
-			dst: &testStruct{
-				Name: "test",
-				Map:  map[string]string{},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Map == nil {
-					t.Error("Map should not be nil")
-				}
-				if len(dst.Map) != 0 {
-					t.Errorf("Map length = %v, want 0", len(dst.Map))
-				}
-			},
-		},
-		{
-			name: "値があるマップは変更されない",
-			dst: &testStruct{
-				Name:         "test",
-				MapWithValue: map[string]int{"a": 1, "b": 2},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if len(dst.MapWithValue) != 2 {
-					t.Errorf("MapWithValue length = %v, want 2", len(dst.MapWithValue))
-				}
-			},
+			name: "正常系: 空スライスはそのまま",
+			args: args{dst: &emptyTargetStruct{Name: "test", Slice: []string{}}},
+			want: want{sliceIsNil: false, sliceLen: 0},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cloudfirestore.SetEmptyByMap(tt.dst)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			rv := reflect.ValueOf(tc.args.dst)
+			cloudfirestore.SetEmptyBySlices(rv, rv.Elem().Type())
+
+			if (tc.args.dst.Slice == nil) != tc.want.sliceIsNil {
+				t.Errorf("Slice == nil = %v, want %v", tc.args.dst.Slice == nil, tc.want.sliceIsNil)
+			}
+			if len(tc.args.dst.Slice) != tc.want.sliceLen {
+				t.Errorf("len(Slice) = %v, want %v", len(tc.args.dst.Slice), tc.want.sliceLen)
+			}
 		})
 	}
 }
 
-func TestSetEmptyByMaps(t *testing.T) {
-	type testStruct struct {
-		Name string
-		Map  map[string]string
+func Test_Cloudfirestore_SetEmptyByMap(t *testing.T) {
+	type args struct {
+		dst *emptyTargetStruct
+	}
+	type want struct {
+		mapIsNil    bool
+		mapLen      int
+		intMapIsNil bool
+		intMapLen   int
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
 	}
 
-	tests := []struct {
-		name     string
-		dst      *testStruct
-		validate func(*testing.T, *testStruct)
-	}{
+	tcs := []testCase{
 		{
-			name: "nil マップが空マップに初期化される",
-			dst: &testStruct{
-				Name: "test",
-				Map:  nil,
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Map == nil {
-					t.Error("Map should not be nil")
-				}
-				if len(dst.Map) != 0 {
-					t.Errorf("Map length = %v, want 0", len(dst.Map))
-				}
-			},
+			name: "正常系: nilマップが空マップに初期化される",
+			args: args{dst: &emptyTargetStruct{Name: "test", Map: nil}},
+			want: want{mapIsNil: false, mapLen: 0, intMapIsNil: false, intMapLen: 0},
 		},
 		{
-			name: "空マップはそのまま",
-			dst: &testStruct{
-				Name: "test",
-				Map:  map[string]string{},
-			},
-			validate: func(t *testing.T, dst *testStruct) {
-				if dst.Map == nil {
-					t.Error("Map should not be nil")
-				}
-				if len(dst.Map) != 0 {
-					t.Errorf("Map length = %v, want 0", len(dst.Map))
-				}
-			},
+			name: "正常系: 空マップはそのまま",
+			args: args{dst: &emptyTargetStruct{Name: "test", Map: map[string]string{}}},
+			want: want{mapIsNil: false, mapLen: 0, intMapIsNil: false, intMapLen: 0},
+		},
+		{
+			name: "正常系: 値があるマップは変更されない",
+			args: args{dst: &emptyTargetStruct{Name: "test", IntMap: map[string]int{"a": 1, "b": 2}}},
+			want: want{mapIsNil: false, mapLen: 0, intMapIsNil: false, intMapLen: 2},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			rv := reflect.ValueOf(tt.dst)
-			rt := rv.Elem().Type()
-			cloudfirestore.SetEmptyByMaps(rv, rt)
-			tt.validate(t, tt.dst)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			cloudfirestore.SetEmptyByMap(tc.args.dst)
+
+			if (tc.args.dst.Map == nil) != tc.want.mapIsNil {
+				t.Errorf("Map == nil = %v, want %v", tc.args.dst.Map == nil, tc.want.mapIsNil)
+			}
+			if len(tc.args.dst.Map) != tc.want.mapLen {
+				t.Errorf("len(Map) = %v, want %v", len(tc.args.dst.Map), tc.want.mapLen)
+			}
+			if (tc.args.dst.IntMap == nil) != tc.want.intMapIsNil {
+				t.Errorf("IntMap == nil = %v, want %v", tc.args.dst.IntMap == nil, tc.want.intMapIsNil)
+			}
+			if len(tc.args.dst.IntMap) != tc.want.intMapLen {
+				t.Errorf("len(IntMap) = %v, want %v", len(tc.args.dst.IntMap), tc.want.intMapLen)
+			}
+		})
+	}
+}
+
+func Test_Cloudfirestore_SetEmptyByMaps(t *testing.T) {
+	type args struct {
+		dst *emptyTargetStruct
+	}
+	type want struct {
+		mapIsNil bool
+		mapLen   int
+	}
+	type testCase struct {
+		name string
+		args args
+		want want
+	}
+
+	tcs := []testCase{
+		{
+			name: "正常系: nilマップが空マップに初期化される",
+			args: args{dst: &emptyTargetStruct{Name: "test", Map: nil}},
+			want: want{mapIsNil: false, mapLen: 0},
+		},
+		{
+			name: "正常系: 空マップはそのまま",
+			args: args{dst: &emptyTargetStruct{Name: "test", Map: map[string]string{}}},
+			want: want{mapIsNil: false, mapLen: 0},
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			rv := reflect.ValueOf(tc.args.dst)
+			cloudfirestore.SetEmptyByMaps(rv, rv.Elem().Type())
+
+			if (tc.args.dst.Map == nil) != tc.want.mapIsNil {
+				t.Errorf("Map == nil = %v, want %v", tc.args.dst.Map == nil, tc.want.mapIsNil)
+			}
+			if len(tc.args.dst.Map) != tc.want.mapLen {
+				t.Errorf("len(Map) = %v, want %v", len(tc.args.dst.Map), tc.want.mapLen)
+			}
 		})
 	}
 }

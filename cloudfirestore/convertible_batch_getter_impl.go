@@ -2,9 +2,9 @@ package cloudfirestore
 
 import (
 	"context"
+	"maps"
 
 	"github.com/rabee-inc/go-pkg/sliceutil"
-	"golang.org/x/exp/maps"
 )
 
 type convertibleBatchGetterItem[D any] struct {

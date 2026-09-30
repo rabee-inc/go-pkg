@@ -1,6 +1,7 @@
 package sliceutil
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/rabee-inc/go-pkg/randutil"
@@ -94,22 +95,12 @@ func Reduce[T, E any](srcs []T, fn func(dst E, src T) E) E {
 
 // Contains ... 配列に要素が含まれているか
 func Contains[T comparable](srcs []T, e T) bool {
-	for _, v := range srcs {
-		if e == v {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(srcs, e)
 }
 
 // ContainsFunc ... 配列に要素が含まれているか
 func ContainsFunc[T any](srcs []T, fn func(src T) bool) bool {
-	for _, src := range srcs {
-		if fn(src) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(srcs, fn)
 }
 
 // Some ... ContainsFunc のエイリアス
@@ -181,10 +172,7 @@ func Chunk[T any](srcs []T, size int) []Slice[T] {
 	var chunks []Slice[T]
 	srcsSize := len(srcs)
 	for i := 0; i < srcsSize; i += size {
-		end := i + size
-		if srcsSize < end {
-			end = srcsSize
-		}
+		end := min(srcsSize, i+size)
 		chunks = append(chunks, srcs[i:end])
 	}
 	return chunks

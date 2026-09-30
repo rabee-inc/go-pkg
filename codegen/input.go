@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"errors"
 	"fmt"
 
 	"gopkg.in/yaml.v3"
@@ -49,7 +50,7 @@ type typeInputList []*typeInput
 func (p *typeInputList) UnmarshalYAML(value *yaml.Node) error {
 	// MappingNode のみ許可
 	if value.Kind != yaml.MappingNode {
-		return fmt.Errorf("`types` must contain YAML mapping.")
+		return errors.New("`types` must contain YAML mapping")
 	}
 
 	*p = make([]*typeInput, len(value.Content)/2)
@@ -202,7 +203,7 @@ func (p *extendsInput) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	if value.Kind != yaml.MappingNode {
-		return fmt.Errorf("`extends` must contain YAML mapping.")
+		return errors.New("`extends` must contain YAML mapping")
 	}
 
 	*p = extendsInput{
@@ -242,7 +243,7 @@ type extendsDefInputList []*extendsDefInput
 func (p *extendsDefInputList) UnmarshalYAML(value *yaml.Node) error {
 	// MappingNode のみ許可
 	if value.Kind != yaml.MappingNode {
-		return fmt.Errorf("`extends_defs` must contain YAML mapping.")
+		return errors.New("`extends_defs` must contain YAML mapping")
 	}
 
 	*p = make([]*extendsDefInput, len(value.Content)/2)
@@ -263,7 +264,7 @@ func (p *extendsDefInputList) UnmarshalYAML(value *yaml.Node) error {
 
 		// extends_defs の中で key: scalar 指定があった場合エラー
 		if ei.IsTemplate {
-			return fmt.Errorf("`extends_defs` > `%v` must contain YAML mapping.", keyName)
+			return fmt.Errorf("`extends_defs` > `%v` must contain YAML mapping", keyName)
 		}
 
 		ei.Name = keyName

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/validation"
@@ -131,7 +131,7 @@ func GetFormBySlice(ctx context.Context, r *http.Request, key string) []string {
 	qs := r.URL.RawQuery
 	vs := []string{}
 	var err error
-	for _, q := range strings.Split(qs, "&") {
+	for q := range strings.SplitSeq(qs, "&") {
 		kv := strings.Split(q, "=")
 		if len(kv) < 2 {
 			continue
@@ -182,7 +182,7 @@ func GetForms(ctx context.Context, r *http.Request, dst any) error {
 	paramValue := reflect.ValueOf(dst).Elem()
 
 	fieldCount := paramType.NumField()
-	for i := 0; i < fieldCount; i++ {
+	for i := range fieldCount {
 		field := paramType.Field(i)
 
 		formTag := paramType.Field(i).Tag.Get("form")

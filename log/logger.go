@@ -536,7 +536,7 @@ func Panic(ctx context.Context, rcvr any) string {
 		traces = append(traces, trace)
 	}
 	msg := fmt.Sprintf("panic!! %v\n%s", rcvr, strings.Join(traces, "\n"))
-	Criticalf(ctx, msg)
+	Criticalf(ctx, "%s", msg)
 	return msg
 }
 
