@@ -58,7 +58,7 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 	}
 
 	// pointer の場合は pointer じゃなくなるまで Elem
-	for rt.Kind() == reflect.Ptr {
+	for rt.Kind() == reflect.Pointer {
 		rt = rt.Elem()
 	}
 
@@ -126,9 +126,8 @@ func (t *typeScanner) scan(rt reflect.Type, ignoreField bool) *TypeStructure {
 		ts.Fields = map[string]*TypeStructure{}
 
 		t.types[name] = ts
-		for i := range rt.NumField() {
+		for field := range rt.Fields() {
 			keyName := ""
-			field := rt.Field(i)
 
 			hasSkip := false
 			omitEmpty := false

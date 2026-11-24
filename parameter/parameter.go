@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-
 	"github.com/rabee-inc/go-pkg/log"
 	"github.com/rabee-inc/go-pkg/validation"
 )
@@ -173,7 +172,7 @@ func GetFormByIntSlice(ctx context.Context, r *http.Request, key string) []int {
 
 // GetForms ... リクエストからFormパラメータを取得する
 func GetForms(ctx context.Context, r *http.Request, dst any) error {
-	if reflect.TypeOf(dst).Kind() != reflect.Ptr {
+	if reflect.TypeOf(dst).Kind() != reflect.Pointer {
 		err := log.Errore(ctx, "dst isn't a pointer")
 		return err
 	}

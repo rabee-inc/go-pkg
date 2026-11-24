@@ -12,7 +12,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rabee-inc/go-pkg/maputil"
 	"github.com/rabee-inc/go-pkg/sliceutil"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 const (

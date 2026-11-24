@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // このファイルでは yaml からの入力についてのみ処理を行う

@@ -78,7 +78,7 @@ func marshalHeader(dsts []string, prevTag string, rp reflect.Value) []string {
 	rv := reflect.Indirect(rp)
 	for i := 0; i < rv.Type().NumField(); i++ {
 		tag := rv.Type().Field(i).Tag.Get("csv")
-		if rv.Field(i).Type().Kind() == reflect.Ptr {
+		if rv.Field(i).Type().Kind() == reflect.Pointer {
 			if rv.Field(i).IsZero() {
 				continue
 			}
@@ -96,7 +96,7 @@ func marshalHeader(dsts []string, prevTag string, rp reflect.Value) []string {
 func marshalValue(dsts []string, rp reflect.Value) []string {
 	rv := reflect.Indirect(rp)
 	for i := 0; i < rv.Type().NumField(); i++ {
-		if rv.Field(i).Type().Kind() == reflect.Ptr {
+		if rv.Field(i).Type().Kind() == reflect.Pointer {
 			if rv.Field(i).IsZero() {
 				continue
 			}

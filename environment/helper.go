@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/rabee-inc/go-pkg/deploy"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // 環境変数を読み込む
